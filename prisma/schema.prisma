@@ -28,7 +28,8 @@ model Staff {
   updatedAt DateTime @updatedAt
 
   workflowSteps WorkflowStep[]
-  workflowTasks WorkflowTask[]
+  tasks         WorkflowTask[]
+  calendarEvents CalendarEvent[]
 
   @@index([name])
   @@index([status])
@@ -67,8 +68,12 @@ model ClientFile {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
+  client        Client               @relation(fields: [clientId], references: [id])
   fileWorkflows FileWorkflow[]
-  client        Client         @relation(fields: [clientId], references: [id])
+  charges       FileCharge[]
+  payments      Payment[]
+  installments  PaymentInstallment[]
+  calendarEvents CalendarEvent[]
 
   @@index([clientId])
   @@index([status])
@@ -115,9 +120,9 @@ model WorkflowStep {
   defaultStaff     Staff?           @relation(fields: [defaultStaffId], references: [id])
   tasks            WorkflowTask[]
 
-  @@unique([workflowTemplateId, stepNumber])
   @@index([workflowTemplateId])
   @@index([defaultStaffId])
+  @@unique([workflowTemplateId, stepNumber])
   @@map("workflow_steps")
 }
 
@@ -182,16 +187,125 @@ enum TaskStatus {
 }
 
 model TaskHistory {
-  id             Int         @id @default(autoincrement())
+  id             Int        @id @default(autoincrement())
   workflowTaskId Int
   oldStatus      TaskStatus?
   newStatus      TaskStatus
   remarks        String?
-  changedAt      DateTime    @default(now())
+  changedAt      DateTime   @default(now())
 
   workflowTask WorkflowTask @relation(fields: [workflowTaskId], references: [id])
 
   @@index([workflowTaskId])
   @@index([changedAt])
   @@map("task_history")
+}
+
+model FileCharge {
+  id           Int      @id @default(autoincrement())
+  clientFileId Int
+  description  String
+  quantity     Int      @default(1)
+  unitAmount   Decimal  @db.Decimal(12, 2)
+  totalAmount  Decimal  @db.Decimal(12, 2)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  clientFile ClientFile @relation(fields: [clientFileId], references: [id])
+
+  @@index([clientFileId])
+  @@map("file_charges")
+}
+
+model Payment {
+  id            Int           @id @default(autoincrement())
+  clientFileId  Int
+  amount        Decimal       @db.Decimal(12, 2)
+  paymentMethod PaymentMethod
+  status        PaymentStatus @default(CLEARED)
+  referenceNo   String?
+  remarks       String?
+  paidAt        DateTime      @default(now())
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  clientFile   ClientFile          @relation(fields: [clientFileId], references: [id])
+  installments PaymentInstallment[]
+
+  @@index([clientFileId])
+  @@index([paymentMethod])
+  @@index([status])
+  @@index([paidAt])
+  @@map("payments")
+}
+
+model PaymentInstallment {
+  id           Int              @id @default(autoincrement())
+  paymentId    Int?
+  clientFileId Int
+  dueDate      DateTime?
+  amount       Decimal          @db.Decimal(12, 2)
+  status       InstallmentStatus @default(PENDING)
+  remarks      String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  payment    Payment?   @relation(fields: [paymentId], references: [id])
+  clientFile ClientFile @relation(fields: [clientFileId], references: [id])
+
+  @@index([paymentId])
+  @@index([clientFileId])
+  @@index([dueDate])
+  @@index([status])
+  @@map("payment_installments")
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  BANK_TRANSFER
+  CHEQUE
+}
+
+enum PaymentStatus {
+  PENDING
+  CLEARED
+  CANCELLED
+  RETURNED
+  BOUNCED
+}
+
+enum InstallmentStatus {
+  PENDING
+  PARTIALLY_PAID
+  PAID
+  CANCELLED
+}
+
+model CalendarEvent {
+  id           Int                 @id @default(autoincrement())
+  title        String
+  description  String?
+  startAt      DateTime
+  endAt        DateTime?
+  clientFileId Int?
+  staffId      Int?
+  status       CalendarEventStatus @default(SCHEDULED)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  clientFile ClientFile? @relation(fields: [clientFileId], references: [id])
+  staff      Staff?      @relation(fields: [staffId], references: [id])
+
+  @@index([startAt])
+  @@index([clientFileId])
+  @@index([staffId])
+  @@index([status])
+  @@map("calendar_events")
+}
+
+enum CalendarEventStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
 }
