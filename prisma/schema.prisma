@@ -1,0 +1,197 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Staff {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String?
+  email     String?
+  position  String?
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workflowSteps WorkflowStep[]
+  workflowTasks WorkflowTask[]
+
+  @@index([name])
+  @@index([status])
+  @@map("staff")
+}
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  fullName  String
+  mobile    String?
+  email     String?
+  nic       String?
+  address   String?
+  notes     String?
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  files ClientFile[]
+
+  @@index([fullName])
+  @@index([mobile])
+  @@index([nic])
+  @@map("clients")
+}
+
+model ClientFile {
+  id          Int        @id @default(autoincrement())
+  clientId    Int
+  fileNumber  String     @unique
+  title       String
+  description String?
+  status      FileStatus @default(OPEN)
+  openedAt    DateTime   @default(now())
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  fileWorkflows FileWorkflow[]
+  client        Client         @relation(fields: [clientId], references: [id])
+
+  @@index([clientId])
+  @@index([status])
+  @@index([fileNumber])
+  @@map("client_files")
+}
+
+enum FileStatus {
+  OPEN
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+model WorkflowTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  steps         WorkflowStep[]
+  fileWorkflows FileWorkflow[]
+
+  @@index([name])
+  @@index([status])
+  @@map("workflow_templates")
+}
+
+model WorkflowStep {
+  id                 Int      @id @default(autoincrement())
+  workflowTemplateId Int
+  stepNumber         Int
+  title              String
+  description        String?
+  defaultStaffId     Int?
+  status             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  workflowTemplate WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id])
+  defaultStaff     Staff?           @relation(fields: [defaultStaffId], references: [id])
+  tasks            WorkflowTask[]
+
+  @@unique([workflowTemplateId, stepNumber])
+  @@index([workflowTemplateId])
+  @@index([defaultStaffId])
+  @@map("workflow_steps")
+}
+
+model FileWorkflow {
+  id                 Int            @id @default(autoincrement())
+  clientFileId       Int
+  workflowTemplateId Int
+  status             WorkflowStatus @default(NOT_STARTED)
+  startedAt          DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  clientFile       ClientFile       @relation(fields: [clientFileId], references: [id])
+  workflowTemplate WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id])
+  tasks            WorkflowTask[]
+
+  @@index([clientFileId])
+  @@index([workflowTemplateId])
+  @@index([status])
+  @@map("file_workflows")
+}
+
+enum WorkflowStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+model WorkflowTask {
+  id              Int        @id @default(autoincrement())
+  fileWorkflowId  Int
+  workflowStepId  Int
+  assignedStaffId Int?
+  status          TaskStatus @default(PENDING)
+  remarks         String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  fileWorkflow  FileWorkflow  @relation(fields: [fileWorkflowId], references: [id])
+  workflowStep  WorkflowStep  @relation(fields: [workflowStepId], references: [id])
+  assignedStaff Staff?        @relation(fields: [assignedStaffId], references: [id])
+  history       TaskHistory[]
+
+  @@index([fileWorkflowId])
+  @@index([workflowStepId])
+  @@index([assignedStaffId])
+  @@index([status])
+  @@map("workflow_tasks")
+}
+
+enum TaskStatus {
+  PENDING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+model TaskHistory {
+  id             Int         @id @default(autoincrement())
+  workflowTaskId Int
+  oldStatus      TaskStatus?
+  newStatus      TaskStatus
+  remarks        String?
+  changedAt      DateTime    @default(now())
+
+  workflowTask WorkflowTask @relation(fields: [workflowTaskId], references: [id])
+
+  @@index([workflowTaskId])
+  @@index([changedAt])
+  @@map("task_history")
+}
