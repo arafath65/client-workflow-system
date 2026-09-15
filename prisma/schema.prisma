@@ -27,8 +27,8 @@ model Staff {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  workflowSteps WorkflowStep[]
-  tasks         WorkflowTask[]
+  workflowSteps  WorkflowStep[]
+  tasks          WorkflowTask[]
   calendarEvents CalendarEvent[]
 
   @@index([name])
@@ -68,11 +68,11 @@ model ClientFile {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  client        Client               @relation(fields: [clientId], references: [id])
-  fileWorkflows FileWorkflow[]
-  charges       FileCharge[]
-  payments      Payment[]
-  installments  PaymentInstallment[]
+  client         Client               @relation(fields: [clientId], references: [id])
+  fileWorkflows  FileWorkflow[]
+  charges        FileCharge[]
+  payments       Payment[]
+  installments   PaymentInstallment[]
   calendarEvents CalendarEvent[]
 
   @@index([clientId])
@@ -116,14 +116,33 @@ model WorkflowStep {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  workflowTemplate WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id])
-  defaultStaff     Staff?           @relation(fields: [defaultStaffId], references: [id])
+  workflowTemplate WorkflowTemplate  @relation(fields: [workflowTemplateId], references: [id])
+  defaultStaff     Staff?            @relation(fields: [defaultStaffId], references: [id])
   tasks            WorkflowTask[]
+  subTasks         WorkflowSubTask[]
 
+  @@unique([workflowTemplateId, stepNumber])
   @@index([workflowTemplateId])
   @@index([defaultStaffId])
-  @@unique([workflowTemplateId, stepNumber])
   @@map("workflow_steps")
+}
+
+model WorkflowSubTask {
+  id             Int      @id @default(autoincrement())
+  workflowStepId Int
+  subTaskNumber  Int
+  title          String
+  description    String?  @db.Text
+  status         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  workflowStep WorkflowStep @relation(fields: [workflowStepId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowStepId, subTaskNumber])
+  @@index([workflowStepId])
+  @@index([status])
+  @@map("workflow_sub_tasks")
 }
 
 model FileWorkflow {
@@ -187,12 +206,12 @@ enum TaskStatus {
 }
 
 model TaskHistory {
-  id             Int        @id @default(autoincrement())
+  id             Int         @id @default(autoincrement())
   workflowTaskId Int
   oldStatus      TaskStatus?
   newStatus      TaskStatus
   remarks        String?
-  changedAt      DateTime   @default(now())
+  changedAt      DateTime    @default(now())
 
   workflowTask WorkflowTask @relation(fields: [workflowTaskId], references: [id])
 
@@ -229,7 +248,7 @@ model Payment {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  clientFile   ClientFile          @relation(fields: [clientFileId], references: [id])
+  clientFile   ClientFile           @relation(fields: [clientFileId], references: [id])
   installments PaymentInstallment[]
 
   @@index([clientFileId])
@@ -240,15 +259,15 @@ model Payment {
 }
 
 model PaymentInstallment {
-  id           Int              @id @default(autoincrement())
+  id           Int               @id @default(autoincrement())
   paymentId    Int?
   clientFileId Int
   dueDate      DateTime?
-  amount       Decimal          @db.Decimal(12, 2)
+  amount       Decimal           @db.Decimal(12, 2)
   status       InstallmentStatus @default(PENDING)
   remarks      String?
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   payment    Payment?   @relation(fields: [paymentId], references: [id])
   clientFile ClientFile @relation(fields: [clientFileId], references: [id])

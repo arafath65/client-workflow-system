@@ -57,9 +57,14 @@ export const ModelName = {
   ClientFile: 'ClientFile',
   WorkflowTemplate: 'WorkflowTemplate',
   WorkflowStep: 'WorkflowStep',
+  WorkflowSubTask: 'WorkflowSubTask',
   FileWorkflow: 'FileWorkflow',
   WorkflowTask: 'WorkflowTask',
-  TaskHistory: 'TaskHistory'
+  TaskHistory: 'TaskHistory',
+  FileCharge: 'FileCharge',
+  Payment: 'Payment',
+  PaymentInstallment: 'PaymentInstallment',
+  CalendarEvent: 'CalendarEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -162,6 +167,20 @@ export const WorkflowStepScalarFieldEnum = {
 export type WorkflowStepScalarFieldEnum = (typeof WorkflowStepScalarFieldEnum)[keyof typeof WorkflowStepScalarFieldEnum]
 
 
+export const WorkflowSubTaskScalarFieldEnum = {
+  id: 'id',
+  workflowStepId: 'workflowStepId',
+  subTaskNumber: 'subTaskNumber',
+  title: 'title',
+  description: 'description',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkflowSubTaskScalarFieldEnum = (typeof WorkflowSubTaskScalarFieldEnum)[keyof typeof WorkflowSubTaskScalarFieldEnum]
+
+
 export const FileWorkflowScalarFieldEnum = {
   id: 'id',
   clientFileId: 'clientFileId',
@@ -202,6 +221,67 @@ export const TaskHistoryScalarFieldEnum = {
 } as const
 
 export type TaskHistoryScalarFieldEnum = (typeof TaskHistoryScalarFieldEnum)[keyof typeof TaskHistoryScalarFieldEnum]
+
+
+export const FileChargeScalarFieldEnum = {
+  id: 'id',
+  clientFileId: 'clientFileId',
+  description: 'description',
+  quantity: 'quantity',
+  unitAmount: 'unitAmount',
+  totalAmount: 'totalAmount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileChargeScalarFieldEnum = (typeof FileChargeScalarFieldEnum)[keyof typeof FileChargeScalarFieldEnum]
+
+
+export const PaymentScalarFieldEnum = {
+  id: 'id',
+  clientFileId: 'clientFileId',
+  amount: 'amount',
+  paymentMethod: 'paymentMethod',
+  status: 'status',
+  referenceNo: 'referenceNo',
+  remarks: 'remarks',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const PaymentInstallmentScalarFieldEnum = {
+  id: 'id',
+  paymentId: 'paymentId',
+  clientFileId: 'clientFileId',
+  dueDate: 'dueDate',
+  amount: 'amount',
+  status: 'status',
+  remarks: 'remarks',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PaymentInstallmentScalarFieldEnum = (typeof PaymentInstallmentScalarFieldEnum)[keyof typeof PaymentInstallmentScalarFieldEnum]
+
+
+export const CalendarEventScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  clientFileId: 'clientFileId',
+  staffId: 'staffId',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -275,6 +355,14 @@ export const WorkflowStepOrderByRelevanceFieldEnum = {
 export type WorkflowStepOrderByRelevanceFieldEnum = (typeof WorkflowStepOrderByRelevanceFieldEnum)[keyof typeof WorkflowStepOrderByRelevanceFieldEnum]
 
 
+export const WorkflowSubTaskOrderByRelevanceFieldEnum = {
+  title: 'title',
+  description: 'description'
+} as const
+
+export type WorkflowSubTaskOrderByRelevanceFieldEnum = (typeof WorkflowSubTaskOrderByRelevanceFieldEnum)[keyof typeof WorkflowSubTaskOrderByRelevanceFieldEnum]
+
+
 export const WorkflowTaskOrderByRelevanceFieldEnum = {
   remarks: 'remarks'
 } as const
@@ -287,4 +375,34 @@ export const TaskHistoryOrderByRelevanceFieldEnum = {
 } as const
 
 export type TaskHistoryOrderByRelevanceFieldEnum = (typeof TaskHistoryOrderByRelevanceFieldEnum)[keyof typeof TaskHistoryOrderByRelevanceFieldEnum]
+
+
+export const FileChargeOrderByRelevanceFieldEnum = {
+  description: 'description'
+} as const
+
+export type FileChargeOrderByRelevanceFieldEnum = (typeof FileChargeOrderByRelevanceFieldEnum)[keyof typeof FileChargeOrderByRelevanceFieldEnum]
+
+
+export const PaymentOrderByRelevanceFieldEnum = {
+  referenceNo: 'referenceNo',
+  remarks: 'remarks'
+} as const
+
+export type PaymentOrderByRelevanceFieldEnum = (typeof PaymentOrderByRelevanceFieldEnum)[keyof typeof PaymentOrderByRelevanceFieldEnum]
+
+
+export const PaymentInstallmentOrderByRelevanceFieldEnum = {
+  remarks: 'remarks'
+} as const
+
+export type PaymentInstallmentOrderByRelevanceFieldEnum = (typeof PaymentInstallmentOrderByRelevanceFieldEnum)[keyof typeof PaymentInstallmentOrderByRelevanceFieldEnum]
+
+
+export const CalendarEventOrderByRelevanceFieldEnum = {
+  title: 'title',
+  description: 'description'
+} as const
+
+export type CalendarEventOrderByRelevanceFieldEnum = (typeof CalendarEventOrderByRelevanceFieldEnum)[keyof typeof CalendarEventOrderByRelevanceFieldEnum]
 

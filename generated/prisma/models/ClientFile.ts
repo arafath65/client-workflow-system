@@ -260,8 +260,12 @@ export type ClientFileWhereInput = {
   completedAt?: Prisma.DateTimeNullableFilter<"ClientFile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
-  fileWorkflows?: Prisma.FileWorkflowListRelationFilter
   client?: Prisma.XOR<Prisma.ClientScalarRelationFilter, Prisma.ClientWhereInput>
+  fileWorkflows?: Prisma.FileWorkflowListRelationFilter
+  charges?: Prisma.FileChargeListRelationFilter
+  payments?: Prisma.PaymentListRelationFilter
+  installments?: Prisma.PaymentInstallmentListRelationFilter
+  calendarEvents?: Prisma.CalendarEventListRelationFilter
 }
 
 export type ClientFileOrderByWithRelationInput = {
@@ -275,8 +279,12 @@ export type ClientFileOrderByWithRelationInput = {
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  fileWorkflows?: Prisma.FileWorkflowOrderByRelationAggregateInput
   client?: Prisma.ClientOrderByWithRelationInput
+  fileWorkflows?: Prisma.FileWorkflowOrderByRelationAggregateInput
+  charges?: Prisma.FileChargeOrderByRelationAggregateInput
+  payments?: Prisma.PaymentOrderByRelationAggregateInput
+  installments?: Prisma.PaymentInstallmentOrderByRelationAggregateInput
+  calendarEvents?: Prisma.CalendarEventOrderByRelationAggregateInput
   _relevance?: Prisma.ClientFileOrderByRelevanceInput
 }
 
@@ -294,8 +302,12 @@ export type ClientFileWhereUniqueInput = Prisma.AtLeast<{
   completedAt?: Prisma.DateTimeNullableFilter<"ClientFile"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
-  fileWorkflows?: Prisma.FileWorkflowListRelationFilter
   client?: Prisma.XOR<Prisma.ClientScalarRelationFilter, Prisma.ClientWhereInput>
+  fileWorkflows?: Prisma.FileWorkflowListRelationFilter
+  charges?: Prisma.FileChargeListRelationFilter
+  payments?: Prisma.PaymentListRelationFilter
+  installments?: Prisma.PaymentInstallmentListRelationFilter
+  calendarEvents?: Prisma.CalendarEventListRelationFilter
 }, "id" | "fileNumber">
 
 export type ClientFileOrderByWithAggregationInput = {
@@ -341,8 +353,12 @@ export type ClientFileCreateInput = {
   completedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  fileWorkflows?: Prisma.FileWorkflowCreateNestedManyWithoutClientFileInput
   client: Prisma.ClientCreateNestedOneWithoutFilesInput
+  fileWorkflows?: Prisma.FileWorkflowCreateNestedManyWithoutClientFileInput
+  charges?: Prisma.FileChargeCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutClientFileInput
 }
 
 export type ClientFileUncheckedCreateInput = {
@@ -357,6 +373,10 @@ export type ClientFileUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
+  charges?: Prisma.FileChargeUncheckedCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutClientFileInput
 }
 
 export type ClientFileUpdateInput = {
@@ -368,8 +388,12 @@ export type ClientFileUpdateInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  fileWorkflows?: Prisma.FileWorkflowUpdateManyWithoutClientFileNestedInput
   client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
+  fileWorkflows?: Prisma.FileWorkflowUpdateManyWithoutClientFileNestedInput
+  charges?: Prisma.FileChargeUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutClientFileNestedInput
 }
 
 export type ClientFileUncheckedUpdateInput = {
@@ -384,6 +408,10 @@ export type ClientFileUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
+  charges?: Prisma.FileChargeUncheckedUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutClientFileNestedInput
 }
 
 export type ClientFileCreateManyInput = {
@@ -493,6 +521,11 @@ export type ClientFileScalarRelationFilter = {
   isNot?: Prisma.ClientFileWhereInput
 }
 
+export type ClientFileNullableScalarRelationFilter = {
+  is?: Prisma.ClientFileWhereInput | null
+  isNot?: Prisma.ClientFileWhereInput | null
+}
+
 export type ClientFileCreateNestedManyWithoutClientInput = {
   create?: Prisma.XOR<Prisma.ClientFileCreateWithoutClientInput, Prisma.ClientFileUncheckedCreateWithoutClientInput> | Prisma.ClientFileCreateWithoutClientInput[] | Prisma.ClientFileUncheckedCreateWithoutClientInput[]
   connectOrCreate?: Prisma.ClientFileCreateOrConnectWithoutClientInput | Prisma.ClientFileCreateOrConnectWithoutClientInput[]
@@ -557,6 +590,64 @@ export type ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ClientFileUpdateToOneWithWhereWithoutFileWorkflowsInput, Prisma.ClientFileUpdateWithoutFileWorkflowsInput>, Prisma.ClientFileUncheckedUpdateWithoutFileWorkflowsInput>
 }
 
+export type ClientFileCreateNestedOneWithoutChargesInput = {
+  create?: Prisma.XOR<Prisma.ClientFileCreateWithoutChargesInput, Prisma.ClientFileUncheckedCreateWithoutChargesInput>
+  connectOrCreate?: Prisma.ClientFileCreateOrConnectWithoutChargesInput
+  connect?: Prisma.ClientFileWhereUniqueInput
+}
+
+export type ClientFileUpdateOneRequiredWithoutChargesNestedInput = {
+  create?: Prisma.XOR<Prisma.ClientFileCreateWithoutChargesInput, Prisma.ClientFileUncheckedCreateWithoutChargesInput>
+  connectOrCreate?: Prisma.ClientFileCreateOrConnectWithoutChargesInput
+  upsert?: Prisma.ClientFileUpsertWithoutChargesInput
+  connect?: Prisma.ClientFileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClientFileUpdateToOneWithWhereWithoutChargesInput, Prisma.ClientFileUpdateWithoutChargesInput>, Prisma.ClientFileUncheckedUpdateWithoutChargesInput>
+}
+
+export type ClientFileCreateNestedOneWithoutPaymentsInput = {
+  create?: Prisma.XOR<Prisma.ClientFileCreateWithoutPaymentsInput, Prisma.ClientFileUncheckedCreateWithoutPaymentsInput>
+  connectOrCreate?: Prisma.ClientFileCreateOrConnectWithoutPaymentsInput
+  connect?: Prisma.ClientFileWhereUniqueInput
+}
+
+export type ClientFileUpdateOneRequiredWithoutPaymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.ClientFileCreateWithoutPaymentsInput, Prisma.ClientFileUncheckedCreateWithoutPaymentsInput>
+  connectOrCreate?: Prisma.ClientFileCreateOrConnectWithoutPaymentsInput
+  upsert?: Prisma.ClientFileUpsertWithoutPaymentsInput
+  connect?: Prisma.ClientFileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClientFileUpdateToOneWithWhereWithoutPaymentsInput, Prisma.ClientFileUpdateWithoutPaymentsInput>, Prisma.ClientFileUncheckedUpdateWithoutPaymentsInput>
+}
+
+export type ClientFileCreateNestedOneWithoutInstallmentsInput = {
+  create?: Prisma.XOR<Prisma.ClientFileCreateWithoutInstallmentsInput, Prisma.ClientFileUncheckedCreateWithoutInstallmentsInput>
+  connectOrCreate?: Prisma.ClientFileCreateOrConnectWithoutInstallmentsInput
+  connect?: Prisma.ClientFileWhereUniqueInput
+}
+
+export type ClientFileUpdateOneRequiredWithoutInstallmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.ClientFileCreateWithoutInstallmentsInput, Prisma.ClientFileUncheckedCreateWithoutInstallmentsInput>
+  connectOrCreate?: Prisma.ClientFileCreateOrConnectWithoutInstallmentsInput
+  upsert?: Prisma.ClientFileUpsertWithoutInstallmentsInput
+  connect?: Prisma.ClientFileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClientFileUpdateToOneWithWhereWithoutInstallmentsInput, Prisma.ClientFileUpdateWithoutInstallmentsInput>, Prisma.ClientFileUncheckedUpdateWithoutInstallmentsInput>
+}
+
+export type ClientFileCreateNestedOneWithoutCalendarEventsInput = {
+  create?: Prisma.XOR<Prisma.ClientFileCreateWithoutCalendarEventsInput, Prisma.ClientFileUncheckedCreateWithoutCalendarEventsInput>
+  connectOrCreate?: Prisma.ClientFileCreateOrConnectWithoutCalendarEventsInput
+  connect?: Prisma.ClientFileWhereUniqueInput
+}
+
+export type ClientFileUpdateOneWithoutCalendarEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.ClientFileCreateWithoutCalendarEventsInput, Prisma.ClientFileUncheckedCreateWithoutCalendarEventsInput>
+  connectOrCreate?: Prisma.ClientFileCreateOrConnectWithoutCalendarEventsInput
+  upsert?: Prisma.ClientFileUpsertWithoutCalendarEventsInput
+  disconnect?: Prisma.ClientFileWhereInput | boolean
+  delete?: Prisma.ClientFileWhereInput | boolean
+  connect?: Prisma.ClientFileWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ClientFileUpdateToOneWithWhereWithoutCalendarEventsInput, Prisma.ClientFileUpdateWithoutCalendarEventsInput>, Prisma.ClientFileUncheckedUpdateWithoutCalendarEventsInput>
+}
+
 export type ClientFileCreateWithoutClientInput = {
   fileNumber: string
   title: string
@@ -567,6 +658,10 @@ export type ClientFileCreateWithoutClientInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflows?: Prisma.FileWorkflowCreateNestedManyWithoutClientFileInput
+  charges?: Prisma.FileChargeCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutClientFileInput
 }
 
 export type ClientFileUncheckedCreateWithoutClientInput = {
@@ -580,6 +675,10 @@ export type ClientFileUncheckedCreateWithoutClientInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
+  charges?: Prisma.FileChargeUncheckedCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutClientFileInput
 }
 
 export type ClientFileCreateOrConnectWithoutClientInput = {
@@ -634,6 +733,10 @@ export type ClientFileCreateWithoutFileWorkflowsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   client: Prisma.ClientCreateNestedOneWithoutFilesInput
+  charges?: Prisma.FileChargeCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutClientFileInput
 }
 
 export type ClientFileUncheckedCreateWithoutFileWorkflowsInput = {
@@ -647,6 +750,10 @@ export type ClientFileUncheckedCreateWithoutFileWorkflowsInput = {
   completedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  charges?: Prisma.FileChargeUncheckedCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutClientFileInput
 }
 
 export type ClientFileCreateOrConnectWithoutFileWorkflowsInput = {
@@ -675,6 +782,10 @@ export type ClientFileUpdateWithoutFileWorkflowsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
+  charges?: Prisma.FileChargeUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutClientFileNestedInput
 }
 
 export type ClientFileUncheckedUpdateWithoutFileWorkflowsInput = {
@@ -688,6 +799,338 @@ export type ClientFileUncheckedUpdateWithoutFileWorkflowsInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  charges?: Prisma.FileChargeUncheckedUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutClientFileNestedInput
+}
+
+export type ClientFileCreateWithoutChargesInput = {
+  fileNumber: string
+  title: string
+  description?: string | null
+  status?: $Enums.FileStatus
+  openedAt?: Date | string
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  client: Prisma.ClientCreateNestedOneWithoutFilesInput
+  fileWorkflows?: Prisma.FileWorkflowCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutClientFileInput
+}
+
+export type ClientFileUncheckedCreateWithoutChargesInput = {
+  id?: number
+  clientId: number
+  fileNumber: string
+  title: string
+  description?: string | null
+  status?: $Enums.FileStatus
+  openedAt?: Date | string
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutClientFileInput
+}
+
+export type ClientFileCreateOrConnectWithoutChargesInput = {
+  where: Prisma.ClientFileWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClientFileCreateWithoutChargesInput, Prisma.ClientFileUncheckedCreateWithoutChargesInput>
+}
+
+export type ClientFileUpsertWithoutChargesInput = {
+  update: Prisma.XOR<Prisma.ClientFileUpdateWithoutChargesInput, Prisma.ClientFileUncheckedUpdateWithoutChargesInput>
+  create: Prisma.XOR<Prisma.ClientFileCreateWithoutChargesInput, Prisma.ClientFileUncheckedCreateWithoutChargesInput>
+  where?: Prisma.ClientFileWhereInput
+}
+
+export type ClientFileUpdateToOneWithWhereWithoutChargesInput = {
+  where?: Prisma.ClientFileWhereInput
+  data: Prisma.XOR<Prisma.ClientFileUpdateWithoutChargesInput, Prisma.ClientFileUncheckedUpdateWithoutChargesInput>
+}
+
+export type ClientFileUpdateWithoutChargesInput = {
+  fileNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
+  fileWorkflows?: Prisma.FileWorkflowUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutClientFileNestedInput
+}
+
+export type ClientFileUncheckedUpdateWithoutChargesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.IntFieldUpdateOperationsInput | number
+  fileNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutClientFileNestedInput
+}
+
+export type ClientFileCreateWithoutPaymentsInput = {
+  fileNumber: string
+  title: string
+  description?: string | null
+  status?: $Enums.FileStatus
+  openedAt?: Date | string
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  client: Prisma.ClientCreateNestedOneWithoutFilesInput
+  fileWorkflows?: Prisma.FileWorkflowCreateNestedManyWithoutClientFileInput
+  charges?: Prisma.FileChargeCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutClientFileInput
+}
+
+export type ClientFileUncheckedCreateWithoutPaymentsInput = {
+  id?: number
+  clientId: number
+  fileNumber: string
+  title: string
+  description?: string | null
+  status?: $Enums.FileStatus
+  openedAt?: Date | string
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
+  charges?: Prisma.FileChargeUncheckedCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutClientFileInput
+}
+
+export type ClientFileCreateOrConnectWithoutPaymentsInput = {
+  where: Prisma.ClientFileWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClientFileCreateWithoutPaymentsInput, Prisma.ClientFileUncheckedCreateWithoutPaymentsInput>
+}
+
+export type ClientFileUpsertWithoutPaymentsInput = {
+  update: Prisma.XOR<Prisma.ClientFileUpdateWithoutPaymentsInput, Prisma.ClientFileUncheckedUpdateWithoutPaymentsInput>
+  create: Prisma.XOR<Prisma.ClientFileCreateWithoutPaymentsInput, Prisma.ClientFileUncheckedCreateWithoutPaymentsInput>
+  where?: Prisma.ClientFileWhereInput
+}
+
+export type ClientFileUpdateToOneWithWhereWithoutPaymentsInput = {
+  where?: Prisma.ClientFileWhereInput
+  data: Prisma.XOR<Prisma.ClientFileUpdateWithoutPaymentsInput, Prisma.ClientFileUncheckedUpdateWithoutPaymentsInput>
+}
+
+export type ClientFileUpdateWithoutPaymentsInput = {
+  fileNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
+  fileWorkflows?: Prisma.FileWorkflowUpdateManyWithoutClientFileNestedInput
+  charges?: Prisma.FileChargeUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutClientFileNestedInput
+}
+
+export type ClientFileUncheckedUpdateWithoutPaymentsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.IntFieldUpdateOperationsInput | number
+  fileNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
+  charges?: Prisma.FileChargeUncheckedUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutClientFileNestedInput
+}
+
+export type ClientFileCreateWithoutInstallmentsInput = {
+  fileNumber: string
+  title: string
+  description?: string | null
+  status?: $Enums.FileStatus
+  openedAt?: Date | string
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  client: Prisma.ClientCreateNestedOneWithoutFilesInput
+  fileWorkflows?: Prisma.FileWorkflowCreateNestedManyWithoutClientFileInput
+  charges?: Prisma.FileChargeCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutClientFileInput
+}
+
+export type ClientFileUncheckedCreateWithoutInstallmentsInput = {
+  id?: number
+  clientId: number
+  fileNumber: string
+  title: string
+  description?: string | null
+  status?: $Enums.FileStatus
+  openedAt?: Date | string
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
+  charges?: Prisma.FileChargeUncheckedCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutClientFileInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutClientFileInput
+}
+
+export type ClientFileCreateOrConnectWithoutInstallmentsInput = {
+  where: Prisma.ClientFileWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClientFileCreateWithoutInstallmentsInput, Prisma.ClientFileUncheckedCreateWithoutInstallmentsInput>
+}
+
+export type ClientFileUpsertWithoutInstallmentsInput = {
+  update: Prisma.XOR<Prisma.ClientFileUpdateWithoutInstallmentsInput, Prisma.ClientFileUncheckedUpdateWithoutInstallmentsInput>
+  create: Prisma.XOR<Prisma.ClientFileCreateWithoutInstallmentsInput, Prisma.ClientFileUncheckedCreateWithoutInstallmentsInput>
+  where?: Prisma.ClientFileWhereInput
+}
+
+export type ClientFileUpdateToOneWithWhereWithoutInstallmentsInput = {
+  where?: Prisma.ClientFileWhereInput
+  data: Prisma.XOR<Prisma.ClientFileUpdateWithoutInstallmentsInput, Prisma.ClientFileUncheckedUpdateWithoutInstallmentsInput>
+}
+
+export type ClientFileUpdateWithoutInstallmentsInput = {
+  fileNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
+  fileWorkflows?: Prisma.FileWorkflowUpdateManyWithoutClientFileNestedInput
+  charges?: Prisma.FileChargeUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutClientFileNestedInput
+}
+
+export type ClientFileUncheckedUpdateWithoutInstallmentsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.IntFieldUpdateOperationsInput | number
+  fileNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
+  charges?: Prisma.FileChargeUncheckedUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutClientFileNestedInput
+}
+
+export type ClientFileCreateWithoutCalendarEventsInput = {
+  fileNumber: string
+  title: string
+  description?: string | null
+  status?: $Enums.FileStatus
+  openedAt?: Date | string
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  client: Prisma.ClientCreateNestedOneWithoutFilesInput
+  fileWorkflows?: Prisma.FileWorkflowCreateNestedManyWithoutClientFileInput
+  charges?: Prisma.FileChargeCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutClientFileInput
+}
+
+export type ClientFileUncheckedCreateWithoutCalendarEventsInput = {
+  id?: number
+  clientId: number
+  fileNumber: string
+  title: string
+  description?: string | null
+  status?: $Enums.FileStatus
+  openedAt?: Date | string
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
+  charges?: Prisma.FileChargeUncheckedCreateNestedManyWithoutClientFileInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutClientFileInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutClientFileInput
+}
+
+export type ClientFileCreateOrConnectWithoutCalendarEventsInput = {
+  where: Prisma.ClientFileWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClientFileCreateWithoutCalendarEventsInput, Prisma.ClientFileUncheckedCreateWithoutCalendarEventsInput>
+}
+
+export type ClientFileUpsertWithoutCalendarEventsInput = {
+  update: Prisma.XOR<Prisma.ClientFileUpdateWithoutCalendarEventsInput, Prisma.ClientFileUncheckedUpdateWithoutCalendarEventsInput>
+  create: Prisma.XOR<Prisma.ClientFileCreateWithoutCalendarEventsInput, Prisma.ClientFileUncheckedCreateWithoutCalendarEventsInput>
+  where?: Prisma.ClientFileWhereInput
+}
+
+export type ClientFileUpdateToOneWithWhereWithoutCalendarEventsInput = {
+  where?: Prisma.ClientFileWhereInput
+  data: Prisma.XOR<Prisma.ClientFileUpdateWithoutCalendarEventsInput, Prisma.ClientFileUncheckedUpdateWithoutCalendarEventsInput>
+}
+
+export type ClientFileUpdateWithoutCalendarEventsInput = {
+  fileNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
+  fileWorkflows?: Prisma.FileWorkflowUpdateManyWithoutClientFileNestedInput
+  charges?: Prisma.FileChargeUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutClientFileNestedInput
+}
+
+export type ClientFileUncheckedUpdateWithoutCalendarEventsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  clientId?: Prisma.IntFieldUpdateOperationsInput | number
+  fileNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
+  charges?: Prisma.FileChargeUncheckedUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutClientFileNestedInput
 }
 
 export type ClientFileCreateManyClientInput = {
@@ -712,6 +1155,10 @@ export type ClientFileUpdateWithoutClientInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflows?: Prisma.FileWorkflowUpdateManyWithoutClientFileNestedInput
+  charges?: Prisma.FileChargeUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutClientFileNestedInput
 }
 
 export type ClientFileUncheckedUpdateWithoutClientInput = {
@@ -725,6 +1172,10 @@ export type ClientFileUncheckedUpdateWithoutClientInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
+  charges?: Prisma.FileChargeUncheckedUpdateManyWithoutClientFileNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutClientFileNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutClientFileNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutClientFileNestedInput
 }
 
 export type ClientFileUncheckedUpdateManyWithoutClientInput = {
@@ -746,10 +1197,18 @@ export type ClientFileUncheckedUpdateManyWithoutClientInput = {
 
 export type ClientFileCountOutputType = {
   fileWorkflows: number
+  charges: number
+  payments: number
+  installments: number
+  calendarEvents: number
 }
 
 export type ClientFileCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   fileWorkflows?: boolean | ClientFileCountOutputTypeCountFileWorkflowsArgs
+  charges?: boolean | ClientFileCountOutputTypeCountChargesArgs
+  payments?: boolean | ClientFileCountOutputTypeCountPaymentsArgs
+  installments?: boolean | ClientFileCountOutputTypeCountInstallmentsArgs
+  calendarEvents?: boolean | ClientFileCountOutputTypeCountCalendarEventsArgs
 }
 
 /**
@@ -769,6 +1228,34 @@ export type ClientFileCountOutputTypeCountFileWorkflowsArgs<ExtArgs extends runt
   where?: Prisma.FileWorkflowWhereInput
 }
 
+/**
+ * ClientFileCountOutputType without action
+ */
+export type ClientFileCountOutputTypeCountChargesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FileChargeWhereInput
+}
+
+/**
+ * ClientFileCountOutputType without action
+ */
+export type ClientFileCountOutputTypeCountPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentWhereInput
+}
+
+/**
+ * ClientFileCountOutputType without action
+ */
+export type ClientFileCountOutputTypeCountInstallmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentInstallmentWhereInput
+}
+
+/**
+ * ClientFileCountOutputType without action
+ */
+export type ClientFileCountOutputTypeCountCalendarEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CalendarEventWhereInput
+}
+
 
 export type ClientFileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -781,8 +1268,12 @@ export type ClientFileSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   completedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  fileWorkflows?: boolean | Prisma.ClientFile$fileWorkflowsArgs<ExtArgs>
   client?: boolean | Prisma.ClientDefaultArgs<ExtArgs>
+  fileWorkflows?: boolean | Prisma.ClientFile$fileWorkflowsArgs<ExtArgs>
+  charges?: boolean | Prisma.ClientFile$chargesArgs<ExtArgs>
+  payments?: boolean | Prisma.ClientFile$paymentsArgs<ExtArgs>
+  installments?: boolean | Prisma.ClientFile$installmentsArgs<ExtArgs>
+  calendarEvents?: boolean | Prisma.ClientFile$calendarEventsArgs<ExtArgs>
   _count?: boolean | Prisma.ClientFileCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["clientFile"]>
 
@@ -803,16 +1294,24 @@ export type ClientFileSelectScalar = {
 
 export type ClientFileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "fileNumber" | "title" | "description" | "status" | "openedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["clientFile"]>
 export type ClientFileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  fileWorkflows?: boolean | Prisma.ClientFile$fileWorkflowsArgs<ExtArgs>
   client?: boolean | Prisma.ClientDefaultArgs<ExtArgs>
+  fileWorkflows?: boolean | Prisma.ClientFile$fileWorkflowsArgs<ExtArgs>
+  charges?: boolean | Prisma.ClientFile$chargesArgs<ExtArgs>
+  payments?: boolean | Prisma.ClientFile$paymentsArgs<ExtArgs>
+  installments?: boolean | Prisma.ClientFile$installmentsArgs<ExtArgs>
+  calendarEvents?: boolean | Prisma.ClientFile$calendarEventsArgs<ExtArgs>
   _count?: boolean | Prisma.ClientFileCountOutputTypeDefaultArgs<ExtArgs>
 }
 
 export type $ClientFilePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ClientFile"
   objects: {
-    fileWorkflows: Prisma.$FileWorkflowPayload<ExtArgs>[]
     client: Prisma.$ClientPayload<ExtArgs>
+    fileWorkflows: Prisma.$FileWorkflowPayload<ExtArgs>[]
+    charges: Prisma.$FileChargePayload<ExtArgs>[]
+    payments: Prisma.$PaymentPayload<ExtArgs>[]
+    installments: Prisma.$PaymentInstallmentPayload<ExtArgs>[]
+    calendarEvents: Prisma.$CalendarEventPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1165,8 +1664,12 @@ readonly fields: ClientFileFieldRefs;
  */
 export interface Prisma__ClientFileClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  fileWorkflows<T extends Prisma.ClientFile$fileWorkflowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClientFile$fileWorkflowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FileWorkflowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   client<T extends Prisma.ClientDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClientDefaultArgs<ExtArgs>>): Prisma.Prisma__ClientClient<runtime.Types.Result.GetResult<Prisma.$ClientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  fileWorkflows<T extends Prisma.ClientFile$fileWorkflowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClientFile$fileWorkflowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FileWorkflowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  charges<T extends Prisma.ClientFile$chargesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClientFile$chargesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FileChargePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  payments<T extends Prisma.ClientFile$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClientFile$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  installments<T extends Prisma.ClientFile$installmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClientFile$installmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentInstallmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  calendarEvents<T extends Prisma.ClientFile$calendarEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClientFile$calendarEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CalendarEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1575,6 +2078,102 @@ export type ClientFile$fileWorkflowsArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.FileWorkflowScalarFieldEnum | Prisma.FileWorkflowScalarFieldEnum[]
+}
+
+/**
+ * ClientFile.charges
+ */
+export type ClientFile$chargesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FileCharge
+   */
+  select?: Prisma.FileChargeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FileCharge
+   */
+  omit?: Prisma.FileChargeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FileChargeInclude<ExtArgs> | null
+  where?: Prisma.FileChargeWhereInput
+  orderBy?: Prisma.FileChargeOrderByWithRelationInput | Prisma.FileChargeOrderByWithRelationInput[]
+  cursor?: Prisma.FileChargeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FileChargeScalarFieldEnum | Prisma.FileChargeScalarFieldEnum[]
+}
+
+/**
+ * ClientFile.payments
+ */
+export type ClientFile$paymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Payment
+   */
+  select?: Prisma.PaymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Payment
+   */
+  omit?: Prisma.PaymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentInclude<ExtArgs> | null
+  where?: Prisma.PaymentWhereInput
+  orderBy?: Prisma.PaymentOrderByWithRelationInput | Prisma.PaymentOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentScalarFieldEnum | Prisma.PaymentScalarFieldEnum[]
+}
+
+/**
+ * ClientFile.installments
+ */
+export type ClientFile$installmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PaymentInstallment
+   */
+  select?: Prisma.PaymentInstallmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PaymentInstallment
+   */
+  omit?: Prisma.PaymentInstallmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentInstallmentInclude<ExtArgs> | null
+  where?: Prisma.PaymentInstallmentWhereInput
+  orderBy?: Prisma.PaymentInstallmentOrderByWithRelationInput | Prisma.PaymentInstallmentOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentInstallmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentInstallmentScalarFieldEnum | Prisma.PaymentInstallmentScalarFieldEnum[]
+}
+
+/**
+ * ClientFile.calendarEvents
+ */
+export type ClientFile$calendarEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CalendarEvent
+   */
+  select?: Prisma.CalendarEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CalendarEvent
+   */
+  omit?: Prisma.CalendarEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CalendarEventInclude<ExtArgs> | null
+  where?: Prisma.CalendarEventWhereInput
+  orderBy?: Prisma.CalendarEventOrderByWithRelationInput | Prisma.CalendarEventOrderByWithRelationInput[]
+  cursor?: Prisma.CalendarEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CalendarEventScalarFieldEnum | Prisma.CalendarEventScalarFieldEnum[]
 }
 
 /**

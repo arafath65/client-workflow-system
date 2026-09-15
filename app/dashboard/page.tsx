@@ -1,3 +1,4 @@
+import Navigation from "../components/Navigation";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -118,6 +119,9 @@ export default async function DashboardPage() {
           </div>
         </div>
       </header>
+
+      {/* Shared Navigation */}
+      <Navigation currentPage="dashboard" />
 
       {/* Main Content */}
       <section className="mx-auto max-w-7xl px-6 py-8">

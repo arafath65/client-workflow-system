@@ -1,21 +1,25 @@
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 
 import Navigation from "../components/Navigation";
 import LogoutButton from "../dashboard/LogoutButton";
-import AddStaffButton from "./AddStaffButton";
-import EditStaffButton from "./EditStaffButton";
-import StaffStatusButton from "./StaffStatusButton";
-import StaffFilter from "./StaffFilter";
+import AddWorkflowButton from "./AddWorkflowButton";
+import EditWorkflowButton from "./EditWorkflowButton";
+import WorkflowStatusButton from "./WorkflowStatusButton";
+import WorkflowFilter from "./WorkflowFilter";
 
-export default async function StaffPage({
+export default async function WorkflowsPage({
   searchParams,
 }: {
   searchParams: Promise<{
     status?: string;
   }>;
 }) {
+  // --------------------------------------------------
+  // Authentication
+  // --------------------------------------------------
   const cookieStore = await cookies();
   const sessionUser = cookieStore.get("session_user");
 
@@ -34,7 +38,6 @@ export default async function StaffPage({
       id: userId,
     },
     select: {
-      id: true,
       username: true,
     },
   });
@@ -43,10 +46,16 @@ export default async function StaffPage({
     redirect("/login");
   }
 
+  // --------------------------------------------------
+  // Filter
+  // --------------------------------------------------
   const params = await searchParams;
   const filter = params.status || "active";
 
-  const staff = await prisma.staff.findMany({
+  // --------------------------------------------------
+  // Workflows
+  // --------------------------------------------------
+  const workflows = await prisma.workflowTemplate.findMany({
     where:
       filter === "inactive"
         ? { status: false }
@@ -58,15 +67,20 @@ export default async function StaffPage({
     },
   });
 
-  const [totalStaff, activeCount, inactiveCount] =
+  // --------------------------------------------------
+  // Summary Counts
+  // --------------------------------------------------
+  const [totalWorkflows, activeCount, inactiveCount] =
     await Promise.all([
-      prisma.staff.count(),
-      prisma.staff.count({
+      prisma.workflowTemplate.count(),
+
+      prisma.workflowTemplate.count({
         where: {
           status: true,
         },
       }),
-      prisma.staff.count({
+
+      prisma.workflowTemplate.count({
         where: {
           status: false,
         },
@@ -78,6 +92,7 @@ export default async function StaffPage({
       {/* Header */}
       <header className="border-b border-black/10 bg-white">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+          {/* Brand */}
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black">
               <span className="text-xs font-bold text-[#f9a800]">
@@ -96,6 +111,7 @@ export default async function StaffPage({
             </div>
           </div>
 
+          {/* User */}
           <div className="flex items-center gap-4">
             <div className="hidden text-right sm:block">
               <p className="text-xs text-black/40">
@@ -113,7 +129,7 @@ export default async function StaffPage({
       </header>
 
       {/* Navigation */}
-      <Navigation currentPage="staff" />
+      <Navigation currentPage="workflows" />
 
       {/* Main Content */}
       <section className="mx-auto max-w-7xl px-6 py-8">
@@ -125,23 +141,23 @@ export default async function StaffPage({
             </p>
 
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-              Staff
+              Workflows
             </h1>
 
             <p className="mt-2 text-sm text-black/50">
-              Manage staff members who can be assigned to workflow
-              tasks.
+              Create and manage service workflows used for client
+              files.
             </p>
           </div>
 
-          <AddStaffButton />
+          <AddWorkflowButton />
         </div>
 
         {/* Summary Cards */}
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <SummaryCard
-            title="Total Staff"
-            value={totalStaff.toString()}
+            title="Total Workflows"
+            value={totalWorkflows.toString()}
           />
 
           <SummaryCard
@@ -155,25 +171,25 @@ export default async function StaffPage({
           />
         </div>
 
-        {/* Staff Members */}
+        {/* Workflow List */}
         <div className="mt-8 overflow-hidden rounded-xl border border-black/10 bg-white">
-          {/* Staff Members Header + Filter */}
+          {/* Section Header */}
           <div className="flex items-center justify-between gap-4 border-b border-black/10 px-5 py-4">
             <div>
               <h2 className="text-sm font-semibold">
-                Staff Members
+                Workflow Templates
               </h2>
 
               <p className="mt-1 text-xs text-black/40">
-                Staff available for assignment to workflow steps.
+                Workflows available when creating client files.
               </p>
             </div>
 
-            <StaffFilter />
+            <WorkflowFilter />
           </div>
 
-          {/* Staff Table */}
-          {staff.length === 0 ? (
+          {/* Empty State */}
+          {workflows.length === 0 ? (
             <div className="flex min-h-64 items-center justify-center">
               <div className="text-center">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-black/[0.04]">
@@ -184,38 +200,31 @@ export default async function StaffPage({
 
                 <p className="mt-4 text-sm font-medium text-black/50">
                   {filter === "inactive"
-                    ? "No inactive staff members"
+                    ? "No inactive workflows"
                     : filter === "all"
-                      ? "No staff members yet"
-                      : "No active staff members"}
+                      ? "No workflows yet"
+                      : "No active workflows"}
                 </p>
 
                 <p className="mt-1 text-xs text-black/30">
                   {filter === "active"
-                    ? "Add your first staff member to get started."
-                    : "Try changing the staff filter."}
+                    ? "Create your first workflow to get started."
+                    : "Try changing the workflow filter."}
                 </p>
               </div>
             </div>
           ) : (
+            /* Workflow Table */
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px]">
+              <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="border-b border-black/10 bg-[#fafaf9]">
                     <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                      Name
+                      Workflow
                     </th>
 
                     <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                      Position
-                    </th>
-
-                    <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                      Phone
-                    </th>
-
-                    <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                      Email
+                      Description
                     </th>
 
                     <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -229,48 +238,45 @@ export default async function StaffPage({
                 </thead>
 
                 <tbody>
-                  {staff.map((member) => (
+                  {workflows.map((workflow) => (
                     <tr
-                      key={member.id}
+                      key={workflow.id}
                       className={`border-b border-black/5 transition last:border-b-0 hover:bg-[#fafaf9] ${
-                        !member.status ? "opacity-60" : ""
+                        !workflow.status ? "opacity-60" : ""
                       }`}
                     >
-                      {/* Name */}
+                      {/* Workflow Title */}
                       <td className="px-5 py-4">
-                        <p className="text-xs font-semibold">
-                          {member.name}
+  <Link
+    href={`/workflows/${workflow.id}`}
+    className="text-sm font-semibold text-black transition hover:text-[#f9a800]"
+  >
+    {workflow.name}
+  </Link>
+</td>
+
+                      {/* Description */}
+                      <td className="max-w-md px-5 py-4">
+                        <p className="truncate text-xs text-black/55">
+                          {workflow.description || "—"}
                         </p>
-                      </td>
-
-                      {/* Position */}
-                      <td className="px-5 py-4 text-xs text-black/55">
-                        {member.position || "—"}
-                      </td>
-
-                      {/* Phone */}
-                      <td className="px-5 py-4 text-xs text-black/55">
-                        {member.phone || "—"}
-                      </td>
-
-                      {/* Email */}
-                      <td className="px-5 py-4 text-xs text-black/55">
-                        {member.email || "—"}
                       </td>
 
                       {/* Status */}
                       <td className="px-5 py-4">
-                        <StatusBadge active={member.status} />
+                        <StatusBadge active={workflow.status} />
                       </td>
 
                       {/* Actions */}
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-4">
-                          <EditStaffButton staff={member} />
+                          <EditWorkflowButton
+                            workflow={workflow}
+                          />
 
-                          <StaffStatusButton
-                            id={member.id}
-                            active={member.status}
+                          <WorkflowStatusButton
+                            id={workflow.id}
+                            active={workflow.status}
                           />
                         </div>
                       </td>
@@ -286,9 +292,9 @@ export default async function StaffPage({
   );
 }
 
-/* --------------------------------
+/* --------------------------------------------------
    Summary Card
---------------------------------- */
+-------------------------------------------------- */
 
 function SummaryCard({
   title,
@@ -310,9 +316,9 @@ function SummaryCard({
   );
 }
 
-/* --------------------------------
+/* --------------------------------------------------
    Status Badge
---------------------------------- */
+-------------------------------------------------- */
 
 function StatusBadge({
   active,

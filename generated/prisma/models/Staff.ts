@@ -241,7 +241,8 @@ export type StaffWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Staff"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Staff"> | Date | string
   workflowSteps?: Prisma.WorkflowStepListRelationFilter
-  workflowTasks?: Prisma.WorkflowTaskListRelationFilter
+  tasks?: Prisma.WorkflowTaskListRelationFilter
+  calendarEvents?: Prisma.CalendarEventListRelationFilter
 }
 
 export type StaffOrderByWithRelationInput = {
@@ -254,7 +255,8 @@ export type StaffOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   workflowSteps?: Prisma.WorkflowStepOrderByRelationAggregateInput
-  workflowTasks?: Prisma.WorkflowTaskOrderByRelationAggregateInput
+  tasks?: Prisma.WorkflowTaskOrderByRelationAggregateInput
+  calendarEvents?: Prisma.CalendarEventOrderByRelationAggregateInput
   _relevance?: Prisma.StaffOrderByRelevanceInput
 }
 
@@ -271,7 +273,8 @@ export type StaffWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Staff"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Staff"> | Date | string
   workflowSteps?: Prisma.WorkflowStepListRelationFilter
-  workflowTasks?: Prisma.WorkflowTaskListRelationFilter
+  tasks?: Prisma.WorkflowTaskListRelationFilter
+  calendarEvents?: Prisma.CalendarEventListRelationFilter
 }, "id">
 
 export type StaffOrderByWithAggregationInput = {
@@ -313,7 +316,8 @@ export type StaffCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workflowSteps?: Prisma.WorkflowStepCreateNestedManyWithoutDefaultStaffInput
-  workflowTasks?: Prisma.WorkflowTaskCreateNestedManyWithoutAssignedStaffInput
+  tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutAssignedStaffInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutStaffInput
 }
 
 export type StaffUncheckedCreateInput = {
@@ -326,7 +330,8 @@ export type StaffUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workflowSteps?: Prisma.WorkflowStepUncheckedCreateNestedManyWithoutDefaultStaffInput
-  workflowTasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutAssignedStaffInput
+  tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutAssignedStaffInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutStaffInput
 }
 
 export type StaffUpdateInput = {
@@ -338,7 +343,8 @@ export type StaffUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workflowSteps?: Prisma.WorkflowStepUpdateManyWithoutDefaultStaffNestedInput
-  workflowTasks?: Prisma.WorkflowTaskUpdateManyWithoutAssignedStaffNestedInput
+  tasks?: Prisma.WorkflowTaskUpdateManyWithoutAssignedStaffNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutStaffNestedInput
 }
 
 export type StaffUncheckedUpdateInput = {
@@ -351,7 +357,8 @@ export type StaffUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workflowSteps?: Prisma.WorkflowStepUncheckedUpdateManyWithoutDefaultStaffNestedInput
-  workflowTasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutAssignedStaffNestedInput
+  tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutAssignedStaffNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutStaffNestedInput
 }
 
 export type StaffCreateManyInput = {
@@ -462,20 +469,36 @@ export type StaffUpdateOneWithoutWorkflowStepsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.StaffUpdateToOneWithWhereWithoutWorkflowStepsInput, Prisma.StaffUpdateWithoutWorkflowStepsInput>, Prisma.StaffUncheckedUpdateWithoutWorkflowStepsInput>
 }
 
-export type StaffCreateNestedOneWithoutWorkflowTasksInput = {
-  create?: Prisma.XOR<Prisma.StaffCreateWithoutWorkflowTasksInput, Prisma.StaffUncheckedCreateWithoutWorkflowTasksInput>
-  connectOrCreate?: Prisma.StaffCreateOrConnectWithoutWorkflowTasksInput
+export type StaffCreateNestedOneWithoutTasksInput = {
+  create?: Prisma.XOR<Prisma.StaffCreateWithoutTasksInput, Prisma.StaffUncheckedCreateWithoutTasksInput>
+  connectOrCreate?: Prisma.StaffCreateOrConnectWithoutTasksInput
   connect?: Prisma.StaffWhereUniqueInput
 }
 
-export type StaffUpdateOneWithoutWorkflowTasksNestedInput = {
-  create?: Prisma.XOR<Prisma.StaffCreateWithoutWorkflowTasksInput, Prisma.StaffUncheckedCreateWithoutWorkflowTasksInput>
-  connectOrCreate?: Prisma.StaffCreateOrConnectWithoutWorkflowTasksInput
-  upsert?: Prisma.StaffUpsertWithoutWorkflowTasksInput
+export type StaffUpdateOneWithoutTasksNestedInput = {
+  create?: Prisma.XOR<Prisma.StaffCreateWithoutTasksInput, Prisma.StaffUncheckedCreateWithoutTasksInput>
+  connectOrCreate?: Prisma.StaffCreateOrConnectWithoutTasksInput
+  upsert?: Prisma.StaffUpsertWithoutTasksInput
   disconnect?: Prisma.StaffWhereInput | boolean
   delete?: Prisma.StaffWhereInput | boolean
   connect?: Prisma.StaffWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.StaffUpdateToOneWithWhereWithoutWorkflowTasksInput, Prisma.StaffUpdateWithoutWorkflowTasksInput>, Prisma.StaffUncheckedUpdateWithoutWorkflowTasksInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StaffUpdateToOneWithWhereWithoutTasksInput, Prisma.StaffUpdateWithoutTasksInput>, Prisma.StaffUncheckedUpdateWithoutTasksInput>
+}
+
+export type StaffCreateNestedOneWithoutCalendarEventsInput = {
+  create?: Prisma.XOR<Prisma.StaffCreateWithoutCalendarEventsInput, Prisma.StaffUncheckedCreateWithoutCalendarEventsInput>
+  connectOrCreate?: Prisma.StaffCreateOrConnectWithoutCalendarEventsInput
+  connect?: Prisma.StaffWhereUniqueInput
+}
+
+export type StaffUpdateOneWithoutCalendarEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.StaffCreateWithoutCalendarEventsInput, Prisma.StaffUncheckedCreateWithoutCalendarEventsInput>
+  connectOrCreate?: Prisma.StaffCreateOrConnectWithoutCalendarEventsInput
+  upsert?: Prisma.StaffUpsertWithoutCalendarEventsInput
+  disconnect?: Prisma.StaffWhereInput | boolean
+  delete?: Prisma.StaffWhereInput | boolean
+  connect?: Prisma.StaffWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StaffUpdateToOneWithWhereWithoutCalendarEventsInput, Prisma.StaffUpdateWithoutCalendarEventsInput>, Prisma.StaffUncheckedUpdateWithoutCalendarEventsInput>
 }
 
 export type StaffCreateWithoutWorkflowStepsInput = {
@@ -486,7 +509,8 @@ export type StaffCreateWithoutWorkflowStepsInput = {
   status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  workflowTasks?: Prisma.WorkflowTaskCreateNestedManyWithoutAssignedStaffInput
+  tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutAssignedStaffInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutStaffInput
 }
 
 export type StaffUncheckedCreateWithoutWorkflowStepsInput = {
@@ -498,7 +522,8 @@ export type StaffUncheckedCreateWithoutWorkflowStepsInput = {
   status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  workflowTasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutAssignedStaffInput
+  tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutAssignedStaffInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutStaffInput
 }
 
 export type StaffCreateOrConnectWithoutWorkflowStepsInput = {
@@ -525,7 +550,8 @@ export type StaffUpdateWithoutWorkflowStepsInput = {
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  workflowTasks?: Prisma.WorkflowTaskUpdateManyWithoutAssignedStaffNestedInput
+  tasks?: Prisma.WorkflowTaskUpdateManyWithoutAssignedStaffNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutStaffNestedInput
 }
 
 export type StaffUncheckedUpdateWithoutWorkflowStepsInput = {
@@ -537,10 +563,11 @@ export type StaffUncheckedUpdateWithoutWorkflowStepsInput = {
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  workflowTasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutAssignedStaffNestedInput
+  tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutAssignedStaffNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutStaffNestedInput
 }
 
-export type StaffCreateWithoutWorkflowTasksInput = {
+export type StaffCreateWithoutTasksInput = {
   name: string
   phone?: string | null
   email?: string | null
@@ -549,9 +576,10 @@ export type StaffCreateWithoutWorkflowTasksInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workflowSteps?: Prisma.WorkflowStepCreateNestedManyWithoutDefaultStaffInput
+  calendarEvents?: Prisma.CalendarEventCreateNestedManyWithoutStaffInput
 }
 
-export type StaffUncheckedCreateWithoutWorkflowTasksInput = {
+export type StaffUncheckedCreateWithoutTasksInput = {
   id?: number
   name: string
   phone?: string | null
@@ -561,25 +589,26 @@ export type StaffUncheckedCreateWithoutWorkflowTasksInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workflowSteps?: Prisma.WorkflowStepUncheckedCreateNestedManyWithoutDefaultStaffInput
+  calendarEvents?: Prisma.CalendarEventUncheckedCreateNestedManyWithoutStaffInput
 }
 
-export type StaffCreateOrConnectWithoutWorkflowTasksInput = {
+export type StaffCreateOrConnectWithoutTasksInput = {
   where: Prisma.StaffWhereUniqueInput
-  create: Prisma.XOR<Prisma.StaffCreateWithoutWorkflowTasksInput, Prisma.StaffUncheckedCreateWithoutWorkflowTasksInput>
+  create: Prisma.XOR<Prisma.StaffCreateWithoutTasksInput, Prisma.StaffUncheckedCreateWithoutTasksInput>
 }
 
-export type StaffUpsertWithoutWorkflowTasksInput = {
-  update: Prisma.XOR<Prisma.StaffUpdateWithoutWorkflowTasksInput, Prisma.StaffUncheckedUpdateWithoutWorkflowTasksInput>
-  create: Prisma.XOR<Prisma.StaffCreateWithoutWorkflowTasksInput, Prisma.StaffUncheckedCreateWithoutWorkflowTasksInput>
+export type StaffUpsertWithoutTasksInput = {
+  update: Prisma.XOR<Prisma.StaffUpdateWithoutTasksInput, Prisma.StaffUncheckedUpdateWithoutTasksInput>
+  create: Prisma.XOR<Prisma.StaffCreateWithoutTasksInput, Prisma.StaffUncheckedCreateWithoutTasksInput>
   where?: Prisma.StaffWhereInput
 }
 
-export type StaffUpdateToOneWithWhereWithoutWorkflowTasksInput = {
+export type StaffUpdateToOneWithWhereWithoutTasksInput = {
   where?: Prisma.StaffWhereInput
-  data: Prisma.XOR<Prisma.StaffUpdateWithoutWorkflowTasksInput, Prisma.StaffUncheckedUpdateWithoutWorkflowTasksInput>
+  data: Prisma.XOR<Prisma.StaffUpdateWithoutTasksInput, Prisma.StaffUncheckedUpdateWithoutTasksInput>
 }
 
-export type StaffUpdateWithoutWorkflowTasksInput = {
+export type StaffUpdateWithoutTasksInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -588,9 +617,10 @@ export type StaffUpdateWithoutWorkflowTasksInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workflowSteps?: Prisma.WorkflowStepUpdateManyWithoutDefaultStaffNestedInput
+  calendarEvents?: Prisma.CalendarEventUpdateManyWithoutStaffNestedInput
 }
 
-export type StaffUncheckedUpdateWithoutWorkflowTasksInput = {
+export type StaffUncheckedUpdateWithoutTasksInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -600,6 +630,73 @@ export type StaffUncheckedUpdateWithoutWorkflowTasksInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workflowSteps?: Prisma.WorkflowStepUncheckedUpdateManyWithoutDefaultStaffNestedInput
+  calendarEvents?: Prisma.CalendarEventUncheckedUpdateManyWithoutStaffNestedInput
+}
+
+export type StaffCreateWithoutCalendarEventsInput = {
+  name: string
+  phone?: string | null
+  email?: string | null
+  position?: string | null
+  status?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workflowSteps?: Prisma.WorkflowStepCreateNestedManyWithoutDefaultStaffInput
+  tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutAssignedStaffInput
+}
+
+export type StaffUncheckedCreateWithoutCalendarEventsInput = {
+  id?: number
+  name: string
+  phone?: string | null
+  email?: string | null
+  position?: string | null
+  status?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  workflowSteps?: Prisma.WorkflowStepUncheckedCreateNestedManyWithoutDefaultStaffInput
+  tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutAssignedStaffInput
+}
+
+export type StaffCreateOrConnectWithoutCalendarEventsInput = {
+  where: Prisma.StaffWhereUniqueInput
+  create: Prisma.XOR<Prisma.StaffCreateWithoutCalendarEventsInput, Prisma.StaffUncheckedCreateWithoutCalendarEventsInput>
+}
+
+export type StaffUpsertWithoutCalendarEventsInput = {
+  update: Prisma.XOR<Prisma.StaffUpdateWithoutCalendarEventsInput, Prisma.StaffUncheckedUpdateWithoutCalendarEventsInput>
+  create: Prisma.XOR<Prisma.StaffCreateWithoutCalendarEventsInput, Prisma.StaffUncheckedCreateWithoutCalendarEventsInput>
+  where?: Prisma.StaffWhereInput
+}
+
+export type StaffUpdateToOneWithWhereWithoutCalendarEventsInput = {
+  where?: Prisma.StaffWhereInput
+  data: Prisma.XOR<Prisma.StaffUpdateWithoutCalendarEventsInput, Prisma.StaffUncheckedUpdateWithoutCalendarEventsInput>
+}
+
+export type StaffUpdateWithoutCalendarEventsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workflowSteps?: Prisma.WorkflowStepUpdateManyWithoutDefaultStaffNestedInput
+  tasks?: Prisma.WorkflowTaskUpdateManyWithoutAssignedStaffNestedInput
+}
+
+export type StaffUncheckedUpdateWithoutCalendarEventsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  position?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workflowSteps?: Prisma.WorkflowStepUncheckedUpdateManyWithoutDefaultStaffNestedInput
+  tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutAssignedStaffNestedInput
 }
 
 
@@ -609,12 +706,14 @@ export type StaffUncheckedUpdateWithoutWorkflowTasksInput = {
 
 export type StaffCountOutputType = {
   workflowSteps: number
-  workflowTasks: number
+  tasks: number
+  calendarEvents: number
 }
 
 export type StaffCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workflowSteps?: boolean | StaffCountOutputTypeCountWorkflowStepsArgs
-  workflowTasks?: boolean | StaffCountOutputTypeCountWorkflowTasksArgs
+  tasks?: boolean | StaffCountOutputTypeCountTasksArgs
+  calendarEvents?: boolean | StaffCountOutputTypeCountCalendarEventsArgs
 }
 
 /**
@@ -637,8 +736,15 @@ export type StaffCountOutputTypeCountWorkflowStepsArgs<ExtArgs extends runtime.T
 /**
  * StaffCountOutputType without action
  */
-export type StaffCountOutputTypeCountWorkflowTasksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type StaffCountOutputTypeCountTasksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.WorkflowTaskWhereInput
+}
+
+/**
+ * StaffCountOutputType without action
+ */
+export type StaffCountOutputTypeCountCalendarEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CalendarEventWhereInput
 }
 
 
@@ -652,7 +758,8 @@ export type StaffSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   createdAt?: boolean
   updatedAt?: boolean
   workflowSteps?: boolean | Prisma.Staff$workflowStepsArgs<ExtArgs>
-  workflowTasks?: boolean | Prisma.Staff$workflowTasksArgs<ExtArgs>
+  tasks?: boolean | Prisma.Staff$tasksArgs<ExtArgs>
+  calendarEvents?: boolean | Prisma.Staff$calendarEventsArgs<ExtArgs>
   _count?: boolean | Prisma.StaffCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["staff"]>
 
@@ -672,7 +779,8 @@ export type StaffSelectScalar = {
 export type StaffOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "phone" | "email" | "position" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["staff"]>
 export type StaffInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workflowSteps?: boolean | Prisma.Staff$workflowStepsArgs<ExtArgs>
-  workflowTasks?: boolean | Prisma.Staff$workflowTasksArgs<ExtArgs>
+  tasks?: boolean | Prisma.Staff$tasksArgs<ExtArgs>
+  calendarEvents?: boolean | Prisma.Staff$calendarEventsArgs<ExtArgs>
   _count?: boolean | Prisma.StaffCountOutputTypeDefaultArgs<ExtArgs>
 }
 
@@ -680,7 +788,8 @@ export type $StaffPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   name: "Staff"
   objects: {
     workflowSteps: Prisma.$WorkflowStepPayload<ExtArgs>[]
-    workflowTasks: Prisma.$WorkflowTaskPayload<ExtArgs>[]
+    tasks: Prisma.$WorkflowTaskPayload<ExtArgs>[]
+    calendarEvents: Prisma.$CalendarEventPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1032,7 +1141,8 @@ readonly fields: StaffFieldRefs;
 export interface Prisma__StaffClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   workflowSteps<T extends Prisma.Staff$workflowStepsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Staff$workflowStepsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  workflowTasks<T extends Prisma.Staff$workflowTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Staff$workflowTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  tasks<T extends Prisma.Staff$tasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Staff$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  calendarEvents<T extends Prisma.Staff$calendarEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Staff$calendarEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CalendarEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1442,9 +1552,9 @@ export type Staff$workflowStepsArgs<ExtArgs extends runtime.Types.Extensions.Int
 }
 
 /**
- * Staff.workflowTasks
+ * Staff.tasks
  */
-export type Staff$workflowTasksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Staff$tasksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the WorkflowTask
    */
@@ -1463,6 +1573,30 @@ export type Staff$workflowTasksArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.WorkflowTaskScalarFieldEnum | Prisma.WorkflowTaskScalarFieldEnum[]
+}
+
+/**
+ * Staff.calendarEvents
+ */
+export type Staff$calendarEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CalendarEvent
+   */
+  select?: Prisma.CalendarEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CalendarEvent
+   */
+  omit?: Prisma.CalendarEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CalendarEventInclude<ExtArgs> | null
+  where?: Prisma.CalendarEventWhereInput
+  orderBy?: Prisma.CalendarEventOrderByWithRelationInput | Prisma.CalendarEventOrderByWithRelationInput[]
+  cursor?: Prisma.CalendarEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CalendarEventScalarFieldEnum | Prisma.CalendarEventScalarFieldEnum[]
 }
 
 /**

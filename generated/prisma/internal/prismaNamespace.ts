@@ -403,9 +403,14 @@ export const ModelName = {
   ClientFile: 'ClientFile',
   WorkflowTemplate: 'WorkflowTemplate',
   WorkflowStep: 'WorkflowStep',
+  WorkflowSubTask: 'WorkflowSubTask',
   FileWorkflow: 'FileWorkflow',
   WorkflowTask: 'WorkflowTask',
-  TaskHistory: 'TaskHistory'
+  TaskHistory: 'TaskHistory',
+  FileCharge: 'FileCharge',
+  Payment: 'Payment',
+  PaymentInstallment: 'PaymentInstallment',
+  CalendarEvent: 'CalendarEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -421,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "fileWorkflow" | "workflowTask" | "taskHistory"
+    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "workflowTask" | "taskHistory" | "fileCharge" | "payment" | "paymentInstallment" | "calendarEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -821,6 +826,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WorkflowSubTask: {
+      payload: Prisma.$WorkflowSubTaskPayload<ExtArgs>
+      fields: Prisma.WorkflowSubTaskFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WorkflowSubTaskFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowSubTaskPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WorkflowSubTaskFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowSubTaskPayload>
+        }
+        findFirst: {
+          args: Prisma.WorkflowSubTaskFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowSubTaskPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WorkflowSubTaskFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowSubTaskPayload>
+        }
+        findMany: {
+          args: Prisma.WorkflowSubTaskFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowSubTaskPayload>[]
+        }
+        create: {
+          args: Prisma.WorkflowSubTaskCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowSubTaskPayload>
+        }
+        createMany: {
+          args: Prisma.WorkflowSubTaskCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.WorkflowSubTaskDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowSubTaskPayload>
+        }
+        update: {
+          args: Prisma.WorkflowSubTaskUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowSubTaskPayload>
+        }
+        deleteMany: {
+          args: Prisma.WorkflowSubTaskDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WorkflowSubTaskUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.WorkflowSubTaskUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowSubTaskPayload>
+        }
+        aggregate: {
+          args: Prisma.WorkflowSubTaskAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWorkflowSubTask>
+        }
+        groupBy: {
+          args: Prisma.WorkflowSubTaskGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkflowSubTaskGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WorkflowSubTaskCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkflowSubTaskCountAggregateOutputType> | number
+        }
+      }
+    }
     FileWorkflow: {
       payload: Prisma.$FileWorkflowPayload<ExtArgs>
       fields: Prisma.FileWorkflowFieldRefs
@@ -1019,6 +1090,270 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FileCharge: {
+      payload: Prisma.$FileChargePayload<ExtArgs>
+      fields: Prisma.FileChargeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FileChargeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileChargePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FileChargeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileChargePayload>
+        }
+        findFirst: {
+          args: Prisma.FileChargeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileChargePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FileChargeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileChargePayload>
+        }
+        findMany: {
+          args: Prisma.FileChargeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileChargePayload>[]
+        }
+        create: {
+          args: Prisma.FileChargeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileChargePayload>
+        }
+        createMany: {
+          args: Prisma.FileChargeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.FileChargeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileChargePayload>
+        }
+        update: {
+          args: Prisma.FileChargeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileChargePayload>
+        }
+        deleteMany: {
+          args: Prisma.FileChargeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FileChargeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.FileChargeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileChargePayload>
+        }
+        aggregate: {
+          args: Prisma.FileChargeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileCharge>
+        }
+        groupBy: {
+          args: Prisma.FileChargeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileChargeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FileChargeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileChargeCountAggregateOutputType> | number
+        }
+      }
+    }
+    Payment: {
+      payload: Prisma.$PaymentPayload<ExtArgs>
+      fields: Prisma.PaymentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PaymentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PaymentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentPayload>
+        }
+        findFirst: {
+          args: Prisma.PaymentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PaymentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentPayload>
+        }
+        findMany: {
+          args: Prisma.PaymentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentPayload>[]
+        }
+        create: {
+          args: Prisma.PaymentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentPayload>
+        }
+        createMany: {
+          args: Prisma.PaymentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.PaymentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentPayload>
+        }
+        update: {
+          args: Prisma.PaymentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentPayload>
+        }
+        deleteMany: {
+          args: Prisma.PaymentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PaymentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.PaymentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentPayload>
+        }
+        aggregate: {
+          args: Prisma.PaymentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePayment>
+        }
+        groupBy: {
+          args: Prisma.PaymentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PaymentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentCountAggregateOutputType> | number
+        }
+      }
+    }
+    PaymentInstallment: {
+      payload: Prisma.$PaymentInstallmentPayload<ExtArgs>
+      fields: Prisma.PaymentInstallmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PaymentInstallmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentInstallmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PaymentInstallmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentInstallmentPayload>
+        }
+        findFirst: {
+          args: Prisma.PaymentInstallmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentInstallmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PaymentInstallmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentInstallmentPayload>
+        }
+        findMany: {
+          args: Prisma.PaymentInstallmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentInstallmentPayload>[]
+        }
+        create: {
+          args: Prisma.PaymentInstallmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentInstallmentPayload>
+        }
+        createMany: {
+          args: Prisma.PaymentInstallmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.PaymentInstallmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentInstallmentPayload>
+        }
+        update: {
+          args: Prisma.PaymentInstallmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentInstallmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.PaymentInstallmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PaymentInstallmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.PaymentInstallmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentInstallmentPayload>
+        }
+        aggregate: {
+          args: Prisma.PaymentInstallmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePaymentInstallment>
+        }
+        groupBy: {
+          args: Prisma.PaymentInstallmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentInstallmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PaymentInstallmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentInstallmentCountAggregateOutputType> | number
+        }
+      }
+    }
+    CalendarEvent: {
+      payload: Prisma.$CalendarEventPayload<ExtArgs>
+      fields: Prisma.CalendarEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CalendarEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CalendarEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        findFirst: {
+          args: Prisma.CalendarEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CalendarEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        findMany: {
+          args: Prisma.CalendarEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>[]
+        }
+        create: {
+          args: Prisma.CalendarEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        createMany: {
+          args: Prisma.CalendarEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.CalendarEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        update: {
+          args: Prisma.CalendarEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.CalendarEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CalendarEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.CalendarEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CalendarEventPayload>
+        }
+        aggregate: {
+          args: Prisma.CalendarEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCalendarEvent>
+        }
+        groupBy: {
+          args: Prisma.CalendarEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalendarEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CalendarEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CalendarEventCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1142,6 +1477,20 @@ export const WorkflowStepScalarFieldEnum = {
 export type WorkflowStepScalarFieldEnum = (typeof WorkflowStepScalarFieldEnum)[keyof typeof WorkflowStepScalarFieldEnum]
 
 
+export const WorkflowSubTaskScalarFieldEnum = {
+  id: 'id',
+  workflowStepId: 'workflowStepId',
+  subTaskNumber: 'subTaskNumber',
+  title: 'title',
+  description: 'description',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkflowSubTaskScalarFieldEnum = (typeof WorkflowSubTaskScalarFieldEnum)[keyof typeof WorkflowSubTaskScalarFieldEnum]
+
+
 export const FileWorkflowScalarFieldEnum = {
   id: 'id',
   clientFileId: 'clientFileId',
@@ -1182,6 +1531,67 @@ export const TaskHistoryScalarFieldEnum = {
 } as const
 
 export type TaskHistoryScalarFieldEnum = (typeof TaskHistoryScalarFieldEnum)[keyof typeof TaskHistoryScalarFieldEnum]
+
+
+export const FileChargeScalarFieldEnum = {
+  id: 'id',
+  clientFileId: 'clientFileId',
+  description: 'description',
+  quantity: 'quantity',
+  unitAmount: 'unitAmount',
+  totalAmount: 'totalAmount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileChargeScalarFieldEnum = (typeof FileChargeScalarFieldEnum)[keyof typeof FileChargeScalarFieldEnum]
+
+
+export const PaymentScalarFieldEnum = {
+  id: 'id',
+  clientFileId: 'clientFileId',
+  amount: 'amount',
+  paymentMethod: 'paymentMethod',
+  status: 'status',
+  referenceNo: 'referenceNo',
+  remarks: 'remarks',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const PaymentInstallmentScalarFieldEnum = {
+  id: 'id',
+  paymentId: 'paymentId',
+  clientFileId: 'clientFileId',
+  dueDate: 'dueDate',
+  amount: 'amount',
+  status: 'status',
+  remarks: 'remarks',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PaymentInstallmentScalarFieldEnum = (typeof PaymentInstallmentScalarFieldEnum)[keyof typeof PaymentInstallmentScalarFieldEnum]
+
+
+export const CalendarEventScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  clientFileId: 'clientFileId',
+  staffId: 'staffId',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1255,6 +1665,14 @@ export const WorkflowStepOrderByRelevanceFieldEnum = {
 export type WorkflowStepOrderByRelevanceFieldEnum = (typeof WorkflowStepOrderByRelevanceFieldEnum)[keyof typeof WorkflowStepOrderByRelevanceFieldEnum]
 
 
+export const WorkflowSubTaskOrderByRelevanceFieldEnum = {
+  title: 'title',
+  description: 'description'
+} as const
+
+export type WorkflowSubTaskOrderByRelevanceFieldEnum = (typeof WorkflowSubTaskOrderByRelevanceFieldEnum)[keyof typeof WorkflowSubTaskOrderByRelevanceFieldEnum]
+
+
 export const WorkflowTaskOrderByRelevanceFieldEnum = {
   remarks: 'remarks'
 } as const
@@ -1267,6 +1685,36 @@ export const TaskHistoryOrderByRelevanceFieldEnum = {
 } as const
 
 export type TaskHistoryOrderByRelevanceFieldEnum = (typeof TaskHistoryOrderByRelevanceFieldEnum)[keyof typeof TaskHistoryOrderByRelevanceFieldEnum]
+
+
+export const FileChargeOrderByRelevanceFieldEnum = {
+  description: 'description'
+} as const
+
+export type FileChargeOrderByRelevanceFieldEnum = (typeof FileChargeOrderByRelevanceFieldEnum)[keyof typeof FileChargeOrderByRelevanceFieldEnum]
+
+
+export const PaymentOrderByRelevanceFieldEnum = {
+  referenceNo: 'referenceNo',
+  remarks: 'remarks'
+} as const
+
+export type PaymentOrderByRelevanceFieldEnum = (typeof PaymentOrderByRelevanceFieldEnum)[keyof typeof PaymentOrderByRelevanceFieldEnum]
+
+
+export const PaymentInstallmentOrderByRelevanceFieldEnum = {
+  remarks: 'remarks'
+} as const
+
+export type PaymentInstallmentOrderByRelevanceFieldEnum = (typeof PaymentInstallmentOrderByRelevanceFieldEnum)[keyof typeof PaymentInstallmentOrderByRelevanceFieldEnum]
+
+
+export const CalendarEventOrderByRelevanceFieldEnum = {
+  title: 'title',
+  description: 'description'
+} as const
+
+export type CalendarEventOrderByRelevanceFieldEnum = (typeof CalendarEventOrderByRelevanceFieldEnum)[keyof typeof CalendarEventOrderByRelevanceFieldEnum]
 
 
 
@@ -1321,6 +1769,41 @@ export type EnumWorkflowStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
  * Reference to a field of type 'TaskStatus'
  */
 export type EnumTaskStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal'
+ */
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+/**
+ * Reference to a field of type 'PaymentMethod'
+ */
+export type EnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMethod'>
+    
+
+
+/**
+ * Reference to a field of type 'PaymentStatus'
+ */
+export type EnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'InstallmentStatus'
+ */
+export type EnumInstallmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InstallmentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'CalendarEventStatus'
+ */
+export type EnumCalendarEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CalendarEventStatus'>
     
 
 
@@ -1487,9 +1970,14 @@ export type GlobalOmitConfig = {
   clientFile?: Prisma.ClientFileOmit
   workflowTemplate?: Prisma.WorkflowTemplateOmit
   workflowStep?: Prisma.WorkflowStepOmit
+  workflowSubTask?: Prisma.WorkflowSubTaskOmit
   fileWorkflow?: Prisma.FileWorkflowOmit
   workflowTask?: Prisma.WorkflowTaskOmit
   taskHistory?: Prisma.TaskHistoryOmit
+  fileCharge?: Prisma.FileChargeOmit
+  payment?: Prisma.PaymentOmit
+  paymentInstallment?: Prisma.PaymentInstallmentOmit
+  calendarEvent?: Prisma.CalendarEventOmit
 }
 
 /* Types for Logging */

@@ -355,7 +355,7 @@ export type WorkflowTaskCreateInput = {
   updatedAt?: Date | string
   fileWorkflow: Prisma.FileWorkflowCreateNestedOneWithoutTasksInput
   workflowStep: Prisma.WorkflowStepCreateNestedOneWithoutTasksInput
-  assignedStaff?: Prisma.StaffCreateNestedOneWithoutWorkflowTasksInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutTasksInput
   history?: Prisma.TaskHistoryCreateNestedManyWithoutWorkflowTaskInput
 }
 
@@ -382,7 +382,7 @@ export type WorkflowTaskUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflow?: Prisma.FileWorkflowUpdateOneRequiredWithoutTasksNestedInput
   workflowStep?: Prisma.WorkflowStepUpdateOneRequiredWithoutTasksNestedInput
-  assignedStaff?: Prisma.StaffUpdateOneWithoutWorkflowTasksNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutTasksNestedInput
   history?: Prisma.TaskHistoryUpdateManyWithoutWorkflowTaskNestedInput
 }
 
@@ -728,7 +728,7 @@ export type WorkflowTaskCreateWithoutWorkflowStepInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflow: Prisma.FileWorkflowCreateNestedOneWithoutTasksInput
-  assignedStaff?: Prisma.StaffCreateNestedOneWithoutWorkflowTasksInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutTasksInput
   history?: Prisma.TaskHistoryCreateNestedManyWithoutWorkflowTaskInput
 }
 
@@ -779,7 +779,7 @@ export type WorkflowTaskCreateWithoutFileWorkflowInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workflowStep: Prisma.WorkflowStepCreateNestedOneWithoutTasksInput
-  assignedStaff?: Prisma.StaffCreateNestedOneWithoutWorkflowTasksInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutTasksInput
   history?: Prisma.TaskHistoryCreateNestedManyWithoutWorkflowTaskInput
 }
 
@@ -831,7 +831,7 @@ export type WorkflowTaskCreateWithoutHistoryInput = {
   updatedAt?: Date | string
   fileWorkflow: Prisma.FileWorkflowCreateNestedOneWithoutTasksInput
   workflowStep: Prisma.WorkflowStepCreateNestedOneWithoutTasksInput
-  assignedStaff?: Prisma.StaffCreateNestedOneWithoutWorkflowTasksInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutTasksInput
 }
 
 export type WorkflowTaskUncheckedCreateWithoutHistoryInput = {
@@ -872,7 +872,7 @@ export type WorkflowTaskUpdateWithoutHistoryInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflow?: Prisma.FileWorkflowUpdateOneRequiredWithoutTasksNestedInput
   workflowStep?: Prisma.WorkflowStepUpdateOneRequiredWithoutTasksNestedInput
-  assignedStaff?: Prisma.StaffUpdateOneWithoutWorkflowTasksNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutTasksNestedInput
 }
 
 export type WorkflowTaskUncheckedUpdateWithoutHistoryInput = {
@@ -957,7 +957,7 @@ export type WorkflowTaskUpdateWithoutWorkflowStepInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflow?: Prisma.FileWorkflowUpdateOneRequiredWithoutTasksNestedInput
-  assignedStaff?: Prisma.StaffUpdateOneWithoutWorkflowTasksNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutTasksNestedInput
   history?: Prisma.TaskHistoryUpdateManyWithoutWorkflowTaskNestedInput
 }
 
@@ -1006,7 +1006,7 @@ export type WorkflowTaskUpdateWithoutFileWorkflowInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workflowStep?: Prisma.WorkflowStepUpdateOneRequiredWithoutTasksNestedInput
-  assignedStaff?: Prisma.StaffUpdateOneWithoutWorkflowTasksNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutTasksNestedInput
   history?: Prisma.TaskHistoryUpdateManyWithoutWorkflowTaskNestedInput
 }
 
