@@ -582,14 +582,6 @@ export type WorkflowStepUncheckedUpdateManyWithoutWorkflowTemplateNestedInput = 
   deleteMany?: Prisma.WorkflowStepScalarWhereInput | Prisma.WorkflowStepScalarWhereInput[]
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type WorkflowStepCreateNestedOneWithoutSubTasksInput = {
   create?: Prisma.XOR<Prisma.WorkflowStepCreateWithoutSubTasksInput, Prisma.WorkflowStepUncheckedCreateWithoutSubTasksInput>
   connectOrCreate?: Prisma.WorkflowStepCreateOrConnectWithoutSubTasksInput

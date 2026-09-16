@@ -406,11 +406,14 @@ export const ModelName = {
   WorkflowSubTask: 'WorkflowSubTask',
   FileWorkflow: 'FileWorkflow',
   WorkflowTask: 'WorkflowTask',
+  FileWorkflowSubTask: 'FileWorkflowSubTask',
   TaskHistory: 'TaskHistory',
   FileCharge: 'FileCharge',
   Payment: 'Payment',
   PaymentInstallment: 'PaymentInstallment',
-  CalendarEvent: 'CalendarEvent'
+  CalendarEvent: 'CalendarEvent',
+  ThirdParty: 'ThirdParty',
+  FileNumberSequence: 'FileNumberSequence'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -426,7 +429,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "workflowTask" | "taskHistory" | "fileCharge" | "payment" | "paymentInstallment" | "calendarEvent"
+    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "workflowTask" | "fileWorkflowSubTask" | "taskHistory" | "fileCharge" | "payment" | "paymentInstallment" | "calendarEvent" | "thirdParty" | "fileNumberSequence"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1024,6 +1027,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FileWorkflowSubTask: {
+      payload: Prisma.$FileWorkflowSubTaskPayload<ExtArgs>
+      fields: Prisma.FileWorkflowSubTaskFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FileWorkflowSubTaskFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowSubTaskPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FileWorkflowSubTaskFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowSubTaskPayload>
+        }
+        findFirst: {
+          args: Prisma.FileWorkflowSubTaskFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowSubTaskPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FileWorkflowSubTaskFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowSubTaskPayload>
+        }
+        findMany: {
+          args: Prisma.FileWorkflowSubTaskFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowSubTaskPayload>[]
+        }
+        create: {
+          args: Prisma.FileWorkflowSubTaskCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowSubTaskPayload>
+        }
+        createMany: {
+          args: Prisma.FileWorkflowSubTaskCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.FileWorkflowSubTaskDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowSubTaskPayload>
+        }
+        update: {
+          args: Prisma.FileWorkflowSubTaskUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowSubTaskPayload>
+        }
+        deleteMany: {
+          args: Prisma.FileWorkflowSubTaskDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FileWorkflowSubTaskUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.FileWorkflowSubTaskUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowSubTaskPayload>
+        }
+        aggregate: {
+          args: Prisma.FileWorkflowSubTaskAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileWorkflowSubTask>
+        }
+        groupBy: {
+          args: Prisma.FileWorkflowSubTaskGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileWorkflowSubTaskGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FileWorkflowSubTaskCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileWorkflowSubTaskCountAggregateOutputType> | number
+        }
+      }
+    }
     TaskHistory: {
       payload: Prisma.$TaskHistoryPayload<ExtArgs>
       fields: Prisma.TaskHistoryFieldRefs
@@ -1354,6 +1423,138 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ThirdParty: {
+      payload: Prisma.$ThirdPartyPayload<ExtArgs>
+      fields: Prisma.ThirdPartyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ThirdPartyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThirdPartyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ThirdPartyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThirdPartyPayload>
+        }
+        findFirst: {
+          args: Prisma.ThirdPartyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThirdPartyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ThirdPartyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThirdPartyPayload>
+        }
+        findMany: {
+          args: Prisma.ThirdPartyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThirdPartyPayload>[]
+        }
+        create: {
+          args: Prisma.ThirdPartyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThirdPartyPayload>
+        }
+        createMany: {
+          args: Prisma.ThirdPartyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.ThirdPartyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThirdPartyPayload>
+        }
+        update: {
+          args: Prisma.ThirdPartyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThirdPartyPayload>
+        }
+        deleteMany: {
+          args: Prisma.ThirdPartyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ThirdPartyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.ThirdPartyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ThirdPartyPayload>
+        }
+        aggregate: {
+          args: Prisma.ThirdPartyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateThirdParty>
+        }
+        groupBy: {
+          args: Prisma.ThirdPartyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ThirdPartyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ThirdPartyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ThirdPartyCountAggregateOutputType> | number
+        }
+      }
+    }
+    FileNumberSequence: {
+      payload: Prisma.$FileNumberSequencePayload<ExtArgs>
+      fields: Prisma.FileNumberSequenceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FileNumberSequenceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileNumberSequencePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FileNumberSequenceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileNumberSequencePayload>
+        }
+        findFirst: {
+          args: Prisma.FileNumberSequenceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileNumberSequencePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FileNumberSequenceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileNumberSequencePayload>
+        }
+        findMany: {
+          args: Prisma.FileNumberSequenceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileNumberSequencePayload>[]
+        }
+        create: {
+          args: Prisma.FileNumberSequenceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileNumberSequencePayload>
+        }
+        createMany: {
+          args: Prisma.FileNumberSequenceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.FileNumberSequenceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileNumberSequencePayload>
+        }
+        update: {
+          args: Prisma.FileNumberSequenceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileNumberSequencePayload>
+        }
+        deleteMany: {
+          args: Prisma.FileNumberSequenceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FileNumberSequenceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.FileNumberSequenceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileNumberSequencePayload>
+        }
+        aggregate: {
+          args: Prisma.FileNumberSequenceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileNumberSequence>
+        }
+        groupBy: {
+          args: Prisma.FileNumberSequenceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileNumberSequenceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FileNumberSequenceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileNumberSequenceCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1420,13 +1621,8 @@ export type StaffScalarFieldEnum = (typeof StaffScalarFieldEnum)[keyof typeof St
 
 export const ClientScalarFieldEnum = {
   id: 'id',
-  fullName: 'fullName',
-  mobile: 'mobile',
-  email: 'email',
-  nic: 'nic',
-  address: 'address',
-  notes: 'notes',
-  status: 'status',
+  name: 'name',
+  whatsapp: 'whatsapp',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1437,7 +1633,9 @@ export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof 
 export const ClientFileScalarFieldEnum = {
   id: 'id',
   clientId: 'clientId',
+  thirdPartyId: 'thirdPartyId',
   fileNumber: 'fileNumber',
+  fileNumberType: 'fileNumberType',
   title: 'title',
   description: 'description',
   status: 'status',
@@ -1454,6 +1652,7 @@ export const WorkflowTemplateScalarFieldEnum = {
   id: 'id',
   name: 'name',
   description: 'description',
+  defaultStaffId: 'defaultStaffId',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1483,6 +1682,7 @@ export const WorkflowSubTaskScalarFieldEnum = {
   subTaskNumber: 'subTaskNumber',
   title: 'title',
   description: 'description',
+  defaultStaffId: 'defaultStaffId',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1495,6 +1695,7 @@ export const FileWorkflowScalarFieldEnum = {
   id: 'id',
   clientFileId: 'clientFileId',
   workflowTemplateId: 'workflowTemplateId',
+  assignedStaffId: 'assignedStaffId',
   status: 'status',
   startedAt: 'startedAt',
   completedAt: 'completedAt',
@@ -1519,6 +1720,22 @@ export const WorkflowTaskScalarFieldEnum = {
 } as const
 
 export type WorkflowTaskScalarFieldEnum = (typeof WorkflowTaskScalarFieldEnum)[keyof typeof WorkflowTaskScalarFieldEnum]
+
+
+export const FileWorkflowSubTaskScalarFieldEnum = {
+  id: 'id',
+  workflowTaskId: 'workflowTaskId',
+  workflowSubTaskId: 'workflowSubTaskId',
+  assignedStaffId: 'assignedStaffId',
+  status: 'status',
+  remarks: 'remarks',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileWorkflowSubTaskScalarFieldEnum = (typeof FileWorkflowSubTaskScalarFieldEnum)[keyof typeof FileWorkflowSubTaskScalarFieldEnum]
 
 
 export const TaskHistoryScalarFieldEnum = {
@@ -1594,6 +1811,28 @@ export const CalendarEventScalarFieldEnum = {
 export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
 
 
+export const ThirdPartyScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  whatsapp: 'whatsapp',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ThirdPartyScalarFieldEnum = (typeof ThirdPartyScalarFieldEnum)[keyof typeof ThirdPartyScalarFieldEnum]
+
+
+export const FileNumberSequenceScalarFieldEnum = {
+  id: 'id',
+  nextNumber: 'nextNumber',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileNumberSequenceScalarFieldEnum = (typeof FileNumberSequenceScalarFieldEnum)[keyof typeof FileNumberSequenceScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1629,12 +1868,8 @@ export type StaffOrderByRelevanceFieldEnum = (typeof StaffOrderByRelevanceFieldE
 
 
 export const ClientOrderByRelevanceFieldEnum = {
-  fullName: 'fullName',
-  mobile: 'mobile',
-  email: 'email',
-  nic: 'nic',
-  address: 'address',
-  notes: 'notes'
+  name: 'name',
+  whatsapp: 'whatsapp'
 } as const
 
 export type ClientOrderByRelevanceFieldEnum = (typeof ClientOrderByRelevanceFieldEnum)[keyof typeof ClientOrderByRelevanceFieldEnum]
@@ -1680,6 +1915,13 @@ export const WorkflowTaskOrderByRelevanceFieldEnum = {
 export type WorkflowTaskOrderByRelevanceFieldEnum = (typeof WorkflowTaskOrderByRelevanceFieldEnum)[keyof typeof WorkflowTaskOrderByRelevanceFieldEnum]
 
 
+export const FileWorkflowSubTaskOrderByRelevanceFieldEnum = {
+  remarks: 'remarks'
+} as const
+
+export type FileWorkflowSubTaskOrderByRelevanceFieldEnum = (typeof FileWorkflowSubTaskOrderByRelevanceFieldEnum)[keyof typeof FileWorkflowSubTaskOrderByRelevanceFieldEnum]
+
+
 export const TaskHistoryOrderByRelevanceFieldEnum = {
   remarks: 'remarks'
 } as const
@@ -1717,6 +1959,14 @@ export const CalendarEventOrderByRelevanceFieldEnum = {
 export type CalendarEventOrderByRelevanceFieldEnum = (typeof CalendarEventOrderByRelevanceFieldEnum)[keyof typeof CalendarEventOrderByRelevanceFieldEnum]
 
 
+export const ThirdPartyOrderByRelevanceFieldEnum = {
+  name: 'name',
+  whatsapp: 'whatsapp'
+} as const
+
+export type ThirdPartyOrderByRelevanceFieldEnum = (typeof ThirdPartyOrderByRelevanceFieldEnum)[keyof typeof ThirdPartyOrderByRelevanceFieldEnum]
+
+
 
 /**
  * Field references
@@ -1748,6 +1998,13 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'FileNumberType'
+ */
+export type EnumFileNumberTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FileNumberType'>
     
 
 
@@ -1973,11 +2230,14 @@ export type GlobalOmitConfig = {
   workflowSubTask?: Prisma.WorkflowSubTaskOmit
   fileWorkflow?: Prisma.FileWorkflowOmit
   workflowTask?: Prisma.WorkflowTaskOmit
+  fileWorkflowSubTask?: Prisma.FileWorkflowSubTaskOmit
   taskHistory?: Prisma.TaskHistoryOmit
   fileCharge?: Prisma.FileChargeOmit
   payment?: Prisma.PaymentOmit
   paymentInstallment?: Prisma.PaymentInstallmentOmit
   calendarEvent?: Prisma.CalendarEventOmit
+  thirdParty?: Prisma.ThirdPartyOmit
+  fileNumberSequence?: Prisma.FileNumberSequenceOmit
 }
 
 /* Types for Logging */

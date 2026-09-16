@@ -65,6 +65,13 @@ export async function POST(
         ? null
         : String(body.description).trim() || null;
 
+    const defaultStaffId =
+      body.defaultStaffId === null ||
+      body.defaultStaffId === undefined ||
+      body.defaultStaffId === ""
+        ? null
+        : Number(body.defaultStaffId);
+
     if (!title) {
       return NextResponse.json(
         {
@@ -73,6 +80,49 @@ export async function POST(
         },
         { status: 400 }
       );
+    }
+
+    // Validate default staff when selected
+    if (defaultStaffId !== null) {
+      if (
+        !Number.isInteger(defaultStaffId) ||
+        defaultStaffId <= 0
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Invalid default staff.",
+          },
+          { status: 400 }
+        );
+      }
+
+      const staff = await prisma.staff.findUnique({
+        where: {
+          id: defaultStaffId,
+        },
+      });
+
+      if (!staff) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Selected staff member was not found.",
+          },
+          { status: 404 }
+        );
+      }
+
+      if (!staff.status) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Cannot assign an inactive staff member.",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     const lastSubTask =
@@ -98,6 +148,7 @@ export async function POST(
           subTaskNumber: nextSubTaskNumber,
           title,
           description,
+          defaultStaffId,
           status: true,
         },
       });

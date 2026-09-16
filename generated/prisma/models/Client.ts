@@ -36,39 +36,24 @@ export type ClientSumAggregateOutputType = {
 
 export type ClientMinAggregateOutputType = {
   id: number | null
-  fullName: string | null
-  mobile: string | null
-  email: string | null
-  nic: string | null
-  address: string | null
-  notes: string | null
-  status: boolean | null
+  name: string | null
+  whatsapp: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type ClientMaxAggregateOutputType = {
   id: number | null
-  fullName: string | null
-  mobile: string | null
-  email: string | null
-  nic: string | null
-  address: string | null
-  notes: string | null
-  status: boolean | null
+  name: string | null
+  whatsapp: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type ClientCountAggregateOutputType = {
   id: number
-  fullName: number
-  mobile: number
-  email: number
-  nic: number
-  address: number
-  notes: number
-  status: number
+  name: number
+  whatsapp: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -85,39 +70,24 @@ export type ClientSumAggregateInputType = {
 
 export type ClientMinAggregateInputType = {
   id?: true
-  fullName?: true
-  mobile?: true
-  email?: true
-  nic?: true
-  address?: true
-  notes?: true
-  status?: true
+  name?: true
+  whatsapp?: true
   createdAt?: true
   updatedAt?: true
 }
 
 export type ClientMaxAggregateInputType = {
   id?: true
-  fullName?: true
-  mobile?: true
-  email?: true
-  nic?: true
-  address?: true
-  notes?: true
-  status?: true
+  name?: true
+  whatsapp?: true
   createdAt?: true
   updatedAt?: true
 }
 
 export type ClientCountAggregateInputType = {
   id?: true
-  fullName?: true
-  mobile?: true
-  email?: true
-  nic?: true
-  address?: true
-  notes?: true
-  status?: true
+  name?: true
+  whatsapp?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -211,13 +181,8 @@ export type ClientGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 
 export type ClientGroupByOutputType = {
   id: number
-  fullName: string
-  mobile: string | null
-  email: string | null
-  nic: string | null
-  address: string | null
-  notes: string | null
-  status: boolean
+  name: string
+  whatsapp: string | null
   createdAt: Date
   updatedAt: Date
   _count: ClientCountAggregateOutputType | null
@@ -247,13 +212,8 @@ export type ClientWhereInput = {
   OR?: Prisma.ClientWhereInput[]
   NOT?: Prisma.ClientWhereInput | Prisma.ClientWhereInput[]
   id?: Prisma.IntFilter<"Client"> | number
-  fullName?: Prisma.StringFilter<"Client"> | string
-  mobile?: Prisma.StringNullableFilter<"Client"> | string | null
-  email?: Prisma.StringNullableFilter<"Client"> | string | null
-  nic?: Prisma.StringNullableFilter<"Client"> | string | null
-  address?: Prisma.StringNullableFilter<"Client"> | string | null
-  notes?: Prisma.StringNullableFilter<"Client"> | string | null
-  status?: Prisma.BoolFilter<"Client"> | boolean
+  name?: Prisma.StringFilter<"Client"> | string
+  whatsapp?: Prisma.StringNullableFilter<"Client"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Client"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Client"> | Date | string
   files?: Prisma.ClientFileListRelationFilter
@@ -261,13 +221,8 @@ export type ClientWhereInput = {
 
 export type ClientOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  fullName?: Prisma.SortOrder
-  mobile?: Prisma.SortOrderInput | Prisma.SortOrder
-  email?: Prisma.SortOrderInput | Prisma.SortOrder
-  nic?: Prisma.SortOrderInput | Prisma.SortOrder
-  address?: Prisma.SortOrderInput | Prisma.SortOrder
-  notes?: Prisma.SortOrderInput | Prisma.SortOrder
-  status?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  whatsapp?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   files?: Prisma.ClientFileOrderByRelationAggregateInput
@@ -279,13 +234,8 @@ export type ClientWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.ClientWhereInput | Prisma.ClientWhereInput[]
   OR?: Prisma.ClientWhereInput[]
   NOT?: Prisma.ClientWhereInput | Prisma.ClientWhereInput[]
-  fullName?: Prisma.StringFilter<"Client"> | string
-  mobile?: Prisma.StringNullableFilter<"Client"> | string | null
-  email?: Prisma.StringNullableFilter<"Client"> | string | null
-  nic?: Prisma.StringNullableFilter<"Client"> | string | null
-  address?: Prisma.StringNullableFilter<"Client"> | string | null
-  notes?: Prisma.StringNullableFilter<"Client"> | string | null
-  status?: Prisma.BoolFilter<"Client"> | boolean
+  name?: Prisma.StringFilter<"Client"> | string
+  whatsapp?: Prisma.StringNullableFilter<"Client"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Client"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Client"> | Date | string
   files?: Prisma.ClientFileListRelationFilter
@@ -293,13 +243,8 @@ export type ClientWhereUniqueInput = Prisma.AtLeast<{
 
 export type ClientOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  fullName?: Prisma.SortOrder
-  mobile?: Prisma.SortOrderInput | Prisma.SortOrder
-  email?: Prisma.SortOrderInput | Prisma.SortOrder
-  nic?: Prisma.SortOrderInput | Prisma.SortOrder
-  address?: Prisma.SortOrderInput | Prisma.SortOrder
-  notes?: Prisma.SortOrderInput | Prisma.SortOrder
-  status?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  whatsapp?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ClientCountOrderByAggregateInput
@@ -314,25 +259,15 @@ export type ClientScalarWhereWithAggregatesInput = {
   OR?: Prisma.ClientScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ClientScalarWhereWithAggregatesInput | Prisma.ClientScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Client"> | number
-  fullName?: Prisma.StringWithAggregatesFilter<"Client"> | string
-  mobile?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
-  email?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
-  nic?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
-  address?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
-  notes?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
-  status?: Prisma.BoolWithAggregatesFilter<"Client"> | boolean
+  name?: Prisma.StringWithAggregatesFilter<"Client"> | string
+  whatsapp?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Client"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Client"> | Date | string
 }
 
 export type ClientCreateInput = {
-  fullName: string
-  mobile?: string | null
-  email?: string | null
-  nic?: string | null
-  address?: string | null
-  notes?: string | null
-  status?: boolean
+  name: string
+  whatsapp?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   files?: Prisma.ClientFileCreateNestedManyWithoutClientInput
@@ -340,26 +275,16 @@ export type ClientCreateInput = {
 
 export type ClientUncheckedCreateInput = {
   id?: number
-  fullName: string
-  mobile?: string | null
-  email?: string | null
-  nic?: string | null
-  address?: string | null
-  notes?: string | null
-  status?: boolean
+  name: string
+  whatsapp?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   files?: Prisma.ClientFileUncheckedCreateNestedManyWithoutClientInput
 }
 
 export type ClientUpdateInput = {
-  fullName?: Prisma.StringFieldUpdateOperationsInput | string
-  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   files?: Prisma.ClientFileUpdateManyWithoutClientNestedInput
@@ -367,13 +292,8 @@ export type ClientUpdateInput = {
 
 export type ClientUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  fullName?: Prisma.StringFieldUpdateOperationsInput | string
-  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   files?: Prisma.ClientFileUncheckedUpdateManyWithoutClientNestedInput
@@ -381,38 +301,23 @@ export type ClientUncheckedUpdateInput = {
 
 export type ClientCreateManyInput = {
   id?: number
-  fullName: string
-  mobile?: string | null
-  email?: string | null
-  nic?: string | null
-  address?: string | null
-  notes?: string | null
-  status?: boolean
+  name: string
+  whatsapp?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ClientUpdateManyMutationInput = {
-  fullName?: Prisma.StringFieldUpdateOperationsInput | string
-  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ClientUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  fullName?: Prisma.StringFieldUpdateOperationsInput | string
-  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -425,13 +330,8 @@ export type ClientOrderByRelevanceInput = {
 
 export type ClientCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  fullName?: Prisma.SortOrder
-  mobile?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  nic?: Prisma.SortOrder
-  address?: Prisma.SortOrder
-  notes?: Prisma.SortOrder
-  status?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  whatsapp?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -442,26 +342,16 @@ export type ClientAvgOrderByAggregateInput = {
 
 export type ClientMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  fullName?: Prisma.SortOrder
-  mobile?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  nic?: Prisma.SortOrder
-  address?: Prisma.SortOrder
-  notes?: Prisma.SortOrder
-  status?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  whatsapp?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type ClientMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  fullName?: Prisma.SortOrder
-  mobile?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  nic?: Prisma.SortOrder
-  address?: Prisma.SortOrder
-  notes?: Prisma.SortOrder
-  status?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  whatsapp?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -490,26 +380,16 @@ export type ClientUpdateOneRequiredWithoutFilesNestedInput = {
 }
 
 export type ClientCreateWithoutFilesInput = {
-  fullName: string
-  mobile?: string | null
-  email?: string | null
-  nic?: string | null
-  address?: string | null
-  notes?: string | null
-  status?: boolean
+  name: string
+  whatsapp?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ClientUncheckedCreateWithoutFilesInput = {
   id?: number
-  fullName: string
-  mobile?: string | null
-  email?: string | null
-  nic?: string | null
-  address?: string | null
-  notes?: string | null
-  status?: boolean
+  name: string
+  whatsapp?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -531,26 +411,16 @@ export type ClientUpdateToOneWithWhereWithoutFilesInput = {
 }
 
 export type ClientUpdateWithoutFilesInput = {
-  fullName?: Prisma.StringFieldUpdateOperationsInput | string
-  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ClientUncheckedUpdateWithoutFilesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  fullName?: Prisma.StringFieldUpdateOperationsInput | string
-  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  nic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  whatsapp?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -588,13 +458,8 @@ export type ClientCountOutputTypeCountFilesArgs<ExtArgs extends runtime.Types.Ex
 
 export type ClientSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  fullName?: boolean
-  mobile?: boolean
-  email?: boolean
-  nic?: boolean
-  address?: boolean
-  notes?: boolean
-  status?: boolean
+  name?: boolean
+  whatsapp?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   files?: boolean | Prisma.Client$filesArgs<ExtArgs>
@@ -605,18 +470,13 @@ export type ClientSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 
 export type ClientSelectScalar = {
   id?: boolean
-  fullName?: boolean
-  mobile?: boolean
-  email?: boolean
-  nic?: boolean
-  address?: boolean
-  notes?: boolean
-  status?: boolean
+  name?: boolean
+  whatsapp?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ClientOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fullName" | "mobile" | "email" | "nic" | "address" | "notes" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["client"]>
+export type ClientOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "whatsapp" | "createdAt" | "updatedAt", ExtArgs["result"]["client"]>
 export type ClientInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   files?: boolean | Prisma.Client$filesArgs<ExtArgs>
   _count?: boolean | Prisma.ClientCountOutputTypeDefaultArgs<ExtArgs>
@@ -629,13 +489,8 @@ export type $ClientPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    fullName: string
-    mobile: string | null
-    email: string | null
-    nic: string | null
-    address: string | null
-    notes: string | null
-    status: boolean
+    name: string
+    whatsapp: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["client"]>
@@ -1009,13 +864,8 @@ export interface Prisma__ClientClient<T, Null = never, ExtArgs extends runtime.T
  */
 export interface ClientFieldRefs {
   readonly id: Prisma.FieldRef<"Client", 'Int'>
-  readonly fullName: Prisma.FieldRef<"Client", 'String'>
-  readonly mobile: Prisma.FieldRef<"Client", 'String'>
-  readonly email: Prisma.FieldRef<"Client", 'String'>
-  readonly nic: Prisma.FieldRef<"Client", 'String'>
-  readonly address: Prisma.FieldRef<"Client", 'String'>
-  readonly notes: Prisma.FieldRef<"Client", 'String'>
-  readonly status: Prisma.FieldRef<"Client", 'Boolean'>
+  readonly name: Prisma.FieldRef<"Client", 'String'>
+  readonly whatsapp: Prisma.FieldRef<"Client", 'String'>
   readonly createdAt: Prisma.FieldRef<"Client", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Client", 'DateTime'>
 }

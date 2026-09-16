@@ -25,11 +25,7 @@ const navigation = [
     href: "/workflows",
     key: "workflows",
   },
-  {
-    label: "Staff",
-    href: "/staff",
-    key: "staff",
-  },
+  { label: "Third Parties", href: "/third-parties", key: "third-parties" },
   {
     label: "Calendar",
     href: "/calendar",

@@ -30,18 +30,21 @@ export type FileWorkflowAvgAggregateOutputType = {
   id: number | null
   clientFileId: number | null
   workflowTemplateId: number | null
+  assignedStaffId: number | null
 }
 
 export type FileWorkflowSumAggregateOutputType = {
   id: number | null
   clientFileId: number | null
   workflowTemplateId: number | null
+  assignedStaffId: number | null
 }
 
 export type FileWorkflowMinAggregateOutputType = {
   id: number | null
   clientFileId: number | null
   workflowTemplateId: number | null
+  assignedStaffId: number | null
   status: $Enums.WorkflowStatus | null
   startedAt: Date | null
   completedAt: Date | null
@@ -53,6 +56,7 @@ export type FileWorkflowMaxAggregateOutputType = {
   id: number | null
   clientFileId: number | null
   workflowTemplateId: number | null
+  assignedStaffId: number | null
   status: $Enums.WorkflowStatus | null
   startedAt: Date | null
   completedAt: Date | null
@@ -64,6 +68,7 @@ export type FileWorkflowCountAggregateOutputType = {
   id: number
   clientFileId: number
   workflowTemplateId: number
+  assignedStaffId: number
   status: number
   startedAt: number
   completedAt: number
@@ -77,18 +82,21 @@ export type FileWorkflowAvgAggregateInputType = {
   id?: true
   clientFileId?: true
   workflowTemplateId?: true
+  assignedStaffId?: true
 }
 
 export type FileWorkflowSumAggregateInputType = {
   id?: true
   clientFileId?: true
   workflowTemplateId?: true
+  assignedStaffId?: true
 }
 
 export type FileWorkflowMinAggregateInputType = {
   id?: true
   clientFileId?: true
   workflowTemplateId?: true
+  assignedStaffId?: true
   status?: true
   startedAt?: true
   completedAt?: true
@@ -100,6 +108,7 @@ export type FileWorkflowMaxAggregateInputType = {
   id?: true
   clientFileId?: true
   workflowTemplateId?: true
+  assignedStaffId?: true
   status?: true
   startedAt?: true
   completedAt?: true
@@ -111,6 +120,7 @@ export type FileWorkflowCountAggregateInputType = {
   id?: true
   clientFileId?: true
   workflowTemplateId?: true
+  assignedStaffId?: true
   status?: true
   startedAt?: true
   completedAt?: true
@@ -209,6 +219,7 @@ export type FileWorkflowGroupByOutputType = {
   id: number
   clientFileId: number
   workflowTemplateId: number
+  assignedStaffId: number | null
   status: $Enums.WorkflowStatus
   startedAt: Date | null
   completedAt: Date | null
@@ -243,6 +254,7 @@ export type FileWorkflowWhereInput = {
   id?: Prisma.IntFilter<"FileWorkflow"> | number
   clientFileId?: Prisma.IntFilter<"FileWorkflow"> | number
   workflowTemplateId?: Prisma.IntFilter<"FileWorkflow"> | number
+  assignedStaffId?: Prisma.IntNullableFilter<"FileWorkflow"> | number | null
   status?: Prisma.EnumWorkflowStatusFilter<"FileWorkflow"> | $Enums.WorkflowStatus
   startedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
@@ -250,6 +262,7 @@ export type FileWorkflowWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"FileWorkflow"> | Date | string
   clientFile?: Prisma.XOR<Prisma.ClientFileScalarRelationFilter, Prisma.ClientFileWhereInput>
   workflowTemplate?: Prisma.XOR<Prisma.WorkflowTemplateScalarRelationFilter, Prisma.WorkflowTemplateWhereInput>
+  assignedStaff?: Prisma.XOR<Prisma.StaffNullableScalarRelationFilter, Prisma.StaffWhereInput> | null
   tasks?: Prisma.WorkflowTaskListRelationFilter
 }
 
@@ -257,6 +270,7 @@ export type FileWorkflowOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
   workflowTemplateId?: Prisma.SortOrder
+  assignedStaffId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -264,6 +278,7 @@ export type FileWorkflowOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   clientFile?: Prisma.ClientFileOrderByWithRelationInput
   workflowTemplate?: Prisma.WorkflowTemplateOrderByWithRelationInput
+  assignedStaff?: Prisma.StaffOrderByWithRelationInput
   tasks?: Prisma.WorkflowTaskOrderByRelationAggregateInput
 }
 
@@ -274,6 +289,7 @@ export type FileWorkflowWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.FileWorkflowWhereInput | Prisma.FileWorkflowWhereInput[]
   clientFileId?: Prisma.IntFilter<"FileWorkflow"> | number
   workflowTemplateId?: Prisma.IntFilter<"FileWorkflow"> | number
+  assignedStaffId?: Prisma.IntNullableFilter<"FileWorkflow"> | number | null
   status?: Prisma.EnumWorkflowStatusFilter<"FileWorkflow"> | $Enums.WorkflowStatus
   startedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
@@ -281,6 +297,7 @@ export type FileWorkflowWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"FileWorkflow"> | Date | string
   clientFile?: Prisma.XOR<Prisma.ClientFileScalarRelationFilter, Prisma.ClientFileWhereInput>
   workflowTemplate?: Prisma.XOR<Prisma.WorkflowTemplateScalarRelationFilter, Prisma.WorkflowTemplateWhereInput>
+  assignedStaff?: Prisma.XOR<Prisma.StaffNullableScalarRelationFilter, Prisma.StaffWhereInput> | null
   tasks?: Prisma.WorkflowTaskListRelationFilter
 }, "id">
 
@@ -288,6 +305,7 @@ export type FileWorkflowOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
   workflowTemplateId?: Prisma.SortOrder
+  assignedStaffId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -307,6 +325,7 @@ export type FileWorkflowScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"FileWorkflow"> | number
   clientFileId?: Prisma.IntWithAggregatesFilter<"FileWorkflow"> | number
   workflowTemplateId?: Prisma.IntWithAggregatesFilter<"FileWorkflow"> | number
+  assignedStaffId?: Prisma.IntNullableWithAggregatesFilter<"FileWorkflow"> | number | null
   status?: Prisma.EnumWorkflowStatusWithAggregatesFilter<"FileWorkflow"> | $Enums.WorkflowStatus
   startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"FileWorkflow"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"FileWorkflow"> | Date | string | null
@@ -322,6 +341,7 @@ export type FileWorkflowCreateInput = {
   updatedAt?: Date | string
   clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
 }
 
@@ -329,6 +349,7 @@ export type FileWorkflowUncheckedCreateInput = {
   id?: number
   clientFileId: number
   workflowTemplateId: number
+  assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -345,6 +366,7 @@ export type FileWorkflowUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
 }
 
@@ -352,6 +374,7 @@ export type FileWorkflowUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -364,6 +387,7 @@ export type FileWorkflowCreateManyInput = {
   id?: number
   clientFileId: number
   workflowTemplateId: number
+  assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -383,6 +407,7 @@ export type FileWorkflowUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -404,6 +429,7 @@ export type FileWorkflowCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
   workflowTemplateId?: Prisma.SortOrder
+  assignedStaffId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -415,12 +441,14 @@ export type FileWorkflowAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
   workflowTemplateId?: Prisma.SortOrder
+  assignedStaffId?: Prisma.SortOrder
 }
 
 export type FileWorkflowMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
   workflowTemplateId?: Prisma.SortOrder
+  assignedStaffId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -432,6 +460,7 @@ export type FileWorkflowMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
   workflowTemplateId?: Prisma.SortOrder
+  assignedStaffId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -443,11 +472,54 @@ export type FileWorkflowSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
   workflowTemplateId?: Prisma.SortOrder
+  assignedStaffId?: Prisma.SortOrder
 }
 
 export type FileWorkflowScalarRelationFilter = {
   is?: Prisma.FileWorkflowWhereInput
   isNot?: Prisma.FileWorkflowWhereInput
+}
+
+export type FileWorkflowCreateNestedManyWithoutAssignedStaffInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowCreateWithoutAssignedStaffInput, Prisma.FileWorkflowUncheckedCreateWithoutAssignedStaffInput> | Prisma.FileWorkflowCreateWithoutAssignedStaffInput[] | Prisma.FileWorkflowUncheckedCreateWithoutAssignedStaffInput[]
+  connectOrCreate?: Prisma.FileWorkflowCreateOrConnectWithoutAssignedStaffInput | Prisma.FileWorkflowCreateOrConnectWithoutAssignedStaffInput[]
+  createMany?: Prisma.FileWorkflowCreateManyAssignedStaffInputEnvelope
+  connect?: Prisma.FileWorkflowWhereUniqueInput | Prisma.FileWorkflowWhereUniqueInput[]
+}
+
+export type FileWorkflowUncheckedCreateNestedManyWithoutAssignedStaffInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowCreateWithoutAssignedStaffInput, Prisma.FileWorkflowUncheckedCreateWithoutAssignedStaffInput> | Prisma.FileWorkflowCreateWithoutAssignedStaffInput[] | Prisma.FileWorkflowUncheckedCreateWithoutAssignedStaffInput[]
+  connectOrCreate?: Prisma.FileWorkflowCreateOrConnectWithoutAssignedStaffInput | Prisma.FileWorkflowCreateOrConnectWithoutAssignedStaffInput[]
+  createMany?: Prisma.FileWorkflowCreateManyAssignedStaffInputEnvelope
+  connect?: Prisma.FileWorkflowWhereUniqueInput | Prisma.FileWorkflowWhereUniqueInput[]
+}
+
+export type FileWorkflowUpdateManyWithoutAssignedStaffNestedInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowCreateWithoutAssignedStaffInput, Prisma.FileWorkflowUncheckedCreateWithoutAssignedStaffInput> | Prisma.FileWorkflowCreateWithoutAssignedStaffInput[] | Prisma.FileWorkflowUncheckedCreateWithoutAssignedStaffInput[]
+  connectOrCreate?: Prisma.FileWorkflowCreateOrConnectWithoutAssignedStaffInput | Prisma.FileWorkflowCreateOrConnectWithoutAssignedStaffInput[]
+  upsert?: Prisma.FileWorkflowUpsertWithWhereUniqueWithoutAssignedStaffInput | Prisma.FileWorkflowUpsertWithWhereUniqueWithoutAssignedStaffInput[]
+  createMany?: Prisma.FileWorkflowCreateManyAssignedStaffInputEnvelope
+  set?: Prisma.FileWorkflowWhereUniqueInput | Prisma.FileWorkflowWhereUniqueInput[]
+  disconnect?: Prisma.FileWorkflowWhereUniqueInput | Prisma.FileWorkflowWhereUniqueInput[]
+  delete?: Prisma.FileWorkflowWhereUniqueInput | Prisma.FileWorkflowWhereUniqueInput[]
+  connect?: Prisma.FileWorkflowWhereUniqueInput | Prisma.FileWorkflowWhereUniqueInput[]
+  update?: Prisma.FileWorkflowUpdateWithWhereUniqueWithoutAssignedStaffInput | Prisma.FileWorkflowUpdateWithWhereUniqueWithoutAssignedStaffInput[]
+  updateMany?: Prisma.FileWorkflowUpdateManyWithWhereWithoutAssignedStaffInput | Prisma.FileWorkflowUpdateManyWithWhereWithoutAssignedStaffInput[]
+  deleteMany?: Prisma.FileWorkflowScalarWhereInput | Prisma.FileWorkflowScalarWhereInput[]
+}
+
+export type FileWorkflowUncheckedUpdateManyWithoutAssignedStaffNestedInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowCreateWithoutAssignedStaffInput, Prisma.FileWorkflowUncheckedCreateWithoutAssignedStaffInput> | Prisma.FileWorkflowCreateWithoutAssignedStaffInput[] | Prisma.FileWorkflowUncheckedCreateWithoutAssignedStaffInput[]
+  connectOrCreate?: Prisma.FileWorkflowCreateOrConnectWithoutAssignedStaffInput | Prisma.FileWorkflowCreateOrConnectWithoutAssignedStaffInput[]
+  upsert?: Prisma.FileWorkflowUpsertWithWhereUniqueWithoutAssignedStaffInput | Prisma.FileWorkflowUpsertWithWhereUniqueWithoutAssignedStaffInput[]
+  createMany?: Prisma.FileWorkflowCreateManyAssignedStaffInputEnvelope
+  set?: Prisma.FileWorkflowWhereUniqueInput | Prisma.FileWorkflowWhereUniqueInput[]
+  disconnect?: Prisma.FileWorkflowWhereUniqueInput | Prisma.FileWorkflowWhereUniqueInput[]
+  delete?: Prisma.FileWorkflowWhereUniqueInput | Prisma.FileWorkflowWhereUniqueInput[]
+  connect?: Prisma.FileWorkflowWhereUniqueInput | Prisma.FileWorkflowWhereUniqueInput[]
+  update?: Prisma.FileWorkflowUpdateWithWhereUniqueWithoutAssignedStaffInput | Prisma.FileWorkflowUpdateWithWhereUniqueWithoutAssignedStaffInput[]
+  updateMany?: Prisma.FileWorkflowUpdateManyWithWhereWithoutAssignedStaffInput | Prisma.FileWorkflowUpdateManyWithWhereWithoutAssignedStaffInput[]
+  deleteMany?: Prisma.FileWorkflowScalarWhereInput | Prisma.FileWorkflowScalarWhereInput[]
 }
 
 export type FileWorkflowCreateNestedManyWithoutClientFileInput = {
@@ -552,6 +624,70 @@ export type FileWorkflowUpdateOneRequiredWithoutTasksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.FileWorkflowUpdateToOneWithWhereWithoutTasksInput, Prisma.FileWorkflowUpdateWithoutTasksInput>, Prisma.FileWorkflowUncheckedUpdateWithoutTasksInput>
 }
 
+export type FileWorkflowCreateWithoutAssignedStaffInput = {
+  status?: $Enums.WorkflowStatus
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
+  workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
+  tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+}
+
+export type FileWorkflowUncheckedCreateWithoutAssignedStaffInput = {
+  id?: number
+  clientFileId: number
+  workflowTemplateId: number
+  status?: $Enums.WorkflowStatus
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+}
+
+export type FileWorkflowCreateOrConnectWithoutAssignedStaffInput = {
+  where: Prisma.FileWorkflowWhereUniqueInput
+  create: Prisma.XOR<Prisma.FileWorkflowCreateWithoutAssignedStaffInput, Prisma.FileWorkflowUncheckedCreateWithoutAssignedStaffInput>
+}
+
+export type FileWorkflowCreateManyAssignedStaffInputEnvelope = {
+  data: Prisma.FileWorkflowCreateManyAssignedStaffInput | Prisma.FileWorkflowCreateManyAssignedStaffInput[]
+  skipDuplicates?: boolean
+}
+
+export type FileWorkflowUpsertWithWhereUniqueWithoutAssignedStaffInput = {
+  where: Prisma.FileWorkflowWhereUniqueInput
+  update: Prisma.XOR<Prisma.FileWorkflowUpdateWithoutAssignedStaffInput, Prisma.FileWorkflowUncheckedUpdateWithoutAssignedStaffInput>
+  create: Prisma.XOR<Prisma.FileWorkflowCreateWithoutAssignedStaffInput, Prisma.FileWorkflowUncheckedCreateWithoutAssignedStaffInput>
+}
+
+export type FileWorkflowUpdateWithWhereUniqueWithoutAssignedStaffInput = {
+  where: Prisma.FileWorkflowWhereUniqueInput
+  data: Prisma.XOR<Prisma.FileWorkflowUpdateWithoutAssignedStaffInput, Prisma.FileWorkflowUncheckedUpdateWithoutAssignedStaffInput>
+}
+
+export type FileWorkflowUpdateManyWithWhereWithoutAssignedStaffInput = {
+  where: Prisma.FileWorkflowScalarWhereInput
+  data: Prisma.XOR<Prisma.FileWorkflowUpdateManyMutationInput, Prisma.FileWorkflowUncheckedUpdateManyWithoutAssignedStaffInput>
+}
+
+export type FileWorkflowScalarWhereInput = {
+  AND?: Prisma.FileWorkflowScalarWhereInput | Prisma.FileWorkflowScalarWhereInput[]
+  OR?: Prisma.FileWorkflowScalarWhereInput[]
+  NOT?: Prisma.FileWorkflowScalarWhereInput | Prisma.FileWorkflowScalarWhereInput[]
+  id?: Prisma.IntFilter<"FileWorkflow"> | number
+  clientFileId?: Prisma.IntFilter<"FileWorkflow"> | number
+  workflowTemplateId?: Prisma.IntFilter<"FileWorkflow"> | number
+  assignedStaffId?: Prisma.IntNullableFilter<"FileWorkflow"> | number | null
+  status?: Prisma.EnumWorkflowStatusFilter<"FileWorkflow"> | $Enums.WorkflowStatus
+  startedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
+  completedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"FileWorkflow"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"FileWorkflow"> | Date | string
+}
+
 export type FileWorkflowCreateWithoutClientFileInput = {
   status?: $Enums.WorkflowStatus
   startedAt?: Date | string | null
@@ -559,12 +695,14 @@ export type FileWorkflowCreateWithoutClientFileInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowUncheckedCreateWithoutClientFileInput = {
   id?: number
   workflowTemplateId: number
+  assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -599,20 +737,6 @@ export type FileWorkflowUpdateManyWithWhereWithoutClientFileInput = {
   data: Prisma.XOR<Prisma.FileWorkflowUpdateManyMutationInput, Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileInput>
 }
 
-export type FileWorkflowScalarWhereInput = {
-  AND?: Prisma.FileWorkflowScalarWhereInput | Prisma.FileWorkflowScalarWhereInput[]
-  OR?: Prisma.FileWorkflowScalarWhereInput[]
-  NOT?: Prisma.FileWorkflowScalarWhereInput | Prisma.FileWorkflowScalarWhereInput[]
-  id?: Prisma.IntFilter<"FileWorkflow"> | number
-  clientFileId?: Prisma.IntFilter<"FileWorkflow"> | number
-  workflowTemplateId?: Prisma.IntFilter<"FileWorkflow"> | number
-  status?: Prisma.EnumWorkflowStatusFilter<"FileWorkflow"> | $Enums.WorkflowStatus
-  startedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
-  completedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
-  createdAt?: Prisma.DateTimeFilter<"FileWorkflow"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"FileWorkflow"> | Date | string
-}
-
 export type FileWorkflowCreateWithoutWorkflowTemplateInput = {
   status?: $Enums.WorkflowStatus
   startedAt?: Date | string | null
@@ -620,12 +744,14 @@ export type FileWorkflowCreateWithoutWorkflowTemplateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowUncheckedCreateWithoutWorkflowTemplateInput = {
   id?: number
   clientFileId: number
+  assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -668,12 +794,14 @@ export type FileWorkflowCreateWithoutTasksInput = {
   updatedAt?: Date | string
   clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
 }
 
 export type FileWorkflowUncheckedCreateWithoutTasksInput = {
   id?: number
   clientFileId: number
   workflowTemplateId: number
+  assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -705,9 +833,56 @@ export type FileWorkflowUpdateWithoutTasksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
 }
 
 export type FileWorkflowUncheckedUpdateWithoutTasksInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type FileWorkflowCreateManyAssignedStaffInput = {
+  id?: number
+  clientFileId: number
+  workflowTemplateId: number
+  status?: $Enums.WorkflowStatus
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type FileWorkflowUpdateWithoutAssignedStaffInput = {
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+}
+
+export type FileWorkflowUncheckedUpdateWithoutAssignedStaffInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+}
+
+export type FileWorkflowUncheckedUpdateManyWithoutAssignedStaffInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
@@ -721,6 +896,7 @@ export type FileWorkflowUncheckedUpdateWithoutTasksInput = {
 export type FileWorkflowCreateManyClientFileInput = {
   id?: number
   workflowTemplateId: number
+  assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -735,12 +911,14 @@ export type FileWorkflowUpdateWithoutClientFileInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowUncheckedUpdateWithoutClientFileInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -752,6 +930,7 @@ export type FileWorkflowUncheckedUpdateWithoutClientFileInput = {
 export type FileWorkflowUncheckedUpdateManyWithoutClientFileInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -762,6 +941,7 @@ export type FileWorkflowUncheckedUpdateManyWithoutClientFileInput = {
 export type FileWorkflowCreateManyWorkflowTemplateInput = {
   id?: number
   clientFileId: number
+  assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -776,12 +956,14 @@ export type FileWorkflowUpdateWithoutWorkflowTemplateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowUncheckedUpdateWithoutWorkflowTemplateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -793,6 +975,7 @@ export type FileWorkflowUncheckedUpdateWithoutWorkflowTemplateInput = {
 export type FileWorkflowUncheckedUpdateManyWithoutWorkflowTemplateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -835,6 +1018,7 @@ export type FileWorkflowSelect<ExtArgs extends runtime.Types.Extensions.Internal
   id?: boolean
   clientFileId?: boolean
   workflowTemplateId?: boolean
+  assignedStaffId?: boolean
   status?: boolean
   startedAt?: boolean
   completedAt?: boolean
@@ -842,6 +1026,7 @@ export type FileWorkflowSelect<ExtArgs extends runtime.Types.Extensions.Internal
   updatedAt?: boolean
   clientFile?: boolean | Prisma.ClientFileDefaultArgs<ExtArgs>
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
+  assignedStaff?: boolean | Prisma.FileWorkflow$assignedStaffArgs<ExtArgs>
   tasks?: boolean | Prisma.FileWorkflow$tasksArgs<ExtArgs>
   _count?: boolean | Prisma.FileWorkflowCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["fileWorkflow"]>
@@ -852,6 +1037,7 @@ export type FileWorkflowSelectScalar = {
   id?: boolean
   clientFileId?: boolean
   workflowTemplateId?: boolean
+  assignedStaffId?: boolean
   status?: boolean
   startedAt?: boolean
   completedAt?: boolean
@@ -859,10 +1045,11 @@ export type FileWorkflowSelectScalar = {
   updatedAt?: boolean
 }
 
-export type FileWorkflowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientFileId" | "workflowTemplateId" | "status" | "startedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["fileWorkflow"]>
+export type FileWorkflowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientFileId" | "workflowTemplateId" | "assignedStaffId" | "status" | "startedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["fileWorkflow"]>
 export type FileWorkflowInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   clientFile?: boolean | Prisma.ClientFileDefaultArgs<ExtArgs>
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
+  assignedStaff?: boolean | Prisma.FileWorkflow$assignedStaffArgs<ExtArgs>
   tasks?: boolean | Prisma.FileWorkflow$tasksArgs<ExtArgs>
   _count?: boolean | Prisma.FileWorkflowCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -872,12 +1059,14 @@ export type $FileWorkflowPayload<ExtArgs extends runtime.Types.Extensions.Intern
   objects: {
     clientFile: Prisma.$ClientFilePayload<ExtArgs>
     workflowTemplate: Prisma.$WorkflowTemplatePayload<ExtArgs>
+    assignedStaff: Prisma.$StaffPayload<ExtArgs> | null
     tasks: Prisma.$WorkflowTaskPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     clientFileId: number
     workflowTemplateId: number
+    assignedStaffId: number | null
     status: $Enums.WorkflowStatus
     startedAt: Date | null
     completedAt: Date | null
@@ -1225,6 +1414,7 @@ export interface Prisma__FileWorkflowClient<T, Null = never, ExtArgs extends run
   readonly [Symbol.toStringTag]: "PrismaPromise"
   clientFile<T extends Prisma.ClientFileDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClientFileDefaultArgs<ExtArgs>>): Prisma.Prisma__ClientFileClient<runtime.Types.Result.GetResult<Prisma.$ClientFilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   workflowTemplate<T extends Prisma.WorkflowTemplateDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowTemplateDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkflowTemplateClient<runtime.Types.Result.GetResult<Prisma.$WorkflowTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  assignedStaff<T extends Prisma.FileWorkflow$assignedStaffArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflow$assignedStaffArgs<ExtArgs>>): Prisma.Prisma__StaffClient<runtime.Types.Result.GetResult<Prisma.$StaffPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   tasks<T extends Prisma.FileWorkflow$tasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflow$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1258,6 +1448,7 @@ export interface FileWorkflowFieldRefs {
   readonly id: Prisma.FieldRef<"FileWorkflow", 'Int'>
   readonly clientFileId: Prisma.FieldRef<"FileWorkflow", 'Int'>
   readonly workflowTemplateId: Prisma.FieldRef<"FileWorkflow", 'Int'>
+  readonly assignedStaffId: Prisma.FieldRef<"FileWorkflow", 'Int'>
   readonly status: Prisma.FieldRef<"FileWorkflow", 'WorkflowStatus'>
   readonly startedAt: Prisma.FieldRef<"FileWorkflow", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"FileWorkflow", 'DateTime'>
@@ -1608,6 +1799,25 @@ export type FileWorkflowDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many FileWorkflows to delete.
    */
   limit?: number
+}
+
+/**
+ * FileWorkflow.assignedStaff
+ */
+export type FileWorkflow$assignedStaffArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Staff
+   */
+  select?: Prisma.StaffSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Staff
+   */
+  omit?: Prisma.StaffOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StaffInclude<ExtArgs> | null
+  where?: Prisma.StaffWhereInput
 }
 
 /**

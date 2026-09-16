@@ -60,11 +60,14 @@ export const ModelName = {
   WorkflowSubTask: 'WorkflowSubTask',
   FileWorkflow: 'FileWorkflow',
   WorkflowTask: 'WorkflowTask',
+  FileWorkflowSubTask: 'FileWorkflowSubTask',
   TaskHistory: 'TaskHistory',
   FileCharge: 'FileCharge',
   Payment: 'Payment',
   PaymentInstallment: 'PaymentInstallment',
-  CalendarEvent: 'CalendarEvent'
+  CalendarEvent: 'CalendarEvent',
+  ThirdParty: 'ThirdParty',
+  FileNumberSequence: 'FileNumberSequence'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -110,13 +113,8 @@ export type StaffScalarFieldEnum = (typeof StaffScalarFieldEnum)[keyof typeof St
 
 export const ClientScalarFieldEnum = {
   id: 'id',
-  fullName: 'fullName',
-  mobile: 'mobile',
-  email: 'email',
-  nic: 'nic',
-  address: 'address',
-  notes: 'notes',
-  status: 'status',
+  name: 'name',
+  whatsapp: 'whatsapp',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -127,7 +125,9 @@ export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof 
 export const ClientFileScalarFieldEnum = {
   id: 'id',
   clientId: 'clientId',
+  thirdPartyId: 'thirdPartyId',
   fileNumber: 'fileNumber',
+  fileNumberType: 'fileNumberType',
   title: 'title',
   description: 'description',
   status: 'status',
@@ -144,6 +144,7 @@ export const WorkflowTemplateScalarFieldEnum = {
   id: 'id',
   name: 'name',
   description: 'description',
+  defaultStaffId: 'defaultStaffId',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -173,6 +174,7 @@ export const WorkflowSubTaskScalarFieldEnum = {
   subTaskNumber: 'subTaskNumber',
   title: 'title',
   description: 'description',
+  defaultStaffId: 'defaultStaffId',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -185,6 +187,7 @@ export const FileWorkflowScalarFieldEnum = {
   id: 'id',
   clientFileId: 'clientFileId',
   workflowTemplateId: 'workflowTemplateId',
+  assignedStaffId: 'assignedStaffId',
   status: 'status',
   startedAt: 'startedAt',
   completedAt: 'completedAt',
@@ -209,6 +212,22 @@ export const WorkflowTaskScalarFieldEnum = {
 } as const
 
 export type WorkflowTaskScalarFieldEnum = (typeof WorkflowTaskScalarFieldEnum)[keyof typeof WorkflowTaskScalarFieldEnum]
+
+
+export const FileWorkflowSubTaskScalarFieldEnum = {
+  id: 'id',
+  workflowTaskId: 'workflowTaskId',
+  workflowSubTaskId: 'workflowSubTaskId',
+  assignedStaffId: 'assignedStaffId',
+  status: 'status',
+  remarks: 'remarks',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileWorkflowSubTaskScalarFieldEnum = (typeof FileWorkflowSubTaskScalarFieldEnum)[keyof typeof FileWorkflowSubTaskScalarFieldEnum]
 
 
 export const TaskHistoryScalarFieldEnum = {
@@ -284,6 +303,28 @@ export const CalendarEventScalarFieldEnum = {
 export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
 
 
+export const ThirdPartyScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  whatsapp: 'whatsapp',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ThirdPartyScalarFieldEnum = (typeof ThirdPartyScalarFieldEnum)[keyof typeof ThirdPartyScalarFieldEnum]
+
+
+export const FileNumberSequenceScalarFieldEnum = {
+  id: 'id',
+  nextNumber: 'nextNumber',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileNumberSequenceScalarFieldEnum = (typeof FileNumberSequenceScalarFieldEnum)[keyof typeof FileNumberSequenceScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -319,12 +360,8 @@ export type StaffOrderByRelevanceFieldEnum = (typeof StaffOrderByRelevanceFieldE
 
 
 export const ClientOrderByRelevanceFieldEnum = {
-  fullName: 'fullName',
-  mobile: 'mobile',
-  email: 'email',
-  nic: 'nic',
-  address: 'address',
-  notes: 'notes'
+  name: 'name',
+  whatsapp: 'whatsapp'
 } as const
 
 export type ClientOrderByRelevanceFieldEnum = (typeof ClientOrderByRelevanceFieldEnum)[keyof typeof ClientOrderByRelevanceFieldEnum]
@@ -370,6 +407,13 @@ export const WorkflowTaskOrderByRelevanceFieldEnum = {
 export type WorkflowTaskOrderByRelevanceFieldEnum = (typeof WorkflowTaskOrderByRelevanceFieldEnum)[keyof typeof WorkflowTaskOrderByRelevanceFieldEnum]
 
 
+export const FileWorkflowSubTaskOrderByRelevanceFieldEnum = {
+  remarks: 'remarks'
+} as const
+
+export type FileWorkflowSubTaskOrderByRelevanceFieldEnum = (typeof FileWorkflowSubTaskOrderByRelevanceFieldEnum)[keyof typeof FileWorkflowSubTaskOrderByRelevanceFieldEnum]
+
+
 export const TaskHistoryOrderByRelevanceFieldEnum = {
   remarks: 'remarks'
 } as const
@@ -405,4 +449,12 @@ export const CalendarEventOrderByRelevanceFieldEnum = {
 } as const
 
 export type CalendarEventOrderByRelevanceFieldEnum = (typeof CalendarEventOrderByRelevanceFieldEnum)[keyof typeof CalendarEventOrderByRelevanceFieldEnum]
+
+
+export const ThirdPartyOrderByRelevanceFieldEnum = {
+  name: 'name',
+  whatsapp: 'whatsapp'
+} as const
+
+export type ThirdPartyOrderByRelevanceFieldEnum = (typeof ThirdPartyOrderByRelevanceFieldEnum)[keyof typeof ThirdPartyOrderByRelevanceFieldEnum]
 

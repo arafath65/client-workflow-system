@@ -39,11 +39,8 @@ export default async function DashboardPage() {
   // --------------------------------------------------
   const [clientCount, activeFileCount, pendingTaskCount] =
     await Promise.all([
-      prisma.client.count({
-        where: {
-          status: true,
-        },
-      }),
+      // Client model does not have a status field.
+      prisma.client.count(),
 
       prisma.clientFile.count({
         where: {
@@ -73,7 +70,9 @@ export default async function DashboardPage() {
     include: {
       client: {
         select: {
-          fullName: true,
+          id: true,
+          name: true,
+          whatsapp: true,
         },
       },
     },
@@ -146,7 +145,7 @@ export default async function DashboardPage() {
           <DashboardCard
             title="Clients"
             value={clientCount.toString()}
-            description="Active clients"
+            description="Registered clients"
           />
 
           <DashboardCard
@@ -239,7 +238,7 @@ export default async function DashboardPage() {
                     </div>
 
                     <p className="truncate text-xs font-medium">
-                      {file.client.fullName}
+                      {file.client.name}
                     </p>
 
                     <p className="truncate text-xs text-black/55">

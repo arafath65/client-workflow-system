@@ -63,6 +63,11 @@ export type FileWorkflow = Prisma.FileWorkflowModel
  */
 export type WorkflowTask = Prisma.WorkflowTaskModel
 /**
+ * Model FileWorkflowSubTask
+ * 
+ */
+export type FileWorkflowSubTask = Prisma.FileWorkflowSubTaskModel
+/**
  * Model TaskHistory
  * 
  */
@@ -87,3 +92,13 @@ export type PaymentInstallment = Prisma.PaymentInstallmentModel
  * 
  */
 export type CalendarEvent = Prisma.CalendarEventModel
+/**
+ * Model ThirdParty
+ * 
+ */
+export type ThirdParty = Prisma.ThirdPartyModel
+/**
+ * Model FileNumberSequence
+ * 
+ */
+export type FileNumberSequence = Prisma.FileNumberSequenceModel

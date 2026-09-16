@@ -20,6 +20,14 @@ export const FileStatus = {
 export type FileStatus = (typeof FileStatus)[keyof typeof FileStatus]
 
 
+export const FileNumberType = {
+  SYSTEM: 'SYSTEM',
+  CUSTOM: 'CUSTOM'
+} as const
+
+export type FileNumberType = (typeof FileNumberType)[keyof typeof FileNumberType]
+
+
 export const WorkflowStatus = {
   NOT_STARTED: 'NOT_STARTED',
   IN_PROGRESS: 'IN_PROGRESS',

@@ -58,7 +58,10 @@ export default async function WorkflowDetailsPage({
   const { id } = await params;
   const workflowId = Number(id);
 
-  if (!Number.isInteger(workflowId) || workflowId <= 0) {
+  if (
+    !Number.isInteger(workflowId) ||
+    workflowId <= 0
+  ) {
     redirect("/workflows");
   }
 
@@ -69,7 +72,8 @@ export default async function WorkflowDetailsPage({
   const { stepStatus } = await searchParams;
 
   const selectedStepStatus =
-    stepStatus === "inactive" || stepStatus === "all"
+    stepStatus === "inactive" ||
+    stepStatus === "all"
       ? stepStatus
       : "active";
 
@@ -77,38 +81,50 @@ export default async function WorkflowDetailsPage({
   // Load Workflow
   // --------------------------------------------------
 
-  const workflow = await prisma.workflowTemplate.findUnique({
-    where: {
-      id: workflowId,
-    },
-    include: {
-      steps: {
-        where:
-          selectedStepStatus === "all"
-            ? undefined
-            : {
-                status: selectedStepStatus === "active",
-              },
-        orderBy: {
-          stepNumber: "asc",
-        },
-        include: {
-          defaultStaff: {
-            select: {
-              id: true,
-              name: true,
-              status: true,
-            },
+  const workflow =
+    await prisma.workflowTemplate.findUnique({
+      where: {
+        id: workflowId,
+      },
+      include: {
+        steps: {
+          where:
+            selectedStepStatus === "all"
+              ? undefined
+              : {
+                  status:
+                    selectedStepStatus === "active",
+                },
+          orderBy: {
+            stepNumber: "asc",
           },
-          subTasks: {
-            orderBy: {
-              subTaskNumber: "asc",
+          include: {
+            defaultStaff: {
+              select: {
+                id: true,
+                name: true,
+                status: true,
+              },
+            },
+
+            subTasks: {
+              orderBy: {
+                subTaskNumber: "asc",
+              },
+              include: {
+                defaultStaff: {
+                  select: {
+                    id: true,
+                    name: true,
+                    status: true,
+                  },
+                },
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
   if (!workflow) {
     redirect("/workflows");
@@ -118,18 +134,19 @@ export default async function WorkflowDetailsPage({
   // Load Active Staff
   // --------------------------------------------------
 
-  const activeStaff = await prisma.staff.findMany({
-    where: {
-      status: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-    select: {
-      id: true,
-      name: true,
-    },
-  });
+  const activeStaff =
+    await prisma.staff.findMany({
+      where: {
+        status: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
 
   // --------------------------------------------------
   // Page
@@ -138,9 +155,11 @@ export default async function WorkflowDetailsPage({
   return (
     <main className="min-h-screen bg-[#f6f6f4] text-[#171717]">
       {/* Header */}
+
       <header className="border-b border-black/10 bg-white">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           {/* Brand */}
+
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black">
               <span className="text-xs font-bold text-[#f9a800]">
@@ -160,6 +179,7 @@ export default async function WorkflowDetailsPage({
           </div>
 
           {/* User */}
+
           <div className="flex items-center gap-4">
             <div className="hidden text-right sm:block">
               <p className="text-xs text-black/40">
@@ -177,11 +197,14 @@ export default async function WorkflowDetailsPage({
       </header>
 
       {/* Navigation */}
+
       <Navigation currentPage="workflows" />
 
       {/* Main Content */}
+
       <section className="mx-auto max-w-7xl px-6 py-8">
         {/* Back */}
+
         <Link
           href="/workflows"
           className="inline-flex items-center gap-2 text-xs font-medium text-black/40 transition hover:text-black"
@@ -191,6 +214,7 @@ export default async function WorkflowDetailsPage({
         </Link>
 
         {/* Workflow Header */}
+
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -198,7 +222,9 @@ export default async function WorkflowDetailsPage({
                 {workflow.name}
               </h1>
 
-              <StatusBadge active={workflow.status} />
+              <StatusBadge
+                active={workflow.status}
+              />
             </div>
 
             <p className="mt-2 max-w-2xl text-sm text-black/50">
@@ -209,8 +235,10 @@ export default async function WorkflowDetailsPage({
         </div>
 
         {/* Workflow Steps */}
+
         <div className="mt-8 overflow-hidden rounded-xl border border-black/10 bg-white">
           {/* Section Header */}
+
           <div className="flex flex-col gap-4 border-b border-black/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-sm font-semibold">
@@ -233,6 +261,7 @@ export default async function WorkflowDetailsPage({
           </div>
 
           {/* Interactive Steps */}
+
           <WorkflowSteps
             steps={workflow.steps}
             staff={activeStaff}
@@ -240,6 +269,7 @@ export default async function WorkflowDetailsPage({
         </div>
 
         {/* Workflow Information */}
+
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           <InfoCard
             title="Steps"
@@ -261,12 +291,18 @@ export default async function WorkflowDetailsPage({
             title="Default Staff"
             value={new Set(
               workflow.steps
-                .map((step) => step.defaultStaff?.id)
+                .map(
+                  (step) =>
+                    step.defaultStaff?.id
+                )
                 .filter(
-                  (staffId): staffId is number =>
+                  (
+                    staffId
+                  ): staffId is number =>
                     staffId !== undefined
                 )
-            ).size.toString()}
+            )
+              .size.toString()}
           />
         </div>
       </section>

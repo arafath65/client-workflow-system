@@ -272,6 +272,7 @@ export type WorkflowTaskWhereInput = {
   workflowStep?: Prisma.XOR<Prisma.WorkflowStepScalarRelationFilter, Prisma.WorkflowStepWhereInput>
   assignedStaff?: Prisma.XOR<Prisma.StaffNullableScalarRelationFilter, Prisma.StaffWhereInput> | null
   history?: Prisma.TaskHistoryListRelationFilter
+  subTasks?: Prisma.FileWorkflowSubTaskListRelationFilter
 }
 
 export type WorkflowTaskOrderByWithRelationInput = {
@@ -289,6 +290,7 @@ export type WorkflowTaskOrderByWithRelationInput = {
   workflowStep?: Prisma.WorkflowStepOrderByWithRelationInput
   assignedStaff?: Prisma.StaffOrderByWithRelationInput
   history?: Prisma.TaskHistoryOrderByRelationAggregateInput
+  subTasks?: Prisma.FileWorkflowSubTaskOrderByRelationAggregateInput
   _relevance?: Prisma.WorkflowTaskOrderByRelevanceInput
 }
 
@@ -310,6 +312,7 @@ export type WorkflowTaskWhereUniqueInput = Prisma.AtLeast<{
   workflowStep?: Prisma.XOR<Prisma.WorkflowStepScalarRelationFilter, Prisma.WorkflowStepWhereInput>
   assignedStaff?: Prisma.XOR<Prisma.StaffNullableScalarRelationFilter, Prisma.StaffWhereInput> | null
   history?: Prisma.TaskHistoryListRelationFilter
+  subTasks?: Prisma.FileWorkflowSubTaskListRelationFilter
 }, "id">
 
 export type WorkflowTaskOrderByWithAggregationInput = {
@@ -357,6 +360,7 @@ export type WorkflowTaskCreateInput = {
   workflowStep: Prisma.WorkflowStepCreateNestedOneWithoutTasksInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutTasksInput
   history?: Prisma.TaskHistoryCreateNestedManyWithoutWorkflowTaskInput
+  subTasks?: Prisma.FileWorkflowSubTaskCreateNestedManyWithoutWorkflowTaskInput
 }
 
 export type WorkflowTaskUncheckedCreateInput = {
@@ -371,6 +375,7 @@ export type WorkflowTaskUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   history?: Prisma.TaskHistoryUncheckedCreateNestedManyWithoutWorkflowTaskInput
+  subTasks?: Prisma.FileWorkflowSubTaskUncheckedCreateNestedManyWithoutWorkflowTaskInput
 }
 
 export type WorkflowTaskUpdateInput = {
@@ -384,6 +389,7 @@ export type WorkflowTaskUpdateInput = {
   workflowStep?: Prisma.WorkflowStepUpdateOneRequiredWithoutTasksNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutTasksNestedInput
   history?: Prisma.TaskHistoryUpdateManyWithoutWorkflowTaskNestedInput
+  subTasks?: Prisma.FileWorkflowSubTaskUpdateManyWithoutWorkflowTaskNestedInput
 }
 
 export type WorkflowTaskUncheckedUpdateInput = {
@@ -398,6 +404,7 @@ export type WorkflowTaskUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   history?: Prisma.TaskHistoryUncheckedUpdateManyWithoutWorkflowTaskNestedInput
+  subTasks?: Prisma.FileWorkflowSubTaskUncheckedUpdateManyWithoutWorkflowTaskNestedInput
 }
 
 export type WorkflowTaskCreateManyInput = {
@@ -639,6 +646,20 @@ export type EnumTaskStatusFieldUpdateOperationsInput = {
   set?: $Enums.TaskStatus
 }
 
+export type WorkflowTaskCreateNestedOneWithoutSubTasksInput = {
+  create?: Prisma.XOR<Prisma.WorkflowTaskCreateWithoutSubTasksInput, Prisma.WorkflowTaskUncheckedCreateWithoutSubTasksInput>
+  connectOrCreate?: Prisma.WorkflowTaskCreateOrConnectWithoutSubTasksInput
+  connect?: Prisma.WorkflowTaskWhereUniqueInput
+}
+
+export type WorkflowTaskUpdateOneRequiredWithoutSubTasksNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkflowTaskCreateWithoutSubTasksInput, Prisma.WorkflowTaskUncheckedCreateWithoutSubTasksInput>
+  connectOrCreate?: Prisma.WorkflowTaskCreateOrConnectWithoutSubTasksInput
+  upsert?: Prisma.WorkflowTaskUpsertWithoutSubTasksInput
+  connect?: Prisma.WorkflowTaskWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WorkflowTaskUpdateToOneWithWhereWithoutSubTasksInput, Prisma.WorkflowTaskUpdateWithoutSubTasksInput>, Prisma.WorkflowTaskUncheckedUpdateWithoutSubTasksInput>
+}
+
 export type WorkflowTaskCreateNestedOneWithoutHistoryInput = {
   create?: Prisma.XOR<Prisma.WorkflowTaskCreateWithoutHistoryInput, Prisma.WorkflowTaskUncheckedCreateWithoutHistoryInput>
   connectOrCreate?: Prisma.WorkflowTaskCreateOrConnectWithoutHistoryInput
@@ -663,6 +684,7 @@ export type WorkflowTaskCreateWithoutAssignedStaffInput = {
   fileWorkflow: Prisma.FileWorkflowCreateNestedOneWithoutTasksInput
   workflowStep: Prisma.WorkflowStepCreateNestedOneWithoutTasksInput
   history?: Prisma.TaskHistoryCreateNestedManyWithoutWorkflowTaskInput
+  subTasks?: Prisma.FileWorkflowSubTaskCreateNestedManyWithoutWorkflowTaskInput
 }
 
 export type WorkflowTaskUncheckedCreateWithoutAssignedStaffInput = {
@@ -676,6 +698,7 @@ export type WorkflowTaskUncheckedCreateWithoutAssignedStaffInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   history?: Prisma.TaskHistoryUncheckedCreateNestedManyWithoutWorkflowTaskInput
+  subTasks?: Prisma.FileWorkflowSubTaskUncheckedCreateNestedManyWithoutWorkflowTaskInput
 }
 
 export type WorkflowTaskCreateOrConnectWithoutAssignedStaffInput = {
@@ -730,6 +753,7 @@ export type WorkflowTaskCreateWithoutWorkflowStepInput = {
   fileWorkflow: Prisma.FileWorkflowCreateNestedOneWithoutTasksInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutTasksInput
   history?: Prisma.TaskHistoryCreateNestedManyWithoutWorkflowTaskInput
+  subTasks?: Prisma.FileWorkflowSubTaskCreateNestedManyWithoutWorkflowTaskInput
 }
 
 export type WorkflowTaskUncheckedCreateWithoutWorkflowStepInput = {
@@ -743,6 +767,7 @@ export type WorkflowTaskUncheckedCreateWithoutWorkflowStepInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   history?: Prisma.TaskHistoryUncheckedCreateNestedManyWithoutWorkflowTaskInput
+  subTasks?: Prisma.FileWorkflowSubTaskUncheckedCreateNestedManyWithoutWorkflowTaskInput
 }
 
 export type WorkflowTaskCreateOrConnectWithoutWorkflowStepInput = {
@@ -781,6 +806,7 @@ export type WorkflowTaskCreateWithoutFileWorkflowInput = {
   workflowStep: Prisma.WorkflowStepCreateNestedOneWithoutTasksInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutTasksInput
   history?: Prisma.TaskHistoryCreateNestedManyWithoutWorkflowTaskInput
+  subTasks?: Prisma.FileWorkflowSubTaskCreateNestedManyWithoutWorkflowTaskInput
 }
 
 export type WorkflowTaskUncheckedCreateWithoutFileWorkflowInput = {
@@ -794,6 +820,7 @@ export type WorkflowTaskUncheckedCreateWithoutFileWorkflowInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   history?: Prisma.TaskHistoryUncheckedCreateNestedManyWithoutWorkflowTaskInput
+  subTasks?: Prisma.FileWorkflowSubTaskUncheckedCreateNestedManyWithoutWorkflowTaskInput
 }
 
 export type WorkflowTaskCreateOrConnectWithoutFileWorkflowInput = {
@@ -822,6 +849,76 @@ export type WorkflowTaskUpdateManyWithWhereWithoutFileWorkflowInput = {
   data: Prisma.XOR<Prisma.WorkflowTaskUpdateManyMutationInput, Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowInput>
 }
 
+export type WorkflowTaskCreateWithoutSubTasksInput = {
+  status?: $Enums.TaskStatus
+  remarks?: string | null
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fileWorkflow: Prisma.FileWorkflowCreateNestedOneWithoutTasksInput
+  workflowStep: Prisma.WorkflowStepCreateNestedOneWithoutTasksInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutTasksInput
+  history?: Prisma.TaskHistoryCreateNestedManyWithoutWorkflowTaskInput
+}
+
+export type WorkflowTaskUncheckedCreateWithoutSubTasksInput = {
+  id?: number
+  fileWorkflowId: number
+  workflowStepId: number
+  assignedStaffId?: number | null
+  status?: $Enums.TaskStatus
+  remarks?: string | null
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  history?: Prisma.TaskHistoryUncheckedCreateNestedManyWithoutWorkflowTaskInput
+}
+
+export type WorkflowTaskCreateOrConnectWithoutSubTasksInput = {
+  where: Prisma.WorkflowTaskWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkflowTaskCreateWithoutSubTasksInput, Prisma.WorkflowTaskUncheckedCreateWithoutSubTasksInput>
+}
+
+export type WorkflowTaskUpsertWithoutSubTasksInput = {
+  update: Prisma.XOR<Prisma.WorkflowTaskUpdateWithoutSubTasksInput, Prisma.WorkflowTaskUncheckedUpdateWithoutSubTasksInput>
+  create: Prisma.XOR<Prisma.WorkflowTaskCreateWithoutSubTasksInput, Prisma.WorkflowTaskUncheckedCreateWithoutSubTasksInput>
+  where?: Prisma.WorkflowTaskWhereInput
+}
+
+export type WorkflowTaskUpdateToOneWithWhereWithoutSubTasksInput = {
+  where?: Prisma.WorkflowTaskWhereInput
+  data: Prisma.XOR<Prisma.WorkflowTaskUpdateWithoutSubTasksInput, Prisma.WorkflowTaskUncheckedUpdateWithoutSubTasksInput>
+}
+
+export type WorkflowTaskUpdateWithoutSubTasksInput = {
+  status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+  remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fileWorkflow?: Prisma.FileWorkflowUpdateOneRequiredWithoutTasksNestedInput
+  workflowStep?: Prisma.WorkflowStepUpdateOneRequiredWithoutTasksNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutTasksNestedInput
+  history?: Prisma.TaskHistoryUpdateManyWithoutWorkflowTaskNestedInput
+}
+
+export type WorkflowTaskUncheckedUpdateWithoutSubTasksInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  fileWorkflowId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowStepId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+  remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  history?: Prisma.TaskHistoryUncheckedUpdateManyWithoutWorkflowTaskNestedInput
+}
+
 export type WorkflowTaskCreateWithoutHistoryInput = {
   status?: $Enums.TaskStatus
   remarks?: string | null
@@ -832,6 +929,7 @@ export type WorkflowTaskCreateWithoutHistoryInput = {
   fileWorkflow: Prisma.FileWorkflowCreateNestedOneWithoutTasksInput
   workflowStep: Prisma.WorkflowStepCreateNestedOneWithoutTasksInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutTasksInput
+  subTasks?: Prisma.FileWorkflowSubTaskCreateNestedManyWithoutWorkflowTaskInput
 }
 
 export type WorkflowTaskUncheckedCreateWithoutHistoryInput = {
@@ -845,6 +943,7 @@ export type WorkflowTaskUncheckedCreateWithoutHistoryInput = {
   completedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  subTasks?: Prisma.FileWorkflowSubTaskUncheckedCreateNestedManyWithoutWorkflowTaskInput
 }
 
 export type WorkflowTaskCreateOrConnectWithoutHistoryInput = {
@@ -873,6 +972,7 @@ export type WorkflowTaskUpdateWithoutHistoryInput = {
   fileWorkflow?: Prisma.FileWorkflowUpdateOneRequiredWithoutTasksNestedInput
   workflowStep?: Prisma.WorkflowStepUpdateOneRequiredWithoutTasksNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutTasksNestedInput
+  subTasks?: Prisma.FileWorkflowSubTaskUpdateManyWithoutWorkflowTaskNestedInput
 }
 
 export type WorkflowTaskUncheckedUpdateWithoutHistoryInput = {
@@ -886,6 +986,7 @@ export type WorkflowTaskUncheckedUpdateWithoutHistoryInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subTasks?: Prisma.FileWorkflowSubTaskUncheckedUpdateManyWithoutWorkflowTaskNestedInput
 }
 
 export type WorkflowTaskCreateManyAssignedStaffInput = {
@@ -910,6 +1011,7 @@ export type WorkflowTaskUpdateWithoutAssignedStaffInput = {
   fileWorkflow?: Prisma.FileWorkflowUpdateOneRequiredWithoutTasksNestedInput
   workflowStep?: Prisma.WorkflowStepUpdateOneRequiredWithoutTasksNestedInput
   history?: Prisma.TaskHistoryUpdateManyWithoutWorkflowTaskNestedInput
+  subTasks?: Prisma.FileWorkflowSubTaskUpdateManyWithoutWorkflowTaskNestedInput
 }
 
 export type WorkflowTaskUncheckedUpdateWithoutAssignedStaffInput = {
@@ -923,6 +1025,7 @@ export type WorkflowTaskUncheckedUpdateWithoutAssignedStaffInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   history?: Prisma.TaskHistoryUncheckedUpdateManyWithoutWorkflowTaskNestedInput
+  subTasks?: Prisma.FileWorkflowSubTaskUncheckedUpdateManyWithoutWorkflowTaskNestedInput
 }
 
 export type WorkflowTaskUncheckedUpdateManyWithoutAssignedStaffInput = {
@@ -959,6 +1062,7 @@ export type WorkflowTaskUpdateWithoutWorkflowStepInput = {
   fileWorkflow?: Prisma.FileWorkflowUpdateOneRequiredWithoutTasksNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutTasksNestedInput
   history?: Prisma.TaskHistoryUpdateManyWithoutWorkflowTaskNestedInput
+  subTasks?: Prisma.FileWorkflowSubTaskUpdateManyWithoutWorkflowTaskNestedInput
 }
 
 export type WorkflowTaskUncheckedUpdateWithoutWorkflowStepInput = {
@@ -972,6 +1076,7 @@ export type WorkflowTaskUncheckedUpdateWithoutWorkflowStepInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   history?: Prisma.TaskHistoryUncheckedUpdateManyWithoutWorkflowTaskNestedInput
+  subTasks?: Prisma.FileWorkflowSubTaskUncheckedUpdateManyWithoutWorkflowTaskNestedInput
 }
 
 export type WorkflowTaskUncheckedUpdateManyWithoutWorkflowStepInput = {
@@ -1008,6 +1113,7 @@ export type WorkflowTaskUpdateWithoutFileWorkflowInput = {
   workflowStep?: Prisma.WorkflowStepUpdateOneRequiredWithoutTasksNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutTasksNestedInput
   history?: Prisma.TaskHistoryUpdateManyWithoutWorkflowTaskNestedInput
+  subTasks?: Prisma.FileWorkflowSubTaskUpdateManyWithoutWorkflowTaskNestedInput
 }
 
 export type WorkflowTaskUncheckedUpdateWithoutFileWorkflowInput = {
@@ -1021,6 +1127,7 @@ export type WorkflowTaskUncheckedUpdateWithoutFileWorkflowInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   history?: Prisma.TaskHistoryUncheckedUpdateManyWithoutWorkflowTaskNestedInput
+  subTasks?: Prisma.FileWorkflowSubTaskUncheckedUpdateManyWithoutWorkflowTaskNestedInput
 }
 
 export type WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowInput = {
@@ -1042,10 +1149,12 @@ export type WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowInput = {
 
 export type WorkflowTaskCountOutputType = {
   history: number
+  subTasks: number
 }
 
 export type WorkflowTaskCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   history?: boolean | WorkflowTaskCountOutputTypeCountHistoryArgs
+  subTasks?: boolean | WorkflowTaskCountOutputTypeCountSubTasksArgs
 }
 
 /**
@@ -1065,6 +1174,13 @@ export type WorkflowTaskCountOutputTypeCountHistoryArgs<ExtArgs extends runtime.
   where?: Prisma.TaskHistoryWhereInput
 }
 
+/**
+ * WorkflowTaskCountOutputType without action
+ */
+export type WorkflowTaskCountOutputTypeCountSubTasksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FileWorkflowSubTaskWhereInput
+}
+
 
 export type WorkflowTaskSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1081,6 +1197,7 @@ export type WorkflowTaskSelect<ExtArgs extends runtime.Types.Extensions.Internal
   workflowStep?: boolean | Prisma.WorkflowStepDefaultArgs<ExtArgs>
   assignedStaff?: boolean | Prisma.WorkflowTask$assignedStaffArgs<ExtArgs>
   history?: boolean | Prisma.WorkflowTask$historyArgs<ExtArgs>
+  subTasks?: boolean | Prisma.WorkflowTask$subTasksArgs<ExtArgs>
   _count?: boolean | Prisma.WorkflowTaskCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["workflowTask"]>
 
@@ -1105,6 +1222,7 @@ export type WorkflowTaskInclude<ExtArgs extends runtime.Types.Extensions.Interna
   workflowStep?: boolean | Prisma.WorkflowStepDefaultArgs<ExtArgs>
   assignedStaff?: boolean | Prisma.WorkflowTask$assignedStaffArgs<ExtArgs>
   history?: boolean | Prisma.WorkflowTask$historyArgs<ExtArgs>
+  subTasks?: boolean | Prisma.WorkflowTask$subTasksArgs<ExtArgs>
   _count?: boolean | Prisma.WorkflowTaskCountOutputTypeDefaultArgs<ExtArgs>
 }
 
@@ -1115,6 +1233,7 @@ export type $WorkflowTaskPayload<ExtArgs extends runtime.Types.Extensions.Intern
     workflowStep: Prisma.$WorkflowStepPayload<ExtArgs>
     assignedStaff: Prisma.$StaffPayload<ExtArgs> | null
     history: Prisma.$TaskHistoryPayload<ExtArgs>[]
+    subTasks: Prisma.$FileWorkflowSubTaskPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1471,6 +1590,7 @@ export interface Prisma__WorkflowTaskClient<T, Null = never, ExtArgs extends run
   workflowStep<T extends Prisma.WorkflowStepDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowStepDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkflowStepClient<runtime.Types.Result.GetResult<Prisma.$WorkflowStepPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   assignedStaff<T extends Prisma.WorkflowTask$assignedStaffArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowTask$assignedStaffArgs<ExtArgs>>): Prisma.Prisma__StaffClient<runtime.Types.Result.GetResult<Prisma.$StaffPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   history<T extends Prisma.WorkflowTask$historyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowTask$historyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaskHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  subTasks<T extends Prisma.WorkflowTask$subTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowTask$subTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FileWorkflowSubTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1898,6 +2018,30 @@ export type WorkflowTask$historyArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.TaskHistoryScalarFieldEnum | Prisma.TaskHistoryScalarFieldEnum[]
+}
+
+/**
+ * WorkflowTask.subTasks
+ */
+export type WorkflowTask$subTasksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FileWorkflowSubTask
+   */
+  select?: Prisma.FileWorkflowSubTaskSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FileWorkflowSubTask
+   */
+  omit?: Prisma.FileWorkflowSubTaskOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FileWorkflowSubTaskInclude<ExtArgs> | null
+  where?: Prisma.FileWorkflowSubTaskWhereInput
+  orderBy?: Prisma.FileWorkflowSubTaskOrderByWithRelationInput | Prisma.FileWorkflowSubTaskOrderByWithRelationInput[]
+  cursor?: Prisma.FileWorkflowSubTaskWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FileWorkflowSubTaskScalarFieldEnum | Prisma.FileWorkflowSubTaskScalarFieldEnum[]
 }
 
 /**

@@ -7,6 +7,10 @@ datasource db {
   provider = "mysql"
 }
 
+// ==================================================
+// USER
+// ==================================================
+
 model User {
   id           Int      @id @default(autoincrement())
   username     String   @unique
@@ -16,6 +20,10 @@ model User {
 
   @@map("users")
 }
+
+// ==================================================
+// STAFF
+// ==================================================
 
 model Staff {
   id        Int      @id @default(autoincrement())
@@ -27,48 +35,59 @@ model Staff {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  workflowSteps  WorkflowStep[]
-  tasks          WorkflowTask[]
-  calendarEvents CalendarEvent[]
+  workflowSteps    WorkflowStep[]
+  tasks            WorkflowTask[]
+  calendarEvents   CalendarEvent[]
+  fileWorkflows    FileWorkflow[]        @relation("FileWorkflowResponsible")
+  workflowSubTasks WorkflowSubTask[]     @relation("WorkflowSubTaskDefaultStaff")
+  fileSubTasks     FileWorkflowSubTask[] @relation("FileWorkflowSubTaskAssignee")
+
+  workflowTemplates WorkflowTemplate[] @relation("WorkflowTemplateDefaultStaff")
 
   @@index([name])
   @@index([status])
   @@map("staff")
 }
 
+// ==================================================
+// CLIENT
+// ==================================================
+
 model Client {
   id        Int      @id @default(autoincrement())
-  fullName  String
-  mobile    String?
-  email     String?
-  nic       String?
-  address   String?
-  notes     String?
-  status    Boolean  @default(true)
+  name      String
+  whatsapp  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   files ClientFile[]
 
-  @@index([fullName])
-  @@index([mobile])
-  @@index([nic])
+  @@index([name])
+  @@index([whatsapp])
   @@map("clients")
 }
 
-model ClientFile {
-  id          Int        @id @default(autoincrement())
-  clientId    Int
-  fileNumber  String     @unique
-  title       String
-  description String?
-  status      FileStatus @default(OPEN)
-  openedAt    DateTime   @default(now())
-  completedAt DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+// ==================================================
+// CLIENT FILE
+// ==================================================
 
-  client         Client               @relation(fields: [clientId], references: [id])
+model ClientFile {
+  id             Int            @id @default(autoincrement())
+  clientId       Int
+  thirdPartyId   Int?
+  fileNumber     String         @unique
+  fileNumberType FileNumberType @default(SYSTEM)
+  title          String
+  description    String?
+  status         FileStatus     @default(OPEN)
+  openedAt       DateTime       @default(now())
+  completedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  client     Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  thirdParty ThirdParty? @relation(fields: [thirdPartyId], references: [id], onDelete: SetNull)
+
   fileWorkflows  FileWorkflow[]
   charges        FileCharge[]
   payments       Payment[]
@@ -76,10 +95,15 @@ model ClientFile {
   calendarEvents CalendarEvent[]
 
   @@index([clientId])
+  @@index([thirdPartyId])
   @@index([status])
   @@index([fileNumber])
   @@map("client_files")
 }
+
+// ==================================================
+// FILE ENUMS
+// ==================================================
 
 enum FileStatus {
   OPEN
@@ -89,21 +113,38 @@ enum FileStatus {
   CANCELLED
 }
 
+enum FileNumberType {
+  SYSTEM
+  CUSTOM
+}
+
+// ==================================================
+// WORKFLOW TEMPLATE
+// ==================================================
+
 model WorkflowTemplate {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  status      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  name           String
+  description    String?
+  defaultStaffId Int?
+  status         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  defaultStaff Staff? @relation("WorkflowTemplateDefaultStaff", fields: [defaultStaffId], references: [id], onDelete: SetNull)
 
   steps         WorkflowStep[]
   fileWorkflows FileWorkflow[]
 
   @@index([name])
   @@index([status])
+  @@index([defaultStaffId])
   @@map("workflow_templates")
 }
+
+// ==================================================
+// WORKFLOW STEP
+// ==================================================
 
 model WorkflowStep {
   id                 Int      @id @default(autoincrement())
@@ -116,16 +157,23 @@ model WorkflowStep {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  workflowTemplate WorkflowTemplate  @relation(fields: [workflowTemplateId], references: [id])
-  defaultStaff     Staff?            @relation(fields: [defaultStaffId], references: [id])
-  tasks            WorkflowTask[]
-  subTasks         WorkflowSubTask[]
+  workflowTemplate WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id])
+
+  defaultStaff Staff? @relation(fields: [defaultStaffId], references: [id], onDelete: SetNull)
+
+  tasks    WorkflowTask[]
+  subTasks WorkflowSubTask[]
 
   @@unique([workflowTemplateId, stepNumber])
   @@index([workflowTemplateId])
   @@index([defaultStaffId])
+  @@index([status])
   @@map("workflow_steps")
 }
+
+// ==================================================
+// WORKFLOW SUBTASK TEMPLATE
+// ==================================================
 
 model WorkflowSubTask {
   id             Int      @id @default(autoincrement())
@@ -133,37 +181,56 @@ model WorkflowSubTask {
   subTaskNumber  Int
   title          String
   description    String?  @db.Text
+  defaultStaffId Int?
   status         Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   workflowStep WorkflowStep @relation(fields: [workflowStepId], references: [id], onDelete: Cascade)
 
+  defaultStaff Staff? @relation("WorkflowSubTaskDefaultStaff", fields: [defaultStaffId], references: [id], onDelete: SetNull)
+
+  fileSubTasks FileWorkflowSubTask[]
+
   @@unique([workflowStepId, subTaskNumber])
   @@index([workflowStepId])
+  @@index([defaultStaffId])
   @@index([status])
   @@map("workflow_sub_tasks")
 }
+
+// ==================================================
+// FILE WORKFLOW
+// ==================================================
 
 model FileWorkflow {
   id                 Int            @id @default(autoincrement())
   clientFileId       Int
   workflowTemplateId Int
+  assignedStaffId    Int?
   status             WorkflowStatus @default(NOT_STARTED)
   startedAt          DateTime?
   completedAt        DateTime?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
 
-  clientFile       ClientFile       @relation(fields: [clientFileId], references: [id])
+  clientFile       ClientFile       @relation(fields: [clientFileId], references: [id], onDelete: Cascade)
   workflowTemplate WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id])
-  tasks            WorkflowTask[]
+
+  assignedStaff Staff? @relation("FileWorkflowResponsible", fields: [assignedStaffId], references: [id], onDelete: SetNull)
+
+  tasks WorkflowTask[]
 
   @@index([clientFileId])
   @@index([workflowTemplateId])
+  @@index([assignedStaffId])
   @@index([status])
   @@map("file_workflows")
 }
+
+// ==================================================
+// WORKFLOW STATUS
+// ==================================================
 
 enum WorkflowStatus {
   NOT_STARTED
@@ -172,6 +239,10 @@ enum WorkflowStatus {
   COMPLETED
   CANCELLED
 }
+
+// ==================================================
+// WORKFLOW TASK / FILE STEP
+// ==================================================
 
 model WorkflowTask {
   id              Int        @id @default(autoincrement())
@@ -185,10 +256,12 @@ model WorkflowTask {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
-  fileWorkflow  FileWorkflow  @relation(fields: [fileWorkflowId], references: [id])
-  workflowStep  WorkflowStep  @relation(fields: [workflowStepId], references: [id])
-  assignedStaff Staff?        @relation(fields: [assignedStaffId], references: [id])
-  history       TaskHistory[]
+  fileWorkflow  FileWorkflow @relation(fields: [fileWorkflowId], references: [id], onDelete: Cascade)
+  workflowStep  WorkflowStep @relation(fields: [workflowStepId], references: [id])
+  assignedStaff Staff?       @relation(fields: [assignedStaffId], references: [id], onDelete: SetNull)
+
+  history  TaskHistory[]
+  subTasks FileWorkflowSubTask[]
 
   @@index([fileWorkflowId])
   @@index([workflowStepId])
@@ -197,6 +270,40 @@ model WorkflowTask {
   @@map("workflow_tasks")
 }
 
+// ==================================================
+// FILE WORKFLOW SUBTASK
+// ==================================================
+
+model FileWorkflowSubTask {
+  id                Int        @id @default(autoincrement())
+  workflowTaskId    Int
+  workflowSubTaskId Int
+  assignedStaffId   Int?
+  status            TaskStatus @default(PENDING)
+  remarks           String?
+  startedAt         DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  workflowTask WorkflowTask @relation(fields: [workflowTaskId], references: [id], onDelete: Cascade)
+
+  workflowSubTask WorkflowSubTask @relation(fields: [workflowSubTaskId], references: [id], onDelete: Restrict)
+
+  assignedStaff Staff? @relation("FileWorkflowSubTaskAssignee", fields: [assignedStaffId], references: [id], onDelete: SetNull)
+
+  @@unique([workflowTaskId, workflowSubTaskId])
+  @@index([workflowTaskId])
+  @@index([workflowSubTaskId])
+  @@index([assignedStaffId])
+  @@index([status])
+  @@map("file_workflow_sub_tasks")
+}
+
+// ==================================================
+// TASK STATUS
+// ==================================================
+
 enum TaskStatus {
   PENDING
   ACTIVE
@@ -204,6 +311,10 @@ enum TaskStatus {
   COMPLETED
   CANCELLED
 }
+
+// ==================================================
+// TASK HISTORY
+// ==================================================
 
 model TaskHistory {
   id             Int         @id @default(autoincrement())
@@ -220,6 +331,10 @@ model TaskHistory {
   @@map("task_history")
 }
 
+// ==================================================
+// FILE CHARGES
+// ==================================================
+
 model FileCharge {
   id           Int      @id @default(autoincrement())
   clientFileId Int
@@ -235,6 +350,10 @@ model FileCharge {
   @@index([clientFileId])
   @@map("file_charges")
 }
+
+// ==================================================
+// PAYMENT
+// ==================================================
 
 model Payment {
   id            Int           @id @default(autoincrement())
@@ -258,6 +377,10 @@ model Payment {
   @@map("payments")
 }
 
+// ==================================================
+// PAYMENT INSTALLMENT
+// ==================================================
+
 model PaymentInstallment {
   id           Int               @id @default(autoincrement())
   paymentId    Int?
@@ -278,6 +401,10 @@ model PaymentInstallment {
   @@index([status])
   @@map("payment_installments")
 }
+
+// ==================================================
+// PAYMENT ENUMS
+// ==================================================
 
 enum PaymentMethod {
   CASH
@@ -301,6 +428,10 @@ enum InstallmentStatus {
   CANCELLED
 }
 
+// ==================================================
+// CALENDAR
+// ==================================================
+
 model CalendarEvent {
   id           Int                 @id @default(autoincrement())
   title        String
@@ -323,8 +454,44 @@ model CalendarEvent {
   @@map("calendar_events")
 }
 
+// ==================================================
+// CALENDAR STATUS
+// ==================================================
+
 enum CalendarEventStatus {
   SCHEDULED
   COMPLETED
   CANCELLED
+}
+
+// ==================================================
+// THIRD PARTY
+// ==================================================
+
+model ThirdParty {
+  id        Int      @id @default(autoincrement())
+  name      String
+  whatsapp  String?
+  status    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clientFiles ClientFile[]
+
+  @@index([name])
+  @@index([status])
+  @@map("third_parties")
+}
+
+// ==================================================
+// FILE NUMBER SEQUENCE
+// ==================================================
+
+model FileNumberSequence {
+  id         Int      @id @default(1)
+  nextNumber Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("file_number_sequences")
 }
