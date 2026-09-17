@@ -106,6 +106,10 @@ export default async function FileDetailsPage({
                 id: true,
                 name: true,
                 description: true,
+                defaultStaffId: true,
+                defaultStaff: {
+                  select: { id: true, name: true },
+                },
               },
             },
 
@@ -123,6 +127,10 @@ export default async function FileDetailsPage({
                     stepNumber: true,
                     title: true,
                     description: true,
+                    defaultStaffId: true,
+                    defaultStaff: {
+                      select: { id: true, name: true },
+                    },
                   },
                 },
 
@@ -150,13 +158,20 @@ export default async function FileDetailsPage({
 
                   include: {
                     workflowSubTask: {
-                      select: {
-                        id: true,
-                        subTaskNumber: true,
-                        title: true,
-                        description: true,
-                      },
-                    },
+  select: {
+    id: true,
+    subTaskNumber: true,
+    title: true,
+    description: true,
+    defaultStaffId: true,
+    defaultStaff: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+  },
+},
 
                     assignedStaff: {
                       select: {
@@ -193,6 +208,7 @@ export default async function FileDetailsPage({
 
   const mainResponsibleStaff =
     fileWorkflow?.assignedStaff?.name ||
+    fileWorkflow?.workflowTemplate.defaultStaff?.name ||
     "";
 
   return (
@@ -416,6 +432,7 @@ export default async function FileDetailsPage({
               {workflowTasks.map((task) => {
                 const effectiveStepStaff =
                   task.assignedStaff?.name ||
+                  task.workflowStep.defaultStaff?.name ||
                   mainResponsibleStaff ||
                   "Unassigned";
 
@@ -442,6 +459,7 @@ export default async function FileDetailsPage({
                       null
                     }
                     inheritedStaffName={
+                      task.workflowStep.defaultStaff?.name ||
                       mainResponsibleStaff ||
                       "Unassigned"
                     }
@@ -538,19 +556,25 @@ function WorkflowTaskRow({
   assignedStaffName: string | null;
   inheritedStaffName: string;
   subTasks: {
+  id: number;
+  status: string; // Add this
+  assignedStaffId: number | null;
+  assignedStaff: {
     id: number;
-    assignedStaffId: number | null;
-    assignedStaff: {
+    name: string;
+  } | null;
+  workflowSubTask: {
+    id: number;
+    subTaskNumber: number;
+    title: string;
+    description: string | null;
+    defaultStaffId: number | null;
+    defaultStaff: {
       id: number;
       name: string;
     } | null;
-    workflowSubTask: {
-      id: number;
-      subTaskNumber: number;
-      title: string;
-      description: string | null;
-    };
-  }[];
+  };
+}[];
   effectiveStepStaff: string;
 }) {
   const isActive = status === "ACTIVE";
@@ -648,8 +672,8 @@ function WorkflowTaskRow({
                 {subTasks.map(
                   (subTask) => {
                     const effectiveSubTaskStaff =
-                      subTask.assignedStaff
-                        ?.name ||
+                      subTask.assignedStaff?.name ||
+                      subTask.workflowSubTask.defaultStaff?.name ||
                       effectiveStepStaff;
 
                     return (
@@ -688,16 +712,11 @@ function WorkflowTaskRow({
                             )}
 
                             <WorkflowSubTaskStaffAssignment
-                              subTaskId={
-                                subTask.id
-                              }
-                              assignedStaffId={
-                                subTask.assignedStaffId
-                              }
-                              inheritedStaffName={
-                                effectiveSubTaskStaff
-                              }
-                            />
+  subTaskId={subTask.id}
+  assignedStaffId={subTask.assignedStaffId}
+  inheritedStaffName={effectiveSubTaskStaff}
+  status={subTask.status}
+/>
 
                             <div className="mt-1">
                               {subTask.assignedStaff ? (
@@ -708,8 +727,8 @@ function WorkflowTaskRow({
                                 </p>
                               ) : (
                                 <p className="text-[8px] text-black/25">
-                                  Inherits from
-                                  this step.
+                                  Inherits from its
+                                  subtask default or step.
                                 </p>
                               )}
                             </div>

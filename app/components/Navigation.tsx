@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 
 type NavigationProps = {
@@ -5,37 +6,14 @@ type NavigationProps = {
 };
 
 const navigation = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    key: "dashboard",
-  },
-  {
-    label: "Clients",
-    href: "/clients",
-    key: "clients",
-  },
-  {
-    label: "Files",
-    href: "/files",
-    key: "files",
-  },
-  {
-    label: "Workflows",
-    href: "/workflows",
-    key: "workflows",
-  },
+  { label: "Dashboard", href: "/dashboard", key: "dashboard" },
+  { label: "Clients", href: "/clients", key: "clients" },
+  { label: "Files", href: "/files", key: "files" },
+  { label: "Workflows", href: "/workflows", key: "workflows" },
+  { label: "Staff", href: "/staff", key: "staff" },
   { label: "Third Parties", href: "/third-parties", key: "third-parties" },
-  {
-    label: "Calendar",
-    href: "/calendar",
-    key: "calendar",
-  },
-  {
-    label: "Payments",
-    href: "/payments",
-    key: "payments",
-  },
+  { label: "Calendar", href: "/calendar", key: "calendar" },
+  { label: "Payments", href: "/payments", key: "payments" },
 ];
 
 export default function Navigation({

@@ -1,43 +1,48 @@
+
 "use client";
 
 import { useState } from "react";
 
-type Props = {
+type WorkflowData = {
   id: number;
-  active: boolean;
+  name: string;
+  status: boolean;
+};
+
+type Props = {
+  workflow: WorkflowData;
 };
 
 export default function WorkflowStatusButton({
-  id,
-  active,
+  workflow,
 }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleStatusChange = async () => {
-    const action = active ? "deactivate" : "activate";
+    if (loading) return;
+
+    const nextStatus = !workflow.status;
 
     const confirmed = window.confirm(
-      active
-        ? "Are you sure you want to deactivate this workflow?"
-        : "Are you sure you want to activate this workflow?"
+      nextStatus
+        ? `Are you sure you want to activate "${workflow.name}"?`
+        : `Are you sure you want to deactivate "${workflow.name}"?`
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     setLoading(true);
 
     try {
       const response = await fetch(
-        `/api/workflows/${id}`,
+        `/api/workflows/${workflow.id}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            status: !active,
+            status: nextStatus,
           }),
         }
       );
@@ -45,9 +50,9 @@ export default function WorkflowStatusButton({
       const data = await response.json();
 
       if (!response.ok) {
-        alert(
-          data.message ||
-            `Unable to ${action} workflow.`
+        window.alert(
+          data?.message ||
+            "Unable to update workflow status."
         );
         return;
       }
@@ -59,8 +64,8 @@ export default function WorkflowStatusButton({
         error
       );
 
-      alert(
-        "Unable to connect to the server."
+      window.alert(
+        "Something went wrong. Please try again."
       );
     } finally {
       setLoading(false);
@@ -72,15 +77,15 @@ export default function WorkflowStatusButton({
       type="button"
       onClick={handleStatusChange}
       disabled={loading}
-      className={`text-xs font-medium transition disabled:opacity-50 ${
-        active
+      className={`text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${
+        workflow.status
           ? "text-black/40 hover:text-red-600"
           : "text-[#a66f00] hover:text-black"
       }`}
     >
       {loading
-        ? "Updating..."
-        : active
+        ? "Saving..."
+        : workflow.status
           ? "Deactivate"
           : "Activate"}
     </button>

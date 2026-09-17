@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -20,6 +21,7 @@ export default async function WorkflowsPage({
   // --------------------------------------------------
   // Authentication
   // --------------------------------------------------
+
   const cookieStore = await cookies();
   const sessionUser = cookieStore.get("session_user");
 
@@ -49,12 +51,14 @@ export default async function WorkflowsPage({
   // --------------------------------------------------
   // Filter
   // --------------------------------------------------
+
   const params = await searchParams;
   const filter = params.status || "active";
 
   // --------------------------------------------------
   // Workflows
   // --------------------------------------------------
+
   const workflows = await prisma.workflowTemplate.findMany({
     where:
       filter === "inactive"
@@ -65,11 +69,20 @@ export default async function WorkflowsPage({
     orderBy: {
       name: "asc",
     },
+    include: {
+      defaultStaff: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
   });
 
   // --------------------------------------------------
   // Summary Counts
   // --------------------------------------------------
+
   const [totalWorkflows, activeCount, inactiveCount] =
     await Promise.all([
       prisma.workflowTemplate.count(),
@@ -87,12 +100,18 @@ export default async function WorkflowsPage({
       }),
     ]);
 
+  // --------------------------------------------------
+  // Page
+  // --------------------------------------------------
+
   return (
     <main className="min-h-screen bg-[#f6f6f4] text-[#171717]">
       {/* Header */}
+
       <header className="border-b border-black/10 bg-white">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           {/* Brand */}
+
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black">
               <span className="text-xs font-bold text-[#f9a800]">
@@ -112,6 +131,7 @@ export default async function WorkflowsPage({
           </div>
 
           {/* User */}
+
           <div className="flex items-center gap-4">
             <div className="hidden text-right sm:block">
               <p className="text-xs text-black/40">
@@ -129,11 +149,14 @@ export default async function WorkflowsPage({
       </header>
 
       {/* Navigation */}
+
       <Navigation currentPage="workflows" />
 
       {/* Main Content */}
+
       <section className="mx-auto max-w-7xl px-6 py-8">
         {/* Page Heading */}
+
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f9a800]">
@@ -154,6 +177,7 @@ export default async function WorkflowsPage({
         </div>
 
         {/* Summary Cards */}
+
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <SummaryCard
             title="Total Workflows"
@@ -172,8 +196,10 @@ export default async function WorkflowsPage({
         </div>
 
         {/* Workflow List */}
+
         <div className="mt-8 overflow-hidden rounded-xl border border-black/10 bg-white">
           {/* Section Header */}
+
           <div className="flex items-center justify-between gap-4 border-b border-black/10 px-5 py-4">
             <div>
               <h2 className="text-sm font-semibold">
@@ -189,6 +215,7 @@ export default async function WorkflowsPage({
           </div>
 
           {/* Empty State */}
+
           {workflows.length === 0 ? (
             <div className="flex min-h-64 items-center justify-center">
               <div className="text-center">
@@ -215,8 +242,9 @@ export default async function WorkflowsPage({
             </div>
           ) : (
             /* Workflow Table */
+
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[800px]">
+              <table className="w-full min-w-[950px]">
                 <thead>
                   <tr className="border-b border-black/10 bg-[#fafaf9]">
                     <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -225,6 +253,10 @@ export default async function WorkflowsPage({
 
                     <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
                       Description
+                    </th>
+
+                    <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                      Default Responsible Person
                     </th>
 
                     <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -246,28 +278,46 @@ export default async function WorkflowsPage({
                       }`}
                     >
                       {/* Workflow Title */}
+
                       <td className="px-5 py-4">
-  <Link
-    href={`/workflows/${workflow.id}`}
-    className="text-sm font-semibold text-black transition hover:text-[#f9a800]"
-  >
-    {workflow.name}
-  </Link>
-</td>
+                        <Link
+                          href={`/workflows/${workflow.id}`}
+                          className="text-sm font-semibold text-black transition hover:text-[#f9a800]"
+                        >
+                          {workflow.name}
+                        </Link>
+                      </td>
 
                       {/* Description */}
+
                       <td className="max-w-md px-5 py-4">
                         <p className="truncate text-xs text-black/55">
                           {workflow.description || "—"}
                         </p>
                       </td>
 
+                      {/* Default Responsible Person */}
+
+                      <td className="px-5 py-4">
+                        {workflow.defaultStaff ? (
+                          <span className="text-xs font-medium text-black/70">
+                            {workflow.defaultStaff.name}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-black/35">
+                            Not assigned
+                          </span>
+                        )}
+                      </td>
+
                       {/* Status */}
+
                       <td className="px-5 py-4">
                         <StatusBadge active={workflow.status} />
                       </td>
 
                       {/* Actions */}
+
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-4">
                           <EditWorkflowButton
@@ -275,8 +325,7 @@ export default async function WorkflowsPage({
                           />
 
                           <WorkflowStatusButton
-                            id={workflow.id}
-                            active={workflow.status}
+                            workflow={workflow}
                           />
                         </div>
                       </td>

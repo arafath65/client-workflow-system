@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -13,12 +14,8 @@ export async function PATCH(
 ) {
   try {
     const { id } = await context.params;
-
     const workflowId = Number(id);
 
-    // ---------------------------------------------
-    // Validate ID
-    // ---------------------------------------------
     if (
       !Number.isInteger(workflowId) ||
       workflowId <= 0
@@ -32,14 +29,8 @@ export async function PATCH(
       );
     }
 
-    // ---------------------------------------------
-    // Read request body
-    // ---------------------------------------------
     const body = await request.json();
 
-    // ---------------------------------------------
-    // Check workflow exists
-    // ---------------------------------------------
     const existingWorkflow =
       await prisma.workflowTemplate.findUnique({
         where: {
@@ -57,9 +48,7 @@ export async function PATCH(
       );
     }
 
-    // ---------------------------------------------
-    // Status update
-    // ---------------------------------------------
+    // Preserve workflow activate/deactivate functionality.
     if (typeof body.status === "boolean") {
       const workflow =
         await prisma.workflowTemplate.update({
@@ -80,12 +69,7 @@ export async function PATCH(
       });
     }
 
-    // ---------------------------------------------
-    // Details update
-    // ---------------------------------------------
-    const name = String(
-      body.name ?? ""
-    ).trim();
+    const name = String(body.name ?? "").trim();
 
     const description = String(
       body.description ?? ""
@@ -101,9 +85,6 @@ export async function PATCH(
       );
     }
 
-    // ---------------------------------------------
-    // Check duplicate name
-    // ---------------------------------------------
     const duplicateWorkflow =
       await prisma.workflowTemplate.findFirst({
         where: {
@@ -127,9 +108,63 @@ export async function PATCH(
       );
     }
 
-    // ---------------------------------------------
-    // Update workflow
-    // ---------------------------------------------
+    // Validate the optional default main staff.
+    const rawDefaultStaffId = body.defaultStaffId;
+
+    const defaultStaffId =
+      rawDefaultStaffId === null ||
+      rawDefaultStaffId === undefined ||
+      rawDefaultStaffId === ""
+        ? null
+        : Number(rawDefaultStaffId);
+
+    if (
+      defaultStaffId !== null &&
+      (!Number.isInteger(defaultStaffId) ||
+        defaultStaffId <= 0)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid default staff.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (defaultStaffId !== null) {
+      const staff = await prisma.staff.findUnique({
+        where: {
+          id: defaultStaffId,
+        },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+        },
+      });
+
+      if (!staff) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Selected staff member was not found.",
+          },
+          { status: 404 }
+        );
+      }
+
+      if (!staff.status) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Inactive staff cannot be assigned.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     const workflow =
       await prisma.workflowTemplate.update({
         where: {
@@ -138,6 +173,16 @@ export async function PATCH(
         data: {
           name,
           description: description || null,
+          defaultStaffId,
+        },
+        include: {
+          defaultStaff: {
+            select: {
+              id: true,
+              name: true,
+              status: true,
+            },
+          },
         },
       });
 
@@ -147,10 +192,7 @@ export async function PATCH(
       workflow,
     });
   } catch (error) {
-    console.error(
-      "Update workflow error:",
-      error
-    );
+    console.error("Update workflow error:", error);
 
     return NextResponse.json(
       {

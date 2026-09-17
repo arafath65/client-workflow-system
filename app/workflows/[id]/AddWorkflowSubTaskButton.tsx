@@ -1,10 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type AddWorkflowSubTaskButtonProps = {
   workflowStepId: number;
+};
+
+type Staff = {
+  id: number;
+  name: string;
+  position?: string | null;
+  status?: boolean;
 };
 
 export default function AddWorkflowSubTaskButton({
@@ -15,12 +22,59 @@ export default function AddWorkflowSubTaskButton({
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [defaultStaffId, setDefaultStaffId] = useState("");
+  const [staff, setStaff] = useState<Staff[]>([]);
+  const [loadingStaff, setLoadingStaff] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!open) return;
+
+    const loadStaff = async () => {
+      try {
+        setLoadingStaff(true);
+
+        const response = await fetch("/api/staff");
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(
+            data?.message || "Unable to load staff."
+          );
+          return;
+        }
+
+        setStaff(
+          Array.isArray(data?.staff)
+            ? data.staff.filter(
+                (member: Staff) =>
+                  member.status !== false
+              )
+            : []
+        );
+      } catch (error) {
+        console.error(
+          "Load staff error:",
+          error
+        );
+
+        setError(
+          "Unable to load staff."
+        );
+      } finally {
+        setLoadingStaff(false);
+      }
+    };
+
+    loadStaff();
+  }, [open]);
 
   const handleOpen = () => {
     setTitle("");
     setDescription("");
+    setDefaultStaffId("");
     setError("");
     setOpen(true);
   };
@@ -31,14 +85,15 @@ export default function AddWorkflowSubTaskButton({
     setOpen(false);
     setTitle("");
     setDescription("");
+    setDefaultStaffId("");
     setError("");
 
-    // Refresh the server-rendered workflow step list
-    // so newly added sub-tasks are visible.
     router.refresh();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: React.FormEvent
+  ) => {
     e.preventDefault();
 
     const cleanTitle = title.trim();
@@ -61,7 +116,12 @@ export default function AddWorkflowSubTaskButton({
           },
           body: JSON.stringify({
             title: cleanTitle,
-            description: description.trim() || null,
+            description:
+              description.trim() || null,
+            defaultStaffId:
+              defaultStaffId
+                ? Number(defaultStaffId)
+                : null,
           }),
         }
       );
@@ -70,22 +130,25 @@ export default function AddWorkflowSubTaskButton({
 
       if (!response.ok) {
         setError(
-          data?.message || "Unable to create sub task."
+          data?.message ||
+            "Unable to create sub task."
         );
         return;
       }
 
-      // Keep the modal open so another sub-task
-      // can be entered immediately.
+      // Keep modal open so another
+      // sub-task can be added.
       setTitle("");
       setDescription("");
+      setDefaultStaffId("");
       setError("");
 
-      // Refresh the page data while keeping
-      // this client-side modal open.
       router.refresh();
     } catch (error) {
-      console.error("Create sub task error:", error);
+      console.error(
+        "Create sub task error:",
+        error
+      );
 
       setError(
         "Something went wrong. Please try again."
@@ -173,13 +236,64 @@ export default function AddWorkflowSubTaskButton({
                     id={`subtask-description-${workflowStepId}`}
                     value={description}
                     onChange={(e) =>
-                      setDescription(e.target.value)
+                      setDescription(
+                        e.target.value
+                      )
                     }
                     rows={3}
                     placeholder="Optional details..."
                     disabled={saving}
                     className="w-full resize-none rounded-lg border border-black/10 bg-white px-3 py-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:bg-black/[0.02]"
                   />
+                </div>
+
+                {/* Default Staff */}
+                <div>
+                  <label
+                    htmlFor={`subtask-staff-${workflowStepId}`}
+                    className="mb-2 block text-xs font-medium text-black/60"
+                  >
+                    Default Staff
+                    <span className="ml-1 text-black/30">
+                      (Optional)
+                    </span>
+                  </label>
+
+                  <select
+                    id={`subtask-staff-${workflowStepId}`}
+                    value={defaultStaffId}
+                    onChange={(e) =>
+                      setDefaultStaffId(
+                        e.target.value
+                      )
+                    }
+                    disabled={
+                      saving || loadingStaff
+                    }
+                    className="h-11 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:bg-black/[0.02]"
+                  >
+                    <option value="">
+                      No default staff
+                    </option>
+
+                    {staff.map((member) => (
+                      <option
+                        key={member.id}
+                        value={member.id}
+                      >
+                        {member.name}
+                        {member.position
+                          ? ` — ${member.position}`
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+
+                  <p className="mt-2 text-[10px] text-black/40">
+                    Used as the template-level
+                    fallback when no file-specific
+                    staff is assigned.
+                  </p>
                 </div>
 
                 {/* Error */}

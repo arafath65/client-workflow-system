@@ -1,12 +1,20 @@
+
 "use client";
 
 import { FormEvent, useState } from "react";
+
+type StaffData = {
+  id: number;
+  name: string;
+  status: boolean;
+};
 
 type WorkflowData = {
   id: number;
   name: string;
   description: string | null;
   status: boolean;
+  defaultStaffId?: number | null;
 };
 
 type Props = {
@@ -18,6 +26,37 @@ export default function EditWorkflowButton({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [staff, setStaff] = useState<StaffData[]>([]);
+  const [defaultStaffId, setDefaultStaffId] = useState(
+    workflow.defaultStaffId?.toString() ?? ""
+  );
+
+  const [staffError, setStaffError] = useState("");
+
+  const handleOpen = async () => {
+    setOpen(true);
+    setStaffLoading(true);
+    setStaffError("");
+
+    try {
+      const response = await fetch("/api/staff");
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message || "Unable to load staff members."
+        );
+      }
+
+      setStaff(data.staff ?? []);
+    } catch (error) {
+      console.error("Load staff error:", error);
+      setStaffError("Unable to load staff members.");
+    } finally {
+      setStaffLoading(false);
+    }
+  };
 
   const handleSubmit = async (
     e: FormEvent<HTMLFormElement>
@@ -54,6 +93,9 @@ export default function EditWorkflowButton({
           body: JSON.stringify({
             name,
             description,
+            defaultStaffId: defaultStaffId
+              ? Number(defaultStaffId)
+              : null,
           }),
         }
       );
@@ -62,22 +104,16 @@ export default function EditWorkflowButton({
 
       if (!response.ok) {
         alert(
-          data.message ||
-            "Unable to update workflow."
+          data.message || "Unable to update workflow."
         );
         return;
       }
 
       window.location.reload();
     } catch (error) {
-      console.error(
-        "Update workflow error:",
-        error
-      );
+      console.error("Update workflow error:", error);
 
-      alert(
-        "Unable to connect to the server."
-      );
+      alert("Unable to connect to the server.");
     } finally {
       setLoading(false);
     }
@@ -87,7 +123,7 @@ export default function EditWorkflowButton({
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         className="text-xs font-medium text-black/40 transition hover:text-black"
       >
         Edit
@@ -130,9 +166,7 @@ export default function EditWorkflowButton({
                   className="mb-1.5 block text-xs font-medium text-black/60"
                 >
                   Workflow Name{" "}
-                  <span className="text-red-500">
-                    *
-                  </span>
+                  <span className="text-red-500">*</span>
                 </label>
 
                 <input
@@ -158,11 +192,69 @@ export default function EditWorkflowButton({
                   id={`edit-workflow-description-${workflow.id}`}
                   name="description"
                   rows={4}
-                  defaultValue={
-                    workflow.description ?? ""
-                  }
+                  defaultValue={workflow.description ?? ""}
                   className="w-full resize-none rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
                 />
+              </div>
+
+              {/* Default Responsible Staff */}
+              <div>
+                <label
+                  htmlFor={`edit-workflow-staff-${workflow.id}`}
+                  className="mb-1.5 block text-xs font-medium text-black/60"
+                >
+                  Default Responsible Staff
+                </label>
+
+                <select
+                  id={`edit-workflow-staff-${workflow.id}`}
+                  value={defaultStaffId}
+                  onChange={(e) =>
+                    setDefaultStaffId(e.target.value)
+                  }
+                  disabled={staffLoading || !!staffError}
+                  className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:opacity-50"
+                >
+                  <option value="">
+                    Unassigned
+                  </option>
+
+                  {staff.map((member) => (
+                    <option
+                      key={member.id}
+                      value={member.id}
+                    >
+                      {member.name}
+                    </option>
+                  ))}
+                </select>
+
+                {staffLoading && (
+                  <p className="mt-1.5 text-xs text-black/40">
+                    Loading staff members...
+                  </p>
+                )}
+
+                {staffError && (
+                  <div className="mt-2">
+                    <p className="text-xs text-red-500">
+                      {staffError}
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={handleOpen}
+                      className="mt-1 text-xs font-medium text-black underline"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
+
+                <p className="mt-1.5 text-xs text-black/40">
+                  This staff member will be the default
+                  responsible person for this workflow.
+                </p>
               </div>
 
               {/* Buttons */}
@@ -178,12 +270,10 @@ export default function EditWorkflowButton({
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || staffLoading}
                   className="rounded-lg bg-black px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black disabled:opacity-50"
                 >
-                  {loading
-                    ? "Saving..."
-                    : "Save Changes"}
+                  {loading ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>

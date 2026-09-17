@@ -137,6 +137,17 @@ export async function PATCH(
               },
             });
 
+            // Complete all subtasks when main step is completed
+await tx.fileWorkflowSubTask.updateMany({
+  where: {
+    workflowTaskId: task.id,
+  },
+  data: {
+    status: "COMPLETED",
+    completedAt: now,
+  },
+});
+
             await tx.taskHistory.create({
               data: {
                 workflowTaskId:
@@ -239,6 +250,17 @@ export async function PATCH(
               now,
           },
         });
+
+        // Reset all subtasks when main step is reopened
+await tx.fileWorkflowSubTask.updateMany({
+  where: {
+    workflowTaskId: task.id,
+  },
+  data: {
+    status: "PENDING",
+    completedAt: null,
+  },
+});
 
         await tx.taskHistory.create({
           data: {

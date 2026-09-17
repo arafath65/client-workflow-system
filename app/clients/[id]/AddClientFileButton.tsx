@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -12,15 +13,6 @@ type WorkflowTemplate = {
 type ThirdParty = {
   id: number;
   name: string;
-  status?: boolean;
-};
-
-type Staff = {
-  id: number;
-  name: string;
-  phone?: string | null;
-  email?: string | null;
-  position?: string | null;
   status?: boolean;
 };
 
@@ -40,15 +32,12 @@ export default function AddClientFileButton({
 
   const [fileNumber, setFileNumber] = useState("");
   const [serviceTypeId, setServiceTypeId] = useState("");
-  const [assignedStaffId, setAssignedStaffId] = useState("");
   const [thirdPartyId, setThirdPartyId] = useState("");
   const [description, setDescription] = useState("");
 
   const [serviceTypes, setServiceTypes] = useState<
     WorkflowTemplate[]
   >([]);
-
-  const [staff, setStaff] = useState<Staff[]>([]);
 
   const [thirdParties, setThirdParties] = useState<
     ThirdParty[]
@@ -79,7 +68,7 @@ export default function AddClientFileButton({
   };
 
   // --------------------------------------------------
-  // Load Service Types, Staff and Third Parties
+  // Load Service Types and Third Parties
   // --------------------------------------------------
 
   const loadFormData = async () => {
@@ -100,18 +89,9 @@ export default function AddClientFileButton({
           }
         );
 
-        const workflowText =
-          await workflowResponse.text();
-
-        let workflowData: any = {};
-
-        try {
-          workflowData = workflowText
-            ? JSON.parse(workflowText)
-            : {};
-        } catch {
-          workflowData = {};
-        }
+        const workflowData = await readResponse(
+          workflowResponse
+        );
 
         if (!workflowResponse.ok) {
           throw new Error(
@@ -120,16 +100,16 @@ export default function AddClientFileButton({
           );
         }
 
-        const workflows =
-          Array.isArray(workflowData?.workflows)
-            ? workflowData.workflows
-            : [];
+        const workflows = Array.isArray(
+          workflowData?.workflows
+        )
+          ? workflowData.workflows
+          : [];
 
-        const activeWorkflows =
-          workflows.filter(
-            (workflow: WorkflowTemplate) =>
-              workflow.status !== false
-          );
+        const activeWorkflows = workflows.filter(
+          (workflow: WorkflowTemplate) =>
+            workflow.status !== false
+        );
 
         setServiceTypes(activeWorkflows);
 
@@ -153,96 +133,21 @@ export default function AddClientFileButton({
       }
 
       // ---------------------------------------------
-      // Load Staff
+      // Load Third Parties
       // ---------------------------------------------
 
       try {
-        const staffResponse = await fetch(
-          "/api/staff",
+        const thirdPartyResponse = await fetch(
+          "/api/third-parties",
           {
             method: "GET",
             cache: "no-store",
           }
         );
 
-        const staffText =
-          await staffResponse.text();
-
-        let staffData: any = {};
-
-        try {
-          staffData = staffText
-            ? JSON.parse(staffText)
-            : {};
-        } catch {
-          staffData = {};
-        }
-
-        if (!staffResponse.ok) {
-          throw new Error(
-            staffData?.message ||
-              `Unable to load staff. HTTP ${staffResponse.status}`
-          );
-        }
-
-        const staffList =
-          Array.isArray(staffData?.staff)
-            ? staffData.staff
-            : [];
-
-        const activeStaff =
-          staffList.filter(
-            (member: Staff) =>
-              member.status !== false
-          );
-
-        setStaff(activeStaff);
-
-        console.log(
-          "Loaded Staff:",
-          activeStaff
+        const thirdPartyData = await readResponse(
+          thirdPartyResponse
         );
-      } catch (error) {
-        console.error(
-          "Staff loading error:",
-          error
-        );
-
-        setStaff([]);
-
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Unable to load staff."
-        );
-      }
-
-      // ---------------------------------------------
-      // Load Third Parties
-      // ---------------------------------------------
-
-      try {
-        const thirdPartyResponse =
-          await fetch(
-            "/api/third-parties",
-            {
-              method: "GET",
-              cache: "no-store",
-            }
-          );
-
-        const thirdPartyText =
-          await thirdPartyResponse.text();
-
-        let thirdPartyData: any = {};
-
-        try {
-          thirdPartyData = thirdPartyText
-            ? JSON.parse(thirdPartyText)
-            : {};
-        } catch {
-          thirdPartyData = {};
-        }
 
         if (!thirdPartyResponse.ok) {
           console.error(
@@ -252,12 +157,11 @@ export default function AddClientFileButton({
 
           setThirdParties([]);
         } else {
-          const thirdParties =
-            Array.isArray(
-              thirdPartyData?.thirdParties
-            )
-              ? thirdPartyData.thirdParties
-              : [];
+          const thirdParties = Array.isArray(
+            thirdPartyData?.thirdParties
+          )
+            ? thirdPartyData.thirdParties
+            : [];
 
           const activeThirdParties =
             thirdParties.filter(
@@ -265,9 +169,7 @@ export default function AddClientFileButton({
                 thirdParty.status !== false
             );
 
-          setThirdParties(
-            activeThirdParties
-          );
+          setThirdParties(activeThirdParties);
         }
       } catch (error) {
         console.error(
@@ -334,7 +236,6 @@ export default function AddClientFileButton({
     setFileNumberType("SYSTEM");
     setFileNumber("");
     setServiceTypeId("");
-    setAssignedStaffId("");
     setThirdPartyId("");
     setDescription("");
     setError("");
@@ -402,13 +303,6 @@ export default function AddClientFileButton({
       return;
     }
 
-    if (!assignedStaffId) {
-      setError(
-        "Main Responsible Staff is required."
-      );
-      return;
-    }
-
     if (!fileNumber.trim()) {
       setError("File Number is required.");
       return;
@@ -431,9 +325,6 @@ export default function AddClientFileButton({
             workflowTemplateId:
               Number(serviceTypeId),
 
-            assignedStaffId:
-              Number(assignedStaffId),
-
             thirdPartyId:
               thirdPartyId || null,
 
@@ -448,8 +339,7 @@ export default function AddClientFileButton({
         }
       );
 
-      const data =
-        await readResponse(response);
+      const data = await readResponse(response);
 
       if (!response.ok) {
         setError(
@@ -464,7 +354,6 @@ export default function AddClientFileButton({
       setFileNumberType("SYSTEM");
       setFileNumber("");
       setServiceTypeId("");
-      setAssignedStaffId("");
       setThirdPartyId("");
       setDescription("");
       setError("");
@@ -502,7 +391,7 @@ export default function AddClientFileButton({
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="flex w-full max-w-lg max-h-[90vh] flex-col overflow-hidden rounded-xl bg-white shadow-xl">
+          <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl bg-white shadow-xl">
 
             {/* Header */}
 
@@ -550,8 +439,7 @@ export default function AddClientFileButton({
                         name="fileNumberType"
                         value="SYSTEM"
                         checked={
-                          fileNumberType ===
-                          "SYSTEM"
+                          fileNumberType === "SYSTEM"
                         }
                         onChange={() =>
                           handleFileNumberTypeChange(
@@ -570,8 +458,7 @@ export default function AddClientFileButton({
                         name="fileNumberType"
                         value="CUSTOM"
                         checked={
-                          fileNumberType ===
-                          "CUSTOM"
+                          fileNumberType === "CUSTOM"
                         }
                         onChange={() =>
                           handleFileNumberTypeChange(
@@ -585,8 +472,7 @@ export default function AddClientFileButton({
                     </label>
                   </div>
 
-                  {fileNumberType ===
-                  "SYSTEM" ? (
+                  {fileNumberType === "SYSTEM" ? (
                     <div className="mt-3 rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-3">
                       <p className="text-[10px] uppercase tracking-wider text-black/35">
                         Generated File Number
@@ -610,9 +496,7 @@ export default function AddClientFileButton({
                       type="text"
                       value={fileNumber}
                       onChange={(e) =>
-                        setFileNumber(
-                          e.target.value
-                        )
+                        setFileNumber(e.target.value)
                       }
                       placeholder="Enter your file number"
                       autoFocus
@@ -632,9 +516,7 @@ export default function AddClientFileButton({
                   <select
                     value={serviceTypeId}
                     onChange={(e) =>
-                      setServiceTypeId(
-                        e.target.value
-                      )
+                      setServiceTypeId(e.target.value)
                     }
                     disabled={
                       loadingData || saving
@@ -666,59 +548,12 @@ export default function AddClientFileButton({
                         Create one from Workflows.
                       </p>
                     )}
-                </div>
-
-                {/* Main Responsible Staff */}
-
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium">
-                    Main Responsible Staff
-                  </label>
-
-                  <select
-                    value={assignedStaffId}
-                    onChange={(e) =>
-                      setAssignedStaffId(
-                        e.target.value
-                      )
-                    }
-                    disabled={
-                      loadingData || saving
-                    }
-                    className="w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
-                  >
-                    <option value="">
-                      {loadingData
-                        ? "Loading Staff..."
-                        : "Select Main Responsible Staff"}
-                    </option>
-
-                    {staff.map((member) => (
-                      <option
-                        key={member.id}
-                        value={member.id}
-                      >
-                        {member.name}
-                        {member.position
-                          ? ` — ${member.position}`
-                          : ""}
-                      </option>
-                    ))}
-                  </select>
-
-                  {!loadingData &&
-                    staff.length === 0 && (
-                      <p className="mt-1.5 text-[10px] text-red-500">
-                        No active staff found.
-                        Create staff first.
-                      </p>
-                    )}
 
                   <p className="mt-1.5 text-[10px] text-black/35">
-                    This person remains responsible for
-                    the overall workflow. Steps and
-                    subtasks inherit this staff unless
-                    specifically reassigned.
+                    The main responsible staff member is
+                    inherited from the selected Service Type.
+                    Steps and subtasks inherit responsibility
+                    unless specifically reassigned.
                   </p>
                 </div>
 
@@ -735,9 +570,7 @@ export default function AddClientFileButton({
                   <select
                     value={thirdPartyId}
                     onChange={(e) =>
-                      setThirdPartyId(
-                        e.target.value
-                      )
+                      setThirdPartyId(e.target.value)
                     }
                     disabled={
                       loadingData || saving
@@ -774,9 +607,7 @@ export default function AddClientFileButton({
                   <textarea
                     value={description}
                     onChange={(e) =>
-                      setDescription(
-                        e.target.value
-                      )
+                      setDescription(e.target.value)
                     }
                     rows={3}
                     placeholder="Enter any additional details..."
@@ -811,7 +642,6 @@ export default function AddClientFileButton({
                       saving ||
                       loadingData ||
                       !serviceTypeId ||
-                      !assignedStaffId ||
                       !fileNumber
                     }
                     className="rounded-lg bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black disabled:cursor-not-allowed disabled:opacity-50"

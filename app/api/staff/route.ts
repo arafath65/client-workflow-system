@@ -1,5 +1,50 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+
+// ==================================================
+// GET - Load Staff
+// ==================================================
+
+export async function GET() {
+  try {
+    const staff = await prisma.staff.findMany({
+      where: {
+        status: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        position: true,
+        status: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      staff,
+    });
+  } catch (error) {
+    console.error("Load staff error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Unable to load staff members.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// ==================================================
+// POST - Create Staff
+// ==================================================
 
 export async function POST(request: NextRequest) {
   try {

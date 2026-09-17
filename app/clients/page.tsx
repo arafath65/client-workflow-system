@@ -69,7 +69,7 @@ export default async function ClientsPage({
         }
       : undefined,
     orderBy: {
-      name: "asc",
+      createdAt: "desc",
     },
   });
 

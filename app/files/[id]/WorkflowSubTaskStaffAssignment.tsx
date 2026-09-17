@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,95 +13,93 @@ type WorkflowSubTaskStaffAssignmentProps = {
   subTaskId: number;
   assignedStaffId: number | null;
   inheritedStaffName: string;
+  status: string;
 };
 
 export default function WorkflowSubTaskStaffAssignment({
   subTaskId,
   assignedStaffId,
   inheritedStaffName,
+  status,
 }: WorkflowSubTaskStaffAssignmentProps) {
   const router = useRouter();
 
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [selectedStaffId, setSelectedStaffId] = useState(
+    assignedStaffId?.toString() ?? ""
+  );
+  const [completed, setCompleted] = useState(
+    status === "COMPLETED"
+  );
+  const [loadingStaff, setLoadingStaff] = useState(true);
+  const [savingStaff, setSavingStaff] = useState(false);
+  const [savingStatus, setSavingStatus] = useState(false);
+  const [error, setError] = useState("");
 
-  const [selectedStaffId, setSelectedStaffId] =
-    useState(
-      assignedStaffId
-        ? String(assignedStaffId)
-        : ""
-    );
-
-  const [loadingStaff, setLoadingStaff] =
-    useState(true);
-
-  const [saving, setSaving] = useState(false);
-
-  // --------------------------------------------------
-  // Load Active Staff
-  // --------------------------------------------------
-
+  // Keep checkbox state synchronized with server updates.
   useEffect(() => {
-    const loadStaff = async () => {
+    setCompleted(status === "COMPLETED");
+  }, [status]);
+
+  // Synchronize staff selection when server data refreshes.
+  useEffect(() => {
+    setSelectedStaffId(
+      assignedStaffId?.toString() ?? ""
+    );
+  }, [assignedStaffId]);
+
+  // Load available staff.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadStaff() {
       try {
-        setLoadingStaff(true);
-
-        const response = await fetch(
-          "/api/staff",
-          {
-            cache: "no-store",
-          }
-        );
-
+        const response = await fetch("/api/staff");
         const data = await response.json();
 
         if (!response.ok) {
           throw new Error(
-            data?.message ||
-              "Unable to load staff."
+            data.message || "Unable to load staff."
           );
         }
 
-        setStaff(
-          Array.isArray(data?.staff)
-            ? data.staff
-            : []
-        );
-      } catch (error) {
-        console.error(
-          "Load staff error:",
-          error
-        );
+        const staffList = Array.isArray(data)
+          ? data
+          : data.staff ?? [];
 
-        alert(
-          "Unable to load staff members."
-        );
+        if (!cancelled) {
+          setStaff(staffList);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Unable to load staff."
+          );
+        }
       } finally {
-        setLoadingStaff(false);
+        if (!cancelled) {
+          setLoadingStaff(false);
+        }
       }
-    };
-
-    loadStaff();
-  }, []);
-
-  // --------------------------------------------------
-  // Change Staff Assignment
-  // --------------------------------------------------
-
-  const handleChange = async (
-    value: string
-  ) => {
-    if (saving) {
-      return;
     }
 
-    const newStaffId =
-      value === ""
-        ? null
-        : Number(value);
+    loadStaff();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleStaffChange(value: string) {
+    const previousStaffId = selectedStaffId;
+
+    setSelectedStaffId(value);
+    setSavingStaff(true);
+    setError("");
 
     try {
-      setSaving(true);
-
       const response = await fetch(
         `/api/files/subtasks/${subTaskId}/staff`,
         {
@@ -109,100 +108,167 @@ export default function WorkflowSubTaskStaffAssignment({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            assignedStaffId: newStaffId,
+            assignedStaffId: value
+              ? Number(value)
+              : null,
           }),
         }
       );
 
       const data = await response.json();
 
-      if (!response.ok) {
-        alert(
-          data?.message ||
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message ||
             "Unable to update subtask staff."
         );
-
-        return;
       }
 
-      setSelectedStaffId(value);
-
       router.refresh();
-    } catch (error) {
-      console.error(
-        "Update subtask staff error:",
-        error
-      );
+    } catch (err) {
+      setSelectedStaffId(previousStaffId);
 
-      alert(
-        "Something went wrong while updating staff."
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to update subtask staff."
       );
     } finally {
-      setSaving(false);
+      setSavingStaff(false);
     }
-  };
+  }
 
-  const hasOverride =
-    selectedStaffId !== "";
+  async function handleStatusChange() {
+    if (savingStatus) return;
+
+    const nextCompleted = !completed;
+
+    setSavingStatus(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `/api/files/subtasks/${subTaskId}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            completed: nextCompleted,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message ||
+            "Unable to update subtask status."
+        );
+      }
+
+      // Update immediately; server refresh will confirm it.
+      setCompleted(nextCompleted);
+
+      router.refresh();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to update subtask status."
+      );
+    } finally {
+      setSavingStatus(false);
+    }
+  }
+
+  const selectedStaff = staff.find(
+    (item) => item.id.toString() === selectedStaffId
+  );
 
   return (
-    <div className="mt-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-black/25">
-          Responsible
-        </span>
+    <div className="mt-2 space-y-2">
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Subtask completion checkbox */}
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={completed}
+            disabled={savingStatus}
+            onChange={handleStatusChange}
+            className="h-4 w-4 cursor-pointer"
+          />
 
-        {!hasOverride && (
-          <span className="text-[10px] font-medium text-black/50">
-            {inheritedStaffName}
+          <span
+            className={
+              completed
+                ? "text-green-700 line-through"
+                : "text-gray-700"
+            }
+          >
+            {savingStatus
+              ? "Updating..."
+              : completed
+                ? "Completed"
+                : "Mark completed"}
           </span>
-        )}
+        </label>
 
-        {hasOverride && (
-          <span className="rounded-full bg-[#f9a800]/15 px-2 py-0.5 text-[8px] font-semibold text-black">
-            Subtask Override
+        {/* Staff assignment */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-gray-500">
+            {selectedStaffId
+              ? "Subtask Override"
+              : `Inherited: ${
+                  inheritedStaffName || "Unassigned"
+                }`}
           </span>
-        )}
-      </div>
 
-      <div className="mt-1.5 flex flex-col gap-2 sm:flex-row sm:items-center">
-        <select
-          value={selectedStaffId}
-          onChange={(e) =>
-            handleChange(e.target.value)
-          }
-          disabled={
-            loadingStaff || saving
-          }
-          className="w-full max-w-xs rounded-lg border border-black/10 bg-white px-2.5 py-1.5 text-[10px] outline-none transition focus:border-[#f9a800] disabled:cursor-wait disabled:bg-black/[0.03]"
-        >
-          <option value="">
-            {inheritedStaffName
-              ? `Inherit — ${inheritedStaffName}`
-              : "Inherit Step Staff"}
-          </option>
-
-          {staff.map((member) => (
-            <option
-              key={member.id}
-              value={member.id}
-            >
-              {member.name}
+          <select
+            value={selectedStaffId}
+            disabled={loadingStaff || savingStaff}
+            onChange={(event) =>
+              handleStaffChange(event.target.value)
+            }
+            className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+          >
+            <option value="">
+              Inherit — {inheritedStaffName || "Step Staff"}
             </option>
-          ))}
-        </select>
 
-        {saving && (
-          <span className="text-[9px] text-black/30">
-            Saving...
-          </span>
-        )}
+            {staff.map((person) => (
+              <option
+                key={person.id}
+                value={person.id.toString()}
+              >
+                {person.name}
+              </option>
+            ))}
+          </select>
+
+          {savingStaff && (
+            <span className="text-xs text-gray-500">
+              Saving...
+            </span>
+          )}
+        </div>
       </div>
 
-      <p className="mt-1 text-[8px] text-black/25">
-        Leave as Inherit to use this step&apos;s
-        responsible staff.
-      </p>
+      {/* Selected staff */}
+      {selectedStaffId && selectedStaff && (
+        <p className="text-xs text-gray-500">
+          Assigned to: {selectedStaff.name}
+        </p>
+      )}
+
+      {/* Error message */}
+      {error && (
+        <p className="text-sm text-red-600">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

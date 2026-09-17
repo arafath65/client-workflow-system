@@ -224,13 +224,18 @@ export async function POST(request: NextRequest) {
     }
 
     // --------------------------------------------------
-    // Validate Main Responsible Staff
+    // Resolve and Validate Main Responsible Staff
+    // Explicit file assignment takes priority; otherwise use
+    // the Service Type default responsible staff.
     // --------------------------------------------------
 
-    if (assignedStaffId !== null) {
+    const effectiveAssignedStaffId =
+      assignedStaffId ?? workflow.defaultStaffId ?? null;
+
+    if (effectiveAssignedStaffId !== null) {
       if (
-        !Number.isInteger(assignedStaffId) ||
-        assignedStaffId <= 0
+        !Number.isInteger(effectiveAssignedStaffId) ||
+        effectiveAssignedStaffId <= 0
       ) {
         return NextResponse.json(
           {
@@ -244,7 +249,7 @@ export async function POST(request: NextRequest) {
 
       const staff = await prisma.staff.findFirst({
         where: {
-          id: assignedStaffId,
+          id: effectiveAssignedStaffId,
           status: true,
         },
       });
@@ -403,7 +408,7 @@ export async function POST(request: NextRequest) {
               clientFileId: clientFile.id,
               workflowTemplateId:
                 workflow.id,
-              assignedStaffId,
+              assignedStaffId: effectiveAssignedStaffId,
               status: "IN_PROGRESS",
               startedAt: new Date(),
             },
