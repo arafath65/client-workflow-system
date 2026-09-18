@@ -58,6 +58,11 @@ export type WorkflowSubTask = Prisma.WorkflowSubTaskModel
  */
 export type FileWorkflow = Prisma.FileWorkflowModel
 /**
+ * Model PaymentAllocation
+ * 
+ */
+export type PaymentAllocation = Prisma.PaymentAllocationModel
+/**
  * Model WorkflowTask
  * 
  */

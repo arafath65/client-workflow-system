@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -8,6 +7,22 @@ type RouteContext = {
   }>;
 };
 
+function parseMoney(value: unknown): string | null {
+  const raw = String(value ?? "").trim();
+
+  if (!/^\d+(?:\.\d{1,2})?$/.test(raw)) {
+    return null;
+  }
+
+  const amount = Number(raw);
+
+  if (!Number.isFinite(amount) || amount < 0) {
+    return null;
+  }
+
+  return amount.toFixed(2);
+}
+
 export async function PATCH(
   request: NextRequest,
   context: RouteContext
@@ -16,49 +31,31 @@ export async function PATCH(
     const { id } = await context.params;
     const workflowId = Number(id);
 
-    if (
-      !Number.isInteger(workflowId) ||
-      workflowId <= 0
-    ) {
+    if (!Number.isInteger(workflowId) || workflowId <= 0) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid workflow ID.",
-        },
+        { success: false, message: "Invalid workflow ID." },
         { status: 400 }
       );
     }
 
     const body = await request.json();
 
-    const existingWorkflow =
-      await prisma.workflowTemplate.findUnique({
-        where: {
-          id: workflowId,
-        },
-      });
+    const existingWorkflow = await prisma.workflowTemplate.findUnique({
+      where: { id: workflowId },
+    });
 
     if (!existingWorkflow) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Workflow not found.",
-        },
+        { success: false, message: "Workflow not found." },
         { status: 404 }
       );
     }
 
-    // Preserve workflow activate/deactivate functionality.
     if (typeof body.status === "boolean") {
-      const workflow =
-        await prisma.workflowTemplate.update({
-          where: {
-            id: workflowId,
-          },
-          data: {
-            status: body.status,
-          },
-        });
+      const workflow = await prisma.workflowTemplate.update({
+        where: { id: workflowId },
+        data: { status: body.status },
+      });
 
       return NextResponse.json({
         success: true,
@@ -70,47 +67,41 @@ export async function PATCH(
     }
 
     const name = String(body.name ?? "").trim();
-
-    const description = String(
-      body.description ?? ""
-    ).trim();
+    const description = String(body.description ?? "").trim();
+    const baseAmount = parseMoney(body.baseAmount);
 
     if (!name) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Workflow name is required.",
-        },
+        { success: false, message: "Workflow name is required." },
         { status: 400 }
       );
     }
 
-    const duplicateWorkflow =
-      await prisma.workflowTemplate.findFirst({
-        where: {
-          name: {
-            equals: name,
-          },
-          NOT: {
-            id: workflowId,
-          },
-        },
-      });
+    if (baseAmount === null) {
+      return NextResponse.json(
+        { success: false, message: "Valid service price is required." },
+        { status: 400 }
+      );
+    }
+
+    const duplicateWorkflow = await prisma.workflowTemplate.findFirst({
+      where: {
+        name: { equals: name },
+        NOT: { id: workflowId },
+      },
+    });
 
     if (duplicateWorkflow) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "A workflow with this name already exists.",
+          message: "A workflow with this name already exists.",
         },
         { status: 409 }
       );
     }
 
-    // Validate the optional default main staff.
     const rawDefaultStaffId = body.defaultStaffId;
-
     const defaultStaffId =
       rawDefaultStaffId === null ||
       rawDefaultStaffId === undefined ||
@@ -120,28 +111,18 @@ export async function PATCH(
 
     if (
       defaultStaffId !== null &&
-      (!Number.isInteger(defaultStaffId) ||
-        defaultStaffId <= 0)
+      (!Number.isInteger(defaultStaffId) || defaultStaffId <= 0)
     ) {
       return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid default staff.",
-        },
+        { success: false, message: "Invalid default staff." },
         { status: 400 }
       );
     }
 
     if (defaultStaffId !== null) {
       const staff = await prisma.staff.findUnique({
-        where: {
-          id: defaultStaffId,
-        },
-        select: {
-          id: true,
-          name: true,
-          status: true,
-        },
+        where: { id: defaultStaffId },
+        select: { id: true, status: true },
       });
 
       if (!staff) {
@@ -165,26 +146,20 @@ export async function PATCH(
       }
     }
 
-    const workflow =
-      await prisma.workflowTemplate.update({
-        where: {
-          id: workflowId,
+    const workflow = await prisma.workflowTemplate.update({
+      where: { id: workflowId },
+      data: {
+        name,
+        description: description || null,
+        defaultStaffId,
+        baseAmount,
+      },
+      include: {
+        defaultStaff: {
+          select: { id: true, name: true, status: true },
         },
-        data: {
-          name,
-          description: description || null,
-          defaultStaffId,
-        },
-        include: {
-          defaultStaff: {
-            select: {
-              id: true,
-              name: true,
-              status: true,
-            },
-          },
-        },
-      });
+      },
+    });
 
     return NextResponse.json({
       success: true,
@@ -195,10 +170,7 @@ export async function PATCH(
     console.error("Update workflow error:", error);
 
     return NextResponse.json(
-      {
-        success: false,
-        message: "Unable to update workflow.",
-      },
+      { success: false, message: "Unable to update workflow." },
       { status: 500 }
     );
   }

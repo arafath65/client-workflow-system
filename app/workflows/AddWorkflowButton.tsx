@@ -23,9 +23,11 @@ export default function AddWorkflowButton() {
   const [staffError, setStaffError] = useState("");
 
   const [defaultStaffId, setDefaultStaffId] = useState("");
+  const [baseAmount, setBaseAmount] = useState("");
 
   const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const cleanBaseAmount = baseAmount.trim();
 
   // --------------------------------------------------
   // Load active staff when modal opens
@@ -98,6 +100,7 @@ export default function AddWorkflowButton() {
     }
 
     setDefaultStaffId("");
+    setBaseAmount("");
     setStaffError("");
   };
 
@@ -135,6 +138,11 @@ export default function AddWorkflowButton() {
       return;
     }
 
+    if (!/^\d+(?:\.\d{1,2})?$/.test(cleanBaseAmount)) {
+      alert("Valid service price is required.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -149,6 +157,7 @@ export default function AddWorkflowButton() {
           defaultStaffId: defaultStaffId
             ? Number(defaultStaffId)
             : null,
+          baseAmount: cleanBaseAmount,
         }),
       });
 
@@ -264,6 +273,36 @@ export default function AddWorkflowButton() {
                   placeholder="Brief description of this workflow..."
                   className="w-full resize-none rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-black/25 focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
                 />
+              </div>
+
+              {/* Default Service Price */}
+
+              <div>
+                <label
+                  htmlFor="workflow-base-amount"
+                  className="mb-1.5 block text-xs font-medium text-black/60"
+                >
+                  Default Service Price (LKR)
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+
+                <input
+                  id="workflow-base-amount"
+                  name="baseAmount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={baseAmount}
+                  onChange={(e) => setBaseAmount(e.target.value)}
+                  placeholder="e.g. 65000.00"
+                  required
+                  disabled={loading}
+                  className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none transition placeholder:text-black/25 focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:opacity-50"
+                />
+
+                <p className="mt-1.5 text-[11px] text-black/40">
+                  This is the standard price loaded automatically when this service is selected for a client file.
+                </p>
               </div>
 
               {/* Default Responsible Staff */}

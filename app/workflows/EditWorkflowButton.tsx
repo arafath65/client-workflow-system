@@ -15,6 +15,7 @@ type WorkflowData = {
   description: string | null;
   status: boolean;
   defaultStaffId?: number | null;
+  baseAmount: string | number;
 };
 
 type Props = {
@@ -30,6 +31,10 @@ export default function EditWorkflowButton({
   const [staff, setStaff] = useState<StaffData[]>([]);
   const [defaultStaffId, setDefaultStaffId] = useState(
     workflow.defaultStaffId?.toString() ?? ""
+  );
+
+  const [baseAmount, setBaseAmount] = useState(
+    String(workflow.baseAmount ?? "0")
   );
 
   const [staffError, setStaffError] = useState("");
@@ -75,8 +80,15 @@ export default function EditWorkflowButton({
       formData.get("description") ?? ""
     ).trim();
 
+    const cleanBaseAmount = baseAmount.trim();
+
     if (!name) {
       alert("Workflow name is required.");
+      return;
+    }
+
+    if (!/^\d+(?:\.\d{1,2})?$/.test(cleanBaseAmount)) {
+      alert("Valid service price is required.");
       return;
     }
 
@@ -96,6 +108,7 @@ export default function EditWorkflowButton({
             defaultStaffId: defaultStaffId
               ? Number(defaultStaffId)
               : null,
+            baseAmount: cleanBaseAmount,
           }),
         }
       );
@@ -195,6 +208,34 @@ export default function EditWorkflowButton({
                   defaultValue={workflow.description ?? ""}
                   className="w-full resize-none rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
                 />
+              </div>
+
+              {/* Default Service Price */}
+              <div>
+                <label
+                  htmlFor={`edit-workflow-price-${workflow.id}`}
+                  className="mb-1.5 block text-xs font-medium text-black/60"
+                >
+                  Default Service Price (LKR)
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
+
+                <input
+                  id={`edit-workflow-price-${workflow.id}`}
+                  name="baseAmount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={baseAmount}
+                  onChange={(e) => setBaseAmount(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:opacity-50"
+                />
+
+                <p className="mt-1.5 text-[11px] text-black/40">
+                  This price becomes the starting price for new client files using this service. Existing files keep their saved price.
+                </p>
               </div>
 
               {/* Default Responsible Staff */}

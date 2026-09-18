@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PaymentSummary from "./PaymentSummary";
 import { cookies } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -386,6 +387,8 @@ export default async function FileDetailsPage({
           )}
         </div>
 
+       
+
         {/* Workflow */}
         <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
           <div>
@@ -476,27 +479,138 @@ export default async function FileDetailsPage({
           )}
         </div>
 
-        {/* Payments Placeholder */}
-        <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#f9a800]">
-            Payments
-          </p>
+         {/* Service Pricing */}
+<div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
+  <div>
+    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#f9a800]">
+      Billing
+    </p>
 
-          <h2 className="mt-1 text-lg font-semibold">
-            Payment Summary
-          </h2>
+    <h2 className="mt-1 text-lg font-semibold">
+      Service Pricing
+    </h2>
 
-          <div className="mt-5 rounded-lg border border-dashed border-black/10 bg-[#fafaf9] p-6 text-center">
-            <p className="text-sm font-medium text-black/50">
-              Payment management will be added next.
-            </p>
+    <p className="mt-1 text-xs text-black/40">
+      Agreed pricing for services in this client file.
+    </p>
+  </div>
 
-            <p className="mt-1 text-xs text-black/30">
-              Charges, payments, installments and
-              outstanding balance will appear here.
-            </p>
+  {clientFile.fileWorkflows.length === 0 ? (
+    <div className="mt-5 rounded-lg border border-dashed border-black/10 bg-[#fafaf9] p-6 text-center">
+      <p className="text-sm text-black/40">
+        No services added to this file.
+      </p>
+    </div>
+  ) : (
+    <>
+      <div className="mt-5 overflow-x-auto">
+        <table className="w-full min-w-[700px]">
+          <thead>
+            <tr className="border-b border-black/10 bg-[#fafaf9]">
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                Service
+              </th>
+
+              <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                Base Amount
+              </th>
+
+              <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                Discount
+              </th>
+
+              <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                Final Amount
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {clientFile.fileWorkflows.map((workflow) => (
+              <tr
+                key={workflow.id}
+                className="border-b border-black/5 last:border-b-0"
+              >
+                <td className="px-4 py-4">
+                  <p className="text-sm font-medium text-black">
+                    {workflow.workflowTemplate.name}
+                  </p>
+                </td>
+
+                <td className="px-4 py-4 text-right text-sm text-black/70">
+                  {formatMoney(workflow.baseAmount)}
+                </td>
+
+                <td className="px-4 py-4 text-right text-sm text-red-600">
+                  {formatMoney(workflow.discountAmount)}
+                </td>
+
+                <td className="px-4 py-4 text-right text-sm font-semibold text-black">
+                  {formatMoney(workflow.finalAmount)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-5 flex justify-end border-t border-black/10 pt-5">
+        <div className="w-full max-w-sm space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-black/45">
+              Total Base Amount
+            </span>
+
+            <span className="font-medium">
+              {formatMoney(
+                clientFile.fileWorkflows.reduce(
+                  (total, workflow) =>
+                    total + Number(workflow.baseAmount),
+                  0
+                )
+              )}
+            </span>
+          </div>
+
+          <div className="flex justify-between text-sm">
+            <span className="text-black/45">
+              Total Discount
+            </span>
+
+            <span className="font-medium text-red-600">
+              {formatMoney(
+                clientFile.fileWorkflows.reduce(
+                  (total, workflow) =>
+                    total + Number(workflow.discountAmount),
+                  0
+                )
+              )}
+            </span>
+          </div>
+
+          <div className="flex justify-between border-t border-black/10 pt-3">
+            <span className="text-sm font-semibold">
+              Total Service Amount
+            </span>
+
+            <span className="text-base font-semibold">
+              {formatMoney(
+                clientFile.fileWorkflows.reduce(
+                  (total, workflow) =>
+                    total + Number(workflow.finalAmount),
+                  0
+                )
+              )}
+            </span>
           </div>
         </div>
+      </div>
+    </>
+  )}
+</div>
+
+        {/* Payments Placeholder */}
+        <PaymentSummary fileId={clientFile.id} />
       </section>
     </main>
   );
@@ -823,4 +937,13 @@ function formatDate(date: Date) {
     month: "short",
     year: "numeric",
   }).format(date);
+}
+
+function formatMoney(value: unknown) {
+  const amount = Number(String(value));
+
+  return amount.toLocaleString("en-LK", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }

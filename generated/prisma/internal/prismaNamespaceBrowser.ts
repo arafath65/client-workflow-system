@@ -59,6 +59,7 @@ export const ModelName = {
   WorkflowStep: 'WorkflowStep',
   WorkflowSubTask: 'WorkflowSubTask',
   FileWorkflow: 'FileWorkflow',
+  PaymentAllocation: 'PaymentAllocation',
   WorkflowTask: 'WorkflowTask',
   FileWorkflowSubTask: 'FileWorkflowSubTask',
   TaskHistory: 'TaskHistory',
@@ -145,6 +146,7 @@ export const WorkflowTemplateScalarFieldEnum = {
   name: 'name',
   description: 'description',
   defaultStaffId: 'defaultStaffId',
+  baseAmount: 'baseAmount',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -189,6 +191,9 @@ export const FileWorkflowScalarFieldEnum = {
   workflowTemplateId: 'workflowTemplateId',
   assignedStaffId: 'assignedStaffId',
   status: 'status',
+  baseAmount: 'baseAmount',
+  discountAmount: 'discountAmount',
+  finalAmount: 'finalAmount',
   startedAt: 'startedAt',
   completedAt: 'completedAt',
   createdAt: 'createdAt',
@@ -196,6 +201,17 @@ export const FileWorkflowScalarFieldEnum = {
 } as const
 
 export type FileWorkflowScalarFieldEnum = (typeof FileWorkflowScalarFieldEnum)[keyof typeof FileWorkflowScalarFieldEnum]
+
+
+export const PaymentAllocationScalarFieldEnum = {
+  id: 'id',
+  paymentId: 'paymentId',
+  installmentId: 'installmentId',
+  amount: 'amount',
+  createdAt: 'createdAt'
+} as const
+
+export type PaymentAllocationScalarFieldEnum = (typeof PaymentAllocationScalarFieldEnum)[keyof typeof PaymentAllocationScalarFieldEnum]
 
 
 export const WorkflowTaskScalarFieldEnum = {
@@ -266,7 +282,8 @@ export const PaymentScalarFieldEnum = {
   remarks: 'remarks',
   paidAt: 'paidAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  fileWorkflowId: 'fileWorkflowId'
 } as const
 
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
@@ -276,6 +293,7 @@ export const PaymentInstallmentScalarFieldEnum = {
   id: 'id',
   paymentId: 'paymentId',
   clientFileId: 'clientFileId',
+  fileWorkflowId: 'fileWorkflowId',
   dueDate: 'dueDate',
   amount: 'amount',
   status: 'status',

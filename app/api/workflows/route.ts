@@ -1,6 +1,21 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+
+function parseMoney(value: unknown): string | null {
+  const raw = String(value ?? "").trim();
+
+  if (!/^\d+(?:\.\d{1,2})?$/.test(raw)) {
+    return null;
+  }
+
+  const amount = Number(raw);
+
+  if (!Number.isFinite(amount) || amount < 0) {
+    return null;
+  }
+
+  return amount.toFixed(2);
+}
 
 // ==================================================
 // GET - Load Workflows
@@ -48,15 +63,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const name = String(body.name ?? "").trim();
-
     const description = String(body.description ?? "").trim();
-
-    // ---------------------------------------------
-    // Parse Default Staff
-    // ---------------------------------------------
+    const baseAmount = parseMoney(body.baseAmount);
 
     const rawDefaultStaffId = body.defaultStaffId;
-
     let defaultStaffId: number | null = null;
 
     if (
@@ -66,10 +76,7 @@ export async function POST(request: NextRequest) {
     ) {
       const parsedStaffId = Number(rawDefaultStaffId);
 
-      if (
-        !Number.isInteger(parsedStaffId) ||
-        parsedStaffId <= 0
-      ) {
+      if (!Number.isInteger(parsedStaffId) || parsedStaffId <= 0) {
         return NextResponse.json(
           {
             success: false,
@@ -82,10 +89,6 @@ export async function POST(request: NextRequest) {
       defaultStaffId = parsedStaffId;
     }
 
-    // ---------------------------------------------
-    // Validation
-    // ---------------------------------------------
-
     if (!name) {
       return NextResponse.json(
         {
@@ -96,9 +99,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ---------------------------------------------
-    // Validate Default Staff
-    // ---------------------------------------------
+    if (baseAmount === null) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Valid service price is required.",
+        },
+        { status: 400 }
+      );
+    }
 
     if (defaultStaffId !== null) {
       const staff = await prisma.staff.findFirst({
@@ -106,9 +115,7 @@ export async function POST(request: NextRequest) {
           id: defaultStaffId,
           status: true,
         },
-        select: {
-          id: true,
-        },
+        select: { id: true },
       });
 
       if (!staff) {
@@ -122,18 +129,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ---------------------------------------------
-    // Check Duplicate Workflow Name
-    // ---------------------------------------------
-
-    const existingWorkflow =
-      await prisma.workflowTemplate.findFirst({
-        where: {
-          name: {
-            equals: name,
-          },
-        },
-      });
+    const existingWorkflow = await prisma.workflowTemplate.findFirst({
+      where: {
+        name: { equals: name },
+      },
+    });
 
     if (existingWorkflow) {
       return NextResponse.json(
@@ -145,15 +145,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ---------------------------------------------
-    // Create Workflow
-    // ---------------------------------------------
-
     const workflow = await prisma.workflowTemplate.create({
       data: {
         name,
         description: description || null,
         defaultStaffId,
+        baseAmount,
         status: true,
       },
       include: {

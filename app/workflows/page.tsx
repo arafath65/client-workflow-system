@@ -244,7 +244,7 @@ export default async function WorkflowsPage({
             /* Workflow Table */
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[950px]">
+              <table className="w-full min-w-[1050px]">
                 <thead>
                   <tr className="border-b border-black/10 bg-[#fafaf9]">
                     <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -253,6 +253,10 @@ export default async function WorkflowsPage({
 
                     <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
                       Description
+                    </th>
+
+                    <th className="px-5 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                      Price (LKR)
                     </th>
 
                     <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -296,6 +300,17 @@ export default async function WorkflowsPage({
                         </p>
                       </td>
 
+                      {/* Service Price */}
+
+                      <td className="px-5 py-4 text-right">
+                        <span className="text-xs font-semibold text-black/70">
+                          LKR {Number(workflow.baseAmount).toLocaleString("en-LK", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                      </td>
+
                       {/* Default Responsible Person */}
 
                       <td className="px-5 py-4">
@@ -320,14 +335,25 @@ export default async function WorkflowsPage({
 
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-4">
-                          <EditWorkflowButton
-                            workflow={workflow}
-                          />
+  <EditWorkflowButton
+    workflow={{
+      id: workflow.id,
+      name: workflow.name,
+      description: workflow.description,
+      status: workflow.status,
+      defaultStaffId: workflow.defaultStaffId,
+      baseAmount: workflow.baseAmount.toString(),
+    }}
+  />
 
-                          <WorkflowStatusButton
-                            workflow={workflow}
-                          />
-                        </div>
+  <WorkflowStatusButton
+    workflow={{
+      id: workflow.id,
+      name: workflow.name,
+      status: workflow.status,
+    }}
+  />
+</div>
                       </td>
                     </tr>
                   ))}

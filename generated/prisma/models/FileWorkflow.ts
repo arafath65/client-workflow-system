@@ -31,6 +31,9 @@ export type FileWorkflowAvgAggregateOutputType = {
   clientFileId: number | null
   workflowTemplateId: number | null
   assignedStaffId: number | null
+  baseAmount: runtime.Decimal | null
+  discountAmount: runtime.Decimal | null
+  finalAmount: runtime.Decimal | null
 }
 
 export type FileWorkflowSumAggregateOutputType = {
@@ -38,6 +41,9 @@ export type FileWorkflowSumAggregateOutputType = {
   clientFileId: number | null
   workflowTemplateId: number | null
   assignedStaffId: number | null
+  baseAmount: runtime.Decimal | null
+  discountAmount: runtime.Decimal | null
+  finalAmount: runtime.Decimal | null
 }
 
 export type FileWorkflowMinAggregateOutputType = {
@@ -46,6 +52,9 @@ export type FileWorkflowMinAggregateOutputType = {
   workflowTemplateId: number | null
   assignedStaffId: number | null
   status: $Enums.WorkflowStatus | null
+  baseAmount: runtime.Decimal | null
+  discountAmount: runtime.Decimal | null
+  finalAmount: runtime.Decimal | null
   startedAt: Date | null
   completedAt: Date | null
   createdAt: Date | null
@@ -58,6 +67,9 @@ export type FileWorkflowMaxAggregateOutputType = {
   workflowTemplateId: number | null
   assignedStaffId: number | null
   status: $Enums.WorkflowStatus | null
+  baseAmount: runtime.Decimal | null
+  discountAmount: runtime.Decimal | null
+  finalAmount: runtime.Decimal | null
   startedAt: Date | null
   completedAt: Date | null
   createdAt: Date | null
@@ -70,6 +82,9 @@ export type FileWorkflowCountAggregateOutputType = {
   workflowTemplateId: number
   assignedStaffId: number
   status: number
+  baseAmount: number
+  discountAmount: number
+  finalAmount: number
   startedAt: number
   completedAt: number
   createdAt: number
@@ -83,6 +98,9 @@ export type FileWorkflowAvgAggregateInputType = {
   clientFileId?: true
   workflowTemplateId?: true
   assignedStaffId?: true
+  baseAmount?: true
+  discountAmount?: true
+  finalAmount?: true
 }
 
 export type FileWorkflowSumAggregateInputType = {
@@ -90,6 +108,9 @@ export type FileWorkflowSumAggregateInputType = {
   clientFileId?: true
   workflowTemplateId?: true
   assignedStaffId?: true
+  baseAmount?: true
+  discountAmount?: true
+  finalAmount?: true
 }
 
 export type FileWorkflowMinAggregateInputType = {
@@ -98,6 +119,9 @@ export type FileWorkflowMinAggregateInputType = {
   workflowTemplateId?: true
   assignedStaffId?: true
   status?: true
+  baseAmount?: true
+  discountAmount?: true
+  finalAmount?: true
   startedAt?: true
   completedAt?: true
   createdAt?: true
@@ -110,6 +134,9 @@ export type FileWorkflowMaxAggregateInputType = {
   workflowTemplateId?: true
   assignedStaffId?: true
   status?: true
+  baseAmount?: true
+  discountAmount?: true
+  finalAmount?: true
   startedAt?: true
   completedAt?: true
   createdAt?: true
@@ -122,6 +149,9 @@ export type FileWorkflowCountAggregateInputType = {
   workflowTemplateId?: true
   assignedStaffId?: true
   status?: true
+  baseAmount?: true
+  discountAmount?: true
+  finalAmount?: true
   startedAt?: true
   completedAt?: true
   createdAt?: true
@@ -221,6 +251,9 @@ export type FileWorkflowGroupByOutputType = {
   workflowTemplateId: number
   assignedStaffId: number | null
   status: $Enums.WorkflowStatus
+  baseAmount: runtime.Decimal
+  discountAmount: runtime.Decimal
+  finalAmount: runtime.Decimal
   startedAt: Date | null
   completedAt: Date | null
   createdAt: Date
@@ -256,6 +289,9 @@ export type FileWorkflowWhereInput = {
   workflowTemplateId?: Prisma.IntFilter<"FileWorkflow"> | number
   assignedStaffId?: Prisma.IntNullableFilter<"FileWorkflow"> | number | null
   status?: Prisma.EnumWorkflowStatusFilter<"FileWorkflow"> | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"FileWorkflow"> | Date | string
@@ -264,6 +300,8 @@ export type FileWorkflowWhereInput = {
   workflowTemplate?: Prisma.XOR<Prisma.WorkflowTemplateScalarRelationFilter, Prisma.WorkflowTemplateWhereInput>
   assignedStaff?: Prisma.XOR<Prisma.StaffNullableScalarRelationFilter, Prisma.StaffWhereInput> | null
   tasks?: Prisma.WorkflowTaskListRelationFilter
+  payments?: Prisma.PaymentListRelationFilter
+  installments?: Prisma.PaymentInstallmentListRelationFilter
 }
 
 export type FileWorkflowOrderByWithRelationInput = {
@@ -272,6 +310,9 @@ export type FileWorkflowOrderByWithRelationInput = {
   workflowTemplateId?: Prisma.SortOrder
   assignedStaffId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  baseAmount?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
+  finalAmount?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -280,6 +321,8 @@ export type FileWorkflowOrderByWithRelationInput = {
   workflowTemplate?: Prisma.WorkflowTemplateOrderByWithRelationInput
   assignedStaff?: Prisma.StaffOrderByWithRelationInput
   tasks?: Prisma.WorkflowTaskOrderByRelationAggregateInput
+  payments?: Prisma.PaymentOrderByRelationAggregateInput
+  installments?: Prisma.PaymentInstallmentOrderByRelationAggregateInput
 }
 
 export type FileWorkflowWhereUniqueInput = Prisma.AtLeast<{
@@ -291,6 +334,9 @@ export type FileWorkflowWhereUniqueInput = Prisma.AtLeast<{
   workflowTemplateId?: Prisma.IntFilter<"FileWorkflow"> | number
   assignedStaffId?: Prisma.IntNullableFilter<"FileWorkflow"> | number | null
   status?: Prisma.EnumWorkflowStatusFilter<"FileWorkflow"> | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"FileWorkflow"> | Date | string
@@ -299,6 +345,8 @@ export type FileWorkflowWhereUniqueInput = Prisma.AtLeast<{
   workflowTemplate?: Prisma.XOR<Prisma.WorkflowTemplateScalarRelationFilter, Prisma.WorkflowTemplateWhereInput>
   assignedStaff?: Prisma.XOR<Prisma.StaffNullableScalarRelationFilter, Prisma.StaffWhereInput> | null
   tasks?: Prisma.WorkflowTaskListRelationFilter
+  payments?: Prisma.PaymentListRelationFilter
+  installments?: Prisma.PaymentInstallmentListRelationFilter
 }, "id">
 
 export type FileWorkflowOrderByWithAggregationInput = {
@@ -307,6 +355,9 @@ export type FileWorkflowOrderByWithAggregationInput = {
   workflowTemplateId?: Prisma.SortOrder
   assignedStaffId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  baseAmount?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
+  finalAmount?: Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -327,6 +378,9 @@ export type FileWorkflowScalarWhereWithAggregatesInput = {
   workflowTemplateId?: Prisma.IntWithAggregatesFilter<"FileWorkflow"> | number
   assignedStaffId?: Prisma.IntNullableWithAggregatesFilter<"FileWorkflow"> | number | null
   status?: Prisma.EnumWorkflowStatusWithAggregatesFilter<"FileWorkflow"> | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalWithAggregatesFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalWithAggregatesFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalWithAggregatesFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"FileWorkflow"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"FileWorkflow"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"FileWorkflow"> | Date | string
@@ -335,6 +389,9 @@ export type FileWorkflowScalarWhereWithAggregatesInput = {
 
 export type FileWorkflowCreateInput = {
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -343,6 +400,8 @@ export type FileWorkflowCreateInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowUncheckedCreateInput = {
@@ -351,15 +410,23 @@ export type FileWorkflowUncheckedCreateInput = {
   workflowTemplateId: number
   assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowUpdateInput = {
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -368,6 +435,8 @@ export type FileWorkflowUpdateInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowUncheckedUpdateInput = {
@@ -376,11 +445,16 @@ export type FileWorkflowUncheckedUpdateInput = {
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowCreateManyInput = {
@@ -389,6 +463,9 @@ export type FileWorkflowCreateManyInput = {
   workflowTemplateId: number
   assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -397,6 +474,9 @@ export type FileWorkflowCreateManyInput = {
 
 export type FileWorkflowUpdateManyMutationInput = {
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -409,6 +489,9 @@ export type FileWorkflowUncheckedUpdateManyInput = {
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -431,6 +514,9 @@ export type FileWorkflowCountOrderByAggregateInput = {
   workflowTemplateId?: Prisma.SortOrder
   assignedStaffId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  baseAmount?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
+  finalAmount?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -442,6 +528,9 @@ export type FileWorkflowAvgOrderByAggregateInput = {
   clientFileId?: Prisma.SortOrder
   workflowTemplateId?: Prisma.SortOrder
   assignedStaffId?: Prisma.SortOrder
+  baseAmount?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
+  finalAmount?: Prisma.SortOrder
 }
 
 export type FileWorkflowMaxOrderByAggregateInput = {
@@ -450,6 +539,9 @@ export type FileWorkflowMaxOrderByAggregateInput = {
   workflowTemplateId?: Prisma.SortOrder
   assignedStaffId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  baseAmount?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
+  finalAmount?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -462,6 +554,9 @@ export type FileWorkflowMinOrderByAggregateInput = {
   workflowTemplateId?: Prisma.SortOrder
   assignedStaffId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  baseAmount?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
+  finalAmount?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -473,11 +568,19 @@ export type FileWorkflowSumOrderByAggregateInput = {
   clientFileId?: Prisma.SortOrder
   workflowTemplateId?: Prisma.SortOrder
   assignedStaffId?: Prisma.SortOrder
+  baseAmount?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
+  finalAmount?: Prisma.SortOrder
 }
 
 export type FileWorkflowScalarRelationFilter = {
   is?: Prisma.FileWorkflowWhereInput
   isNot?: Prisma.FileWorkflowWhereInput
+}
+
+export type FileWorkflowNullableScalarRelationFilter = {
+  is?: Prisma.FileWorkflowWhereInput | null
+  isNot?: Prisma.FileWorkflowWhereInput | null
 }
 
 export type FileWorkflowCreateNestedManyWithoutAssignedStaffInput = {
@@ -624,8 +727,43 @@ export type FileWorkflowUpdateOneRequiredWithoutTasksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.FileWorkflowUpdateToOneWithWhereWithoutTasksInput, Prisma.FileWorkflowUpdateWithoutTasksInput>, Prisma.FileWorkflowUncheckedUpdateWithoutTasksInput>
 }
 
+export type FileWorkflowCreateNestedOneWithoutPaymentsInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowCreateWithoutPaymentsInput, Prisma.FileWorkflowUncheckedCreateWithoutPaymentsInput>
+  connectOrCreate?: Prisma.FileWorkflowCreateOrConnectWithoutPaymentsInput
+  connect?: Prisma.FileWorkflowWhereUniqueInput
+}
+
+export type FileWorkflowUpdateOneWithoutPaymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowCreateWithoutPaymentsInput, Prisma.FileWorkflowUncheckedCreateWithoutPaymentsInput>
+  connectOrCreate?: Prisma.FileWorkflowCreateOrConnectWithoutPaymentsInput
+  upsert?: Prisma.FileWorkflowUpsertWithoutPaymentsInput
+  disconnect?: Prisma.FileWorkflowWhereInput | boolean
+  delete?: Prisma.FileWorkflowWhereInput | boolean
+  connect?: Prisma.FileWorkflowWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FileWorkflowUpdateToOneWithWhereWithoutPaymentsInput, Prisma.FileWorkflowUpdateWithoutPaymentsInput>, Prisma.FileWorkflowUncheckedUpdateWithoutPaymentsInput>
+}
+
+export type FileWorkflowCreateNestedOneWithoutInstallmentsInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowCreateWithoutInstallmentsInput, Prisma.FileWorkflowUncheckedCreateWithoutInstallmentsInput>
+  connectOrCreate?: Prisma.FileWorkflowCreateOrConnectWithoutInstallmentsInput
+  connect?: Prisma.FileWorkflowWhereUniqueInput
+}
+
+export type FileWorkflowUpdateOneWithoutInstallmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowCreateWithoutInstallmentsInput, Prisma.FileWorkflowUncheckedCreateWithoutInstallmentsInput>
+  connectOrCreate?: Prisma.FileWorkflowCreateOrConnectWithoutInstallmentsInput
+  upsert?: Prisma.FileWorkflowUpsertWithoutInstallmentsInput
+  disconnect?: Prisma.FileWorkflowWhereInput | boolean
+  delete?: Prisma.FileWorkflowWhereInput | boolean
+  connect?: Prisma.FileWorkflowWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FileWorkflowUpdateToOneWithWhereWithoutInstallmentsInput, Prisma.FileWorkflowUpdateWithoutInstallmentsInput>, Prisma.FileWorkflowUncheckedUpdateWithoutInstallmentsInput>
+}
+
 export type FileWorkflowCreateWithoutAssignedStaffInput = {
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -633,6 +771,8 @@ export type FileWorkflowCreateWithoutAssignedStaffInput = {
   clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowUncheckedCreateWithoutAssignedStaffInput = {
@@ -640,11 +780,16 @@ export type FileWorkflowUncheckedCreateWithoutAssignedStaffInput = {
   clientFileId: number
   workflowTemplateId: number
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowCreateOrConnectWithoutAssignedStaffInput = {
@@ -682,6 +827,9 @@ export type FileWorkflowScalarWhereInput = {
   workflowTemplateId?: Prisma.IntFilter<"FileWorkflow"> | number
   assignedStaffId?: Prisma.IntNullableFilter<"FileWorkflow"> | number | null
   status?: Prisma.EnumWorkflowStatusFilter<"FileWorkflow"> | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFilter<"FileWorkflow"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"FileWorkflow"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"FileWorkflow"> | Date | string
@@ -690,6 +838,9 @@ export type FileWorkflowScalarWhereInput = {
 
 export type FileWorkflowCreateWithoutClientFileInput = {
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -697,6 +848,8 @@ export type FileWorkflowCreateWithoutClientFileInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowUncheckedCreateWithoutClientFileInput = {
@@ -704,11 +857,16 @@ export type FileWorkflowUncheckedCreateWithoutClientFileInput = {
   workflowTemplateId: number
   assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowCreateOrConnectWithoutClientFileInput = {
@@ -739,6 +897,9 @@ export type FileWorkflowUpdateManyWithWhereWithoutClientFileInput = {
 
 export type FileWorkflowCreateWithoutWorkflowTemplateInput = {
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -746,6 +907,8 @@ export type FileWorkflowCreateWithoutWorkflowTemplateInput = {
   clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowUncheckedCreateWithoutWorkflowTemplateInput = {
@@ -753,11 +916,16 @@ export type FileWorkflowUncheckedCreateWithoutWorkflowTemplateInput = {
   clientFileId: number
   assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowCreateOrConnectWithoutWorkflowTemplateInput = {
@@ -788,6 +956,9 @@ export type FileWorkflowUpdateManyWithWhereWithoutWorkflowTemplateInput = {
 
 export type FileWorkflowCreateWithoutTasksInput = {
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -795,6 +966,8 @@ export type FileWorkflowCreateWithoutTasksInput = {
   clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowUncheckedCreateWithoutTasksInput = {
@@ -803,10 +976,15 @@ export type FileWorkflowUncheckedCreateWithoutTasksInput = {
   workflowTemplateId: number
   assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
 
 export type FileWorkflowCreateOrConnectWithoutTasksInput = {
@@ -827,6 +1005,9 @@ export type FileWorkflowUpdateToOneWithWhereWithoutTasksInput = {
 
 export type FileWorkflowUpdateWithoutTasksInput = {
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -834,6 +1015,8 @@ export type FileWorkflowUpdateWithoutTasksInput = {
   clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowUncheckedUpdateWithoutTasksInput = {
@@ -842,10 +1025,179 @@ export type FileWorkflowUncheckedUpdateWithoutTasksInput = {
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
+}
+
+export type FileWorkflowCreateWithoutPaymentsInput = {
+  status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
+  workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
+  tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
+}
+
+export type FileWorkflowUncheckedCreateWithoutPaymentsInput = {
+  id?: number
+  clientFileId: number
+  workflowTemplateId: number
+  assignedStaffId?: number | null
+  status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
+}
+
+export type FileWorkflowCreateOrConnectWithoutPaymentsInput = {
+  where: Prisma.FileWorkflowWhereUniqueInput
+  create: Prisma.XOR<Prisma.FileWorkflowCreateWithoutPaymentsInput, Prisma.FileWorkflowUncheckedCreateWithoutPaymentsInput>
+}
+
+export type FileWorkflowUpsertWithoutPaymentsInput = {
+  update: Prisma.XOR<Prisma.FileWorkflowUpdateWithoutPaymentsInput, Prisma.FileWorkflowUncheckedUpdateWithoutPaymentsInput>
+  create: Prisma.XOR<Prisma.FileWorkflowCreateWithoutPaymentsInput, Prisma.FileWorkflowUncheckedCreateWithoutPaymentsInput>
+  where?: Prisma.FileWorkflowWhereInput
+}
+
+export type FileWorkflowUpdateToOneWithWhereWithoutPaymentsInput = {
+  where?: Prisma.FileWorkflowWhereInput
+  data: Prisma.XOR<Prisma.FileWorkflowUpdateWithoutPaymentsInput, Prisma.FileWorkflowUncheckedUpdateWithoutPaymentsInput>
+}
+
+export type FileWorkflowUpdateWithoutPaymentsInput = {
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
+  tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
+}
+
+export type FileWorkflowUncheckedUpdateWithoutPaymentsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
+}
+
+export type FileWorkflowCreateWithoutInstallmentsInput = {
+  status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
+  workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
+  tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
+}
+
+export type FileWorkflowUncheckedCreateWithoutInstallmentsInput = {
+  id?: number
+  clientFileId: number
+  workflowTemplateId: number
+  assignedStaffId?: number | null
+  status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
+}
+
+export type FileWorkflowCreateOrConnectWithoutInstallmentsInput = {
+  where: Prisma.FileWorkflowWhereUniqueInput
+  create: Prisma.XOR<Prisma.FileWorkflowCreateWithoutInstallmentsInput, Prisma.FileWorkflowUncheckedCreateWithoutInstallmentsInput>
+}
+
+export type FileWorkflowUpsertWithoutInstallmentsInput = {
+  update: Prisma.XOR<Prisma.FileWorkflowUpdateWithoutInstallmentsInput, Prisma.FileWorkflowUncheckedUpdateWithoutInstallmentsInput>
+  create: Prisma.XOR<Prisma.FileWorkflowCreateWithoutInstallmentsInput, Prisma.FileWorkflowUncheckedCreateWithoutInstallmentsInput>
+  where?: Prisma.FileWorkflowWhereInput
+}
+
+export type FileWorkflowUpdateToOneWithWhereWithoutInstallmentsInput = {
+  where?: Prisma.FileWorkflowWhereInput
+  data: Prisma.XOR<Prisma.FileWorkflowUpdateWithoutInstallmentsInput, Prisma.FileWorkflowUncheckedUpdateWithoutInstallmentsInput>
+}
+
+export type FileWorkflowUpdateWithoutInstallmentsInput = {
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
+  tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
+}
+
+export type FileWorkflowUncheckedUpdateWithoutInstallmentsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowCreateManyAssignedStaffInput = {
@@ -853,6 +1205,9 @@ export type FileWorkflowCreateManyAssignedStaffInput = {
   clientFileId: number
   workflowTemplateId: number
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -861,6 +1216,9 @@ export type FileWorkflowCreateManyAssignedStaffInput = {
 
 export type FileWorkflowUpdateWithoutAssignedStaffInput = {
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -868,6 +1226,8 @@ export type FileWorkflowUpdateWithoutAssignedStaffInput = {
   clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowUncheckedUpdateWithoutAssignedStaffInput = {
@@ -875,11 +1235,16 @@ export type FileWorkflowUncheckedUpdateWithoutAssignedStaffInput = {
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowUncheckedUpdateManyWithoutAssignedStaffInput = {
@@ -887,6 +1252,9 @@ export type FileWorkflowUncheckedUpdateManyWithoutAssignedStaffInput = {
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -898,6 +1266,9 @@ export type FileWorkflowCreateManyClientFileInput = {
   workflowTemplateId: number
   assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -906,6 +1277,9 @@ export type FileWorkflowCreateManyClientFileInput = {
 
 export type FileWorkflowUpdateWithoutClientFileInput = {
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -913,6 +1287,8 @@ export type FileWorkflowUpdateWithoutClientFileInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowUncheckedUpdateWithoutClientFileInput = {
@@ -920,11 +1296,16 @@ export type FileWorkflowUncheckedUpdateWithoutClientFileInput = {
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowUncheckedUpdateManyWithoutClientFileInput = {
@@ -932,6 +1313,9 @@ export type FileWorkflowUncheckedUpdateManyWithoutClientFileInput = {
   workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -943,6 +1327,9 @@ export type FileWorkflowCreateManyWorkflowTemplateInput = {
   clientFileId: number
   assignedStaffId?: number | null
   status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -951,6 +1338,9 @@ export type FileWorkflowCreateManyWorkflowTemplateInput = {
 
 export type FileWorkflowUpdateWithoutWorkflowTemplateInput = {
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -958,6 +1348,8 @@ export type FileWorkflowUpdateWithoutWorkflowTemplateInput = {
   clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowUncheckedUpdateWithoutWorkflowTemplateInput = {
@@ -965,11 +1357,16 @@ export type FileWorkflowUncheckedUpdateWithoutWorkflowTemplateInput = {
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
 
 export type FileWorkflowUncheckedUpdateManyWithoutWorkflowTemplateInput = {
@@ -977,6 +1374,9 @@ export type FileWorkflowUncheckedUpdateManyWithoutWorkflowTemplateInput = {
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -990,10 +1390,14 @@ export type FileWorkflowUncheckedUpdateManyWithoutWorkflowTemplateInput = {
 
 export type FileWorkflowCountOutputType = {
   tasks: number
+  payments: number
+  installments: number
 }
 
 export type FileWorkflowCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tasks?: boolean | FileWorkflowCountOutputTypeCountTasksArgs
+  payments?: boolean | FileWorkflowCountOutputTypeCountPaymentsArgs
+  installments?: boolean | FileWorkflowCountOutputTypeCountInstallmentsArgs
 }
 
 /**
@@ -1013,6 +1417,20 @@ export type FileWorkflowCountOutputTypeCountTasksArgs<ExtArgs extends runtime.Ty
   where?: Prisma.WorkflowTaskWhereInput
 }
 
+/**
+ * FileWorkflowCountOutputType without action
+ */
+export type FileWorkflowCountOutputTypeCountPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentWhereInput
+}
+
+/**
+ * FileWorkflowCountOutputType without action
+ */
+export type FileWorkflowCountOutputTypeCountInstallmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentInstallmentWhereInput
+}
+
 
 export type FileWorkflowSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1020,6 +1438,9 @@ export type FileWorkflowSelect<ExtArgs extends runtime.Types.Extensions.Internal
   workflowTemplateId?: boolean
   assignedStaffId?: boolean
   status?: boolean
+  baseAmount?: boolean
+  discountAmount?: boolean
+  finalAmount?: boolean
   startedAt?: boolean
   completedAt?: boolean
   createdAt?: boolean
@@ -1028,6 +1449,8 @@ export type FileWorkflowSelect<ExtArgs extends runtime.Types.Extensions.Internal
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
   assignedStaff?: boolean | Prisma.FileWorkflow$assignedStaffArgs<ExtArgs>
   tasks?: boolean | Prisma.FileWorkflow$tasksArgs<ExtArgs>
+  payments?: boolean | Prisma.FileWorkflow$paymentsArgs<ExtArgs>
+  installments?: boolean | Prisma.FileWorkflow$installmentsArgs<ExtArgs>
   _count?: boolean | Prisma.FileWorkflowCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["fileWorkflow"]>
 
@@ -1039,18 +1462,23 @@ export type FileWorkflowSelectScalar = {
   workflowTemplateId?: boolean
   assignedStaffId?: boolean
   status?: boolean
+  baseAmount?: boolean
+  discountAmount?: boolean
+  finalAmount?: boolean
   startedAt?: boolean
   completedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FileWorkflowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientFileId" | "workflowTemplateId" | "assignedStaffId" | "status" | "startedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["fileWorkflow"]>
+export type FileWorkflowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientFileId" | "workflowTemplateId" | "assignedStaffId" | "status" | "baseAmount" | "discountAmount" | "finalAmount" | "startedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["fileWorkflow"]>
 export type FileWorkflowInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   clientFile?: boolean | Prisma.ClientFileDefaultArgs<ExtArgs>
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
   assignedStaff?: boolean | Prisma.FileWorkflow$assignedStaffArgs<ExtArgs>
   tasks?: boolean | Prisma.FileWorkflow$tasksArgs<ExtArgs>
+  payments?: boolean | Prisma.FileWorkflow$paymentsArgs<ExtArgs>
+  installments?: boolean | Prisma.FileWorkflow$installmentsArgs<ExtArgs>
   _count?: boolean | Prisma.FileWorkflowCountOutputTypeDefaultArgs<ExtArgs>
 }
 
@@ -1061,6 +1489,8 @@ export type $FileWorkflowPayload<ExtArgs extends runtime.Types.Extensions.Intern
     workflowTemplate: Prisma.$WorkflowTemplatePayload<ExtArgs>
     assignedStaff: Prisma.$StaffPayload<ExtArgs> | null
     tasks: Prisma.$WorkflowTaskPayload<ExtArgs>[]
+    payments: Prisma.$PaymentPayload<ExtArgs>[]
+    installments: Prisma.$PaymentInstallmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1068,6 +1498,9 @@ export type $FileWorkflowPayload<ExtArgs extends runtime.Types.Extensions.Intern
     workflowTemplateId: number
     assignedStaffId: number | null
     status: $Enums.WorkflowStatus
+    baseAmount: runtime.Decimal
+    discountAmount: runtime.Decimal
+    finalAmount: runtime.Decimal
     startedAt: Date | null
     completedAt: Date | null
     createdAt: Date
@@ -1416,6 +1849,8 @@ export interface Prisma__FileWorkflowClient<T, Null = never, ExtArgs extends run
   workflowTemplate<T extends Prisma.WorkflowTemplateDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowTemplateDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkflowTemplateClient<runtime.Types.Result.GetResult<Prisma.$WorkflowTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   assignedStaff<T extends Prisma.FileWorkflow$assignedStaffArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflow$assignedStaffArgs<ExtArgs>>): Prisma.Prisma__StaffClient<runtime.Types.Result.GetResult<Prisma.$StaffPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   tasks<T extends Prisma.FileWorkflow$tasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflow$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  payments<T extends Prisma.FileWorkflow$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflow$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  installments<T extends Prisma.FileWorkflow$installmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflow$installmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentInstallmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1450,6 +1885,9 @@ export interface FileWorkflowFieldRefs {
   readonly workflowTemplateId: Prisma.FieldRef<"FileWorkflow", 'Int'>
   readonly assignedStaffId: Prisma.FieldRef<"FileWorkflow", 'Int'>
   readonly status: Prisma.FieldRef<"FileWorkflow", 'WorkflowStatus'>
+  readonly baseAmount: Prisma.FieldRef<"FileWorkflow", 'Decimal'>
+  readonly discountAmount: Prisma.FieldRef<"FileWorkflow", 'Decimal'>
+  readonly finalAmount: Prisma.FieldRef<"FileWorkflow", 'Decimal'>
   readonly startedAt: Prisma.FieldRef<"FileWorkflow", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"FileWorkflow", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"FileWorkflow", 'DateTime'>
@@ -1842,6 +2280,54 @@ export type FileWorkflow$tasksArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.WorkflowTaskScalarFieldEnum | Prisma.WorkflowTaskScalarFieldEnum[]
+}
+
+/**
+ * FileWorkflow.payments
+ */
+export type FileWorkflow$paymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Payment
+   */
+  select?: Prisma.PaymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Payment
+   */
+  omit?: Prisma.PaymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentInclude<ExtArgs> | null
+  where?: Prisma.PaymentWhereInput
+  orderBy?: Prisma.PaymentOrderByWithRelationInput | Prisma.PaymentOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentScalarFieldEnum | Prisma.PaymentScalarFieldEnum[]
+}
+
+/**
+ * FileWorkflow.installments
+ */
+export type FileWorkflow$installmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PaymentInstallment
+   */
+  select?: Prisma.PaymentInstallmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PaymentInstallment
+   */
+  omit?: Prisma.PaymentInstallmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentInstallmentInclude<ExtArgs> | null
+  where?: Prisma.PaymentInstallmentWhereInput
+  orderBy?: Prisma.PaymentInstallmentOrderByWithRelationInput | Prisma.PaymentInstallmentOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentInstallmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentInstallmentScalarFieldEnum | Prisma.PaymentInstallmentScalarFieldEnum[]
 }
 
 /**

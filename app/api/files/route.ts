@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@/generated/prisma/client";
 
+
+// ==================================================
+// Money Parser
+// ==================================================
+
+function parseMoney(value: unknown): string | null {
+  const raw = String(value ?? "").trim();
+
+  if (!raw) {
+    return "0.00";
+  }
+
+  if (!/^\d+(?:\.\d{1,2})?$/.test(raw)) {
+    return null;
+  }
+
+  const amount = Number(raw);
+
+  if (!Number.isFinite(amount) || amount < 0) {
+    return null;
+  }
+
+  return amount.toFixed(2);
+}
+
 // ==================================================
 // GET - Load Files
 // ==================================================
@@ -223,6 +248,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // The Service Type owns the default price. Never trust a price
+    // submitted by the browser. Copy the current workflow price
+    // into the client-specific FileWorkflow as its initial base price.
+    const baseAmount = workflow.baseAmount.toFixed(2);
+
+    const discountAmount = parseMoney(body.discountAmount);
+
+    if (discountAmount === null) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Discount must be a valid non-negative amount with up to 2 decimal places.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const baseCents = Math.round(Number(baseAmount) * 100);
+    const discountCents = Math.round(Number(discountAmount) * 100);
+
+    if (discountCents > baseCents) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Discount cannot be greater than the base price.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const finalAmount = ((baseCents - discountCents) / 100).toFixed(2);
+
     // --------------------------------------------------
     // Resolve and Validate Main Responsible Staff
     // Explicit file assignment takes priority; otherwise use
@@ -410,6 +467,9 @@ export async function POST(request: NextRequest) {
                 workflow.id,
               assignedStaffId: effectiveAssignedStaffId,
               status: "IN_PROGRESS",
+              baseAmount,
+              discountAmount,
+              finalAmount,
               startedAt: new Date(),
             },
           });

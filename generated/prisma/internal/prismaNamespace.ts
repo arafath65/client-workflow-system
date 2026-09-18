@@ -405,6 +405,7 @@ export const ModelName = {
   WorkflowStep: 'WorkflowStep',
   WorkflowSubTask: 'WorkflowSubTask',
   FileWorkflow: 'FileWorkflow',
+  PaymentAllocation: 'PaymentAllocation',
   WorkflowTask: 'WorkflowTask',
   FileWorkflowSubTask: 'FileWorkflowSubTask',
   TaskHistory: 'TaskHistory',
@@ -429,7 +430,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "workflowTask" | "fileWorkflowSubTask" | "taskHistory" | "fileCharge" | "payment" | "paymentInstallment" | "calendarEvent" | "thirdParty" | "fileNumberSequence"
+    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "paymentAllocation" | "workflowTask" | "fileWorkflowSubTask" | "taskHistory" | "fileCharge" | "payment" | "paymentInstallment" | "calendarEvent" | "thirdParty" | "fileNumberSequence"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -958,6 +959,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.FileWorkflowCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.FileWorkflowCountAggregateOutputType> | number
+        }
+      }
+    }
+    PaymentAllocation: {
+      payload: Prisma.$PaymentAllocationPayload<ExtArgs>
+      fields: Prisma.PaymentAllocationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PaymentAllocationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentAllocationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PaymentAllocationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentAllocationPayload>
+        }
+        findFirst: {
+          args: Prisma.PaymentAllocationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentAllocationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PaymentAllocationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentAllocationPayload>
+        }
+        findMany: {
+          args: Prisma.PaymentAllocationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentAllocationPayload>[]
+        }
+        create: {
+          args: Prisma.PaymentAllocationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentAllocationPayload>
+        }
+        createMany: {
+          args: Prisma.PaymentAllocationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.PaymentAllocationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentAllocationPayload>
+        }
+        update: {
+          args: Prisma.PaymentAllocationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentAllocationPayload>
+        }
+        deleteMany: {
+          args: Prisma.PaymentAllocationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PaymentAllocationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.PaymentAllocationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentAllocationPayload>
+        }
+        aggregate: {
+          args: Prisma.PaymentAllocationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePaymentAllocation>
+        }
+        groupBy: {
+          args: Prisma.PaymentAllocationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentAllocationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PaymentAllocationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentAllocationCountAggregateOutputType> | number
         }
       }
     }
@@ -1653,6 +1720,7 @@ export const WorkflowTemplateScalarFieldEnum = {
   name: 'name',
   description: 'description',
   defaultStaffId: 'defaultStaffId',
+  baseAmount: 'baseAmount',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1697,6 +1765,9 @@ export const FileWorkflowScalarFieldEnum = {
   workflowTemplateId: 'workflowTemplateId',
   assignedStaffId: 'assignedStaffId',
   status: 'status',
+  baseAmount: 'baseAmount',
+  discountAmount: 'discountAmount',
+  finalAmount: 'finalAmount',
   startedAt: 'startedAt',
   completedAt: 'completedAt',
   createdAt: 'createdAt',
@@ -1704,6 +1775,17 @@ export const FileWorkflowScalarFieldEnum = {
 } as const
 
 export type FileWorkflowScalarFieldEnum = (typeof FileWorkflowScalarFieldEnum)[keyof typeof FileWorkflowScalarFieldEnum]
+
+
+export const PaymentAllocationScalarFieldEnum = {
+  id: 'id',
+  paymentId: 'paymentId',
+  installmentId: 'installmentId',
+  amount: 'amount',
+  createdAt: 'createdAt'
+} as const
+
+export type PaymentAllocationScalarFieldEnum = (typeof PaymentAllocationScalarFieldEnum)[keyof typeof PaymentAllocationScalarFieldEnum]
 
 
 export const WorkflowTaskScalarFieldEnum = {
@@ -1774,7 +1856,8 @@ export const PaymentScalarFieldEnum = {
   remarks: 'remarks',
   paidAt: 'paidAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  fileWorkflowId: 'fileWorkflowId'
 } as const
 
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
@@ -1784,6 +1867,7 @@ export const PaymentInstallmentScalarFieldEnum = {
   id: 'id',
   paymentId: 'paymentId',
   clientFileId: 'clientFileId',
+  fileWorkflowId: 'fileWorkflowId',
   dueDate: 'dueDate',
   amount: 'amount',
   status: 'status',
@@ -2016,6 +2100,13 @@ export type EnumFileStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Prism
 
 
 /**
+ * Reference to a field of type 'Decimal'
+ */
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+/**
  * Reference to a field of type 'WorkflowStatus'
  */
 export type EnumWorkflowStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WorkflowStatus'>
@@ -2026,13 +2117,6 @@ export type EnumWorkflowStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
  * Reference to a field of type 'TaskStatus'
  */
 export type EnumTaskStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskStatus'>
-    
-
-
-/**
- * Reference to a field of type 'Decimal'
- */
-export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
     
 
 
@@ -2229,6 +2313,7 @@ export type GlobalOmitConfig = {
   workflowStep?: Prisma.WorkflowStepOmit
   workflowSubTask?: Prisma.WorkflowSubTaskOmit
   fileWorkflow?: Prisma.FileWorkflowOmit
+  paymentAllocation?: Prisma.PaymentAllocationOmit
   workflowTask?: Prisma.WorkflowTaskOmit
   fileWorkflowSubTask?: Prisma.FileWorkflowSubTaskOmit
   taskHistory?: Prisma.TaskHistoryOmit

@@ -30,6 +30,7 @@ export type PaymentInstallmentAvgAggregateOutputType = {
   id: number | null
   paymentId: number | null
   clientFileId: number | null
+  fileWorkflowId: number | null
   amount: runtime.Decimal | null
 }
 
@@ -37,6 +38,7 @@ export type PaymentInstallmentSumAggregateOutputType = {
   id: number | null
   paymentId: number | null
   clientFileId: number | null
+  fileWorkflowId: number | null
   amount: runtime.Decimal | null
 }
 
@@ -44,6 +46,7 @@ export type PaymentInstallmentMinAggregateOutputType = {
   id: number | null
   paymentId: number | null
   clientFileId: number | null
+  fileWorkflowId: number | null
   dueDate: Date | null
   amount: runtime.Decimal | null
   status: $Enums.InstallmentStatus | null
@@ -56,6 +59,7 @@ export type PaymentInstallmentMaxAggregateOutputType = {
   id: number | null
   paymentId: number | null
   clientFileId: number | null
+  fileWorkflowId: number | null
   dueDate: Date | null
   amount: runtime.Decimal | null
   status: $Enums.InstallmentStatus | null
@@ -68,6 +72,7 @@ export type PaymentInstallmentCountAggregateOutputType = {
   id: number
   paymentId: number
   clientFileId: number
+  fileWorkflowId: number
   dueDate: number
   amount: number
   status: number
@@ -82,6 +87,7 @@ export type PaymentInstallmentAvgAggregateInputType = {
   id?: true
   paymentId?: true
   clientFileId?: true
+  fileWorkflowId?: true
   amount?: true
 }
 
@@ -89,6 +95,7 @@ export type PaymentInstallmentSumAggregateInputType = {
   id?: true
   paymentId?: true
   clientFileId?: true
+  fileWorkflowId?: true
   amount?: true
 }
 
@@ -96,6 +103,7 @@ export type PaymentInstallmentMinAggregateInputType = {
   id?: true
   paymentId?: true
   clientFileId?: true
+  fileWorkflowId?: true
   dueDate?: true
   amount?: true
   status?: true
@@ -108,6 +116,7 @@ export type PaymentInstallmentMaxAggregateInputType = {
   id?: true
   paymentId?: true
   clientFileId?: true
+  fileWorkflowId?: true
   dueDate?: true
   amount?: true
   status?: true
@@ -120,6 +129,7 @@ export type PaymentInstallmentCountAggregateInputType = {
   id?: true
   paymentId?: true
   clientFileId?: true
+  fileWorkflowId?: true
   dueDate?: true
   amount?: true
   status?: true
@@ -219,6 +229,7 @@ export type PaymentInstallmentGroupByOutputType = {
   id: number
   paymentId: number | null
   clientFileId: number
+  fileWorkflowId: number | null
   dueDate: Date | null
   amount: runtime.Decimal
   status: $Enums.InstallmentStatus
@@ -254,6 +265,7 @@ export type PaymentInstallmentWhereInput = {
   id?: Prisma.IntFilter<"PaymentInstallment"> | number
   paymentId?: Prisma.IntNullableFilter<"PaymentInstallment"> | number | null
   clientFileId?: Prisma.IntFilter<"PaymentInstallment"> | number
+  fileWorkflowId?: Prisma.IntNullableFilter<"PaymentInstallment"> | number | null
   dueDate?: Prisma.DateTimeNullableFilter<"PaymentInstallment"> | Date | string | null
   amount?: Prisma.DecimalFilter<"PaymentInstallment"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInstallmentStatusFilter<"PaymentInstallment"> | $Enums.InstallmentStatus
@@ -262,12 +274,15 @@ export type PaymentInstallmentWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"PaymentInstallment"> | Date | string
   payment?: Prisma.XOR<Prisma.PaymentNullableScalarRelationFilter, Prisma.PaymentWhereInput> | null
   clientFile?: Prisma.XOR<Prisma.ClientFileScalarRelationFilter, Prisma.ClientFileWhereInput>
+  fileWorkflow?: Prisma.XOR<Prisma.FileWorkflowNullableScalarRelationFilter, Prisma.FileWorkflowWhereInput> | null
+  allocations?: Prisma.PaymentAllocationListRelationFilter
 }
 
 export type PaymentInstallmentOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   paymentId?: Prisma.SortOrderInput | Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
+  fileWorkflowId?: Prisma.SortOrderInput | Prisma.SortOrder
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   amount?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -276,6 +291,8 @@ export type PaymentInstallmentOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   payment?: Prisma.PaymentOrderByWithRelationInput
   clientFile?: Prisma.ClientFileOrderByWithRelationInput
+  fileWorkflow?: Prisma.FileWorkflowOrderByWithRelationInput
+  allocations?: Prisma.PaymentAllocationOrderByRelationAggregateInput
   _relevance?: Prisma.PaymentInstallmentOrderByRelevanceInput
 }
 
@@ -286,6 +303,7 @@ export type PaymentInstallmentWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.PaymentInstallmentWhereInput | Prisma.PaymentInstallmentWhereInput[]
   paymentId?: Prisma.IntNullableFilter<"PaymentInstallment"> | number | null
   clientFileId?: Prisma.IntFilter<"PaymentInstallment"> | number
+  fileWorkflowId?: Prisma.IntNullableFilter<"PaymentInstallment"> | number | null
   dueDate?: Prisma.DateTimeNullableFilter<"PaymentInstallment"> | Date | string | null
   amount?: Prisma.DecimalFilter<"PaymentInstallment"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInstallmentStatusFilter<"PaymentInstallment"> | $Enums.InstallmentStatus
@@ -294,12 +312,15 @@ export type PaymentInstallmentWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"PaymentInstallment"> | Date | string
   payment?: Prisma.XOR<Prisma.PaymentNullableScalarRelationFilter, Prisma.PaymentWhereInput> | null
   clientFile?: Prisma.XOR<Prisma.ClientFileScalarRelationFilter, Prisma.ClientFileWhereInput>
+  fileWorkflow?: Prisma.XOR<Prisma.FileWorkflowNullableScalarRelationFilter, Prisma.FileWorkflowWhereInput> | null
+  allocations?: Prisma.PaymentAllocationListRelationFilter
 }, "id">
 
 export type PaymentInstallmentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   paymentId?: Prisma.SortOrderInput | Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
+  fileWorkflowId?: Prisma.SortOrderInput | Prisma.SortOrder
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   amount?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -320,6 +341,7 @@ export type PaymentInstallmentScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"PaymentInstallment"> | number
   paymentId?: Prisma.IntNullableWithAggregatesFilter<"PaymentInstallment"> | number | null
   clientFileId?: Prisma.IntWithAggregatesFilter<"PaymentInstallment"> | number
+  fileWorkflowId?: Prisma.IntNullableWithAggregatesFilter<"PaymentInstallment"> | number | null
   dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"PaymentInstallment"> | Date | string | null
   amount?: Prisma.DecimalWithAggregatesFilter<"PaymentInstallment"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInstallmentStatusWithAggregatesFilter<"PaymentInstallment"> | $Enums.InstallmentStatus
@@ -337,18 +359,22 @@ export type PaymentInstallmentCreateInput = {
   updatedAt?: Date | string
   payment?: Prisma.PaymentCreateNestedOneWithoutInstallmentsInput
   clientFile: Prisma.ClientFileCreateNestedOneWithoutInstallmentsInput
+  fileWorkflow?: Prisma.FileWorkflowCreateNestedOneWithoutInstallmentsInput
+  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInstallmentInput
 }
 
 export type PaymentInstallmentUncheckedCreateInput = {
   id?: number
   paymentId?: number | null
   clientFileId: number
+  fileWorkflowId?: number | null
   dueDate?: Date | string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InstallmentStatus
   remarks?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInstallmentInput
 }
 
 export type PaymentInstallmentUpdateInput = {
@@ -360,24 +386,29 @@ export type PaymentInstallmentUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payment?: Prisma.PaymentUpdateOneWithoutInstallmentsNestedInput
   clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutInstallmentsNestedInput
+  fileWorkflow?: Prisma.FileWorkflowUpdateOneWithoutInstallmentsNestedInput
+  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInstallmentNestedInput
 }
 
 export type PaymentInstallmentUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   paymentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  fileWorkflowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInstallmentStatusFieldUpdateOperationsInput | $Enums.InstallmentStatus
   remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInstallmentNestedInput
 }
 
 export type PaymentInstallmentCreateManyInput = {
   id?: number
   paymentId?: number | null
   clientFileId: number
+  fileWorkflowId?: number | null
   dueDate?: Date | string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InstallmentStatus
@@ -399,6 +430,7 @@ export type PaymentInstallmentUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   paymentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  fileWorkflowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInstallmentStatusFieldUpdateOperationsInput | $Enums.InstallmentStatus
@@ -417,6 +449,11 @@ export type PaymentInstallmentOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type PaymentInstallmentScalarRelationFilter = {
+  is?: Prisma.PaymentInstallmentWhereInput
+  isNot?: Prisma.PaymentInstallmentWhereInput
+}
+
 export type PaymentInstallmentOrderByRelevanceInput = {
   fields: Prisma.PaymentInstallmentOrderByRelevanceFieldEnum | Prisma.PaymentInstallmentOrderByRelevanceFieldEnum[]
   sort: Prisma.SortOrder
@@ -427,6 +464,7 @@ export type PaymentInstallmentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   paymentId?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
+  fileWorkflowId?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -439,6 +477,7 @@ export type PaymentInstallmentAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   paymentId?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
+  fileWorkflowId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
 }
 
@@ -446,6 +485,7 @@ export type PaymentInstallmentMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   paymentId?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
+  fileWorkflowId?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -458,6 +498,7 @@ export type PaymentInstallmentMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   paymentId?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
+  fileWorkflowId?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -470,6 +511,7 @@ export type PaymentInstallmentSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   paymentId?: Prisma.SortOrder
   clientFileId?: Prisma.SortOrder
+  fileWorkflowId?: Prisma.SortOrder
   amount?: Prisma.SortOrder
 }
 
@@ -513,6 +555,62 @@ export type PaymentInstallmentUncheckedUpdateManyWithoutClientFileNestedInput = 
   update?: Prisma.PaymentInstallmentUpdateWithWhereUniqueWithoutClientFileInput | Prisma.PaymentInstallmentUpdateWithWhereUniqueWithoutClientFileInput[]
   updateMany?: Prisma.PaymentInstallmentUpdateManyWithWhereWithoutClientFileInput | Prisma.PaymentInstallmentUpdateManyWithWhereWithoutClientFileInput[]
   deleteMany?: Prisma.PaymentInstallmentScalarWhereInput | Prisma.PaymentInstallmentScalarWhereInput[]
+}
+
+export type PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput = {
+  create?: Prisma.XOR<Prisma.PaymentInstallmentCreateWithoutFileWorkflowInput, Prisma.PaymentInstallmentUncheckedCreateWithoutFileWorkflowInput> | Prisma.PaymentInstallmentCreateWithoutFileWorkflowInput[] | Prisma.PaymentInstallmentUncheckedCreateWithoutFileWorkflowInput[]
+  connectOrCreate?: Prisma.PaymentInstallmentCreateOrConnectWithoutFileWorkflowInput | Prisma.PaymentInstallmentCreateOrConnectWithoutFileWorkflowInput[]
+  createMany?: Prisma.PaymentInstallmentCreateManyFileWorkflowInputEnvelope
+  connect?: Prisma.PaymentInstallmentWhereUniqueInput | Prisma.PaymentInstallmentWhereUniqueInput[]
+}
+
+export type PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput = {
+  create?: Prisma.XOR<Prisma.PaymentInstallmentCreateWithoutFileWorkflowInput, Prisma.PaymentInstallmentUncheckedCreateWithoutFileWorkflowInput> | Prisma.PaymentInstallmentCreateWithoutFileWorkflowInput[] | Prisma.PaymentInstallmentUncheckedCreateWithoutFileWorkflowInput[]
+  connectOrCreate?: Prisma.PaymentInstallmentCreateOrConnectWithoutFileWorkflowInput | Prisma.PaymentInstallmentCreateOrConnectWithoutFileWorkflowInput[]
+  createMany?: Prisma.PaymentInstallmentCreateManyFileWorkflowInputEnvelope
+  connect?: Prisma.PaymentInstallmentWhereUniqueInput | Prisma.PaymentInstallmentWhereUniqueInput[]
+}
+
+export type PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput = {
+  create?: Prisma.XOR<Prisma.PaymentInstallmentCreateWithoutFileWorkflowInput, Prisma.PaymentInstallmentUncheckedCreateWithoutFileWorkflowInput> | Prisma.PaymentInstallmentCreateWithoutFileWorkflowInput[] | Prisma.PaymentInstallmentUncheckedCreateWithoutFileWorkflowInput[]
+  connectOrCreate?: Prisma.PaymentInstallmentCreateOrConnectWithoutFileWorkflowInput | Prisma.PaymentInstallmentCreateOrConnectWithoutFileWorkflowInput[]
+  upsert?: Prisma.PaymentInstallmentUpsertWithWhereUniqueWithoutFileWorkflowInput | Prisma.PaymentInstallmentUpsertWithWhereUniqueWithoutFileWorkflowInput[]
+  createMany?: Prisma.PaymentInstallmentCreateManyFileWorkflowInputEnvelope
+  set?: Prisma.PaymentInstallmentWhereUniqueInput | Prisma.PaymentInstallmentWhereUniqueInput[]
+  disconnect?: Prisma.PaymentInstallmentWhereUniqueInput | Prisma.PaymentInstallmentWhereUniqueInput[]
+  delete?: Prisma.PaymentInstallmentWhereUniqueInput | Prisma.PaymentInstallmentWhereUniqueInput[]
+  connect?: Prisma.PaymentInstallmentWhereUniqueInput | Prisma.PaymentInstallmentWhereUniqueInput[]
+  update?: Prisma.PaymentInstallmentUpdateWithWhereUniqueWithoutFileWorkflowInput | Prisma.PaymentInstallmentUpdateWithWhereUniqueWithoutFileWorkflowInput[]
+  updateMany?: Prisma.PaymentInstallmentUpdateManyWithWhereWithoutFileWorkflowInput | Prisma.PaymentInstallmentUpdateManyWithWhereWithoutFileWorkflowInput[]
+  deleteMany?: Prisma.PaymentInstallmentScalarWhereInput | Prisma.PaymentInstallmentScalarWhereInput[]
+}
+
+export type PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput = {
+  create?: Prisma.XOR<Prisma.PaymentInstallmentCreateWithoutFileWorkflowInput, Prisma.PaymentInstallmentUncheckedCreateWithoutFileWorkflowInput> | Prisma.PaymentInstallmentCreateWithoutFileWorkflowInput[] | Prisma.PaymentInstallmentUncheckedCreateWithoutFileWorkflowInput[]
+  connectOrCreate?: Prisma.PaymentInstallmentCreateOrConnectWithoutFileWorkflowInput | Prisma.PaymentInstallmentCreateOrConnectWithoutFileWorkflowInput[]
+  upsert?: Prisma.PaymentInstallmentUpsertWithWhereUniqueWithoutFileWorkflowInput | Prisma.PaymentInstallmentUpsertWithWhereUniqueWithoutFileWorkflowInput[]
+  createMany?: Prisma.PaymentInstallmentCreateManyFileWorkflowInputEnvelope
+  set?: Prisma.PaymentInstallmentWhereUniqueInput | Prisma.PaymentInstallmentWhereUniqueInput[]
+  disconnect?: Prisma.PaymentInstallmentWhereUniqueInput | Prisma.PaymentInstallmentWhereUniqueInput[]
+  delete?: Prisma.PaymentInstallmentWhereUniqueInput | Prisma.PaymentInstallmentWhereUniqueInput[]
+  connect?: Prisma.PaymentInstallmentWhereUniqueInput | Prisma.PaymentInstallmentWhereUniqueInput[]
+  update?: Prisma.PaymentInstallmentUpdateWithWhereUniqueWithoutFileWorkflowInput | Prisma.PaymentInstallmentUpdateWithWhereUniqueWithoutFileWorkflowInput[]
+  updateMany?: Prisma.PaymentInstallmentUpdateManyWithWhereWithoutFileWorkflowInput | Prisma.PaymentInstallmentUpdateManyWithWhereWithoutFileWorkflowInput[]
+  deleteMany?: Prisma.PaymentInstallmentScalarWhereInput | Prisma.PaymentInstallmentScalarWhereInput[]
+}
+
+export type PaymentInstallmentCreateNestedOneWithoutAllocationsInput = {
+  create?: Prisma.XOR<Prisma.PaymentInstallmentCreateWithoutAllocationsInput, Prisma.PaymentInstallmentUncheckedCreateWithoutAllocationsInput>
+  connectOrCreate?: Prisma.PaymentInstallmentCreateOrConnectWithoutAllocationsInput
+  connect?: Prisma.PaymentInstallmentWhereUniqueInput
+}
+
+export type PaymentInstallmentUpdateOneRequiredWithoutAllocationsNestedInput = {
+  create?: Prisma.XOR<Prisma.PaymentInstallmentCreateWithoutAllocationsInput, Prisma.PaymentInstallmentUncheckedCreateWithoutAllocationsInput>
+  connectOrCreate?: Prisma.PaymentInstallmentCreateOrConnectWithoutAllocationsInput
+  upsert?: Prisma.PaymentInstallmentUpsertWithoutAllocationsInput
+  connect?: Prisma.PaymentInstallmentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PaymentInstallmentUpdateToOneWithWhereWithoutAllocationsInput, Prisma.PaymentInstallmentUpdateWithoutAllocationsInput>, Prisma.PaymentInstallmentUncheckedUpdateWithoutAllocationsInput>
 }
 
 export type PaymentInstallmentCreateNestedManyWithoutPaymentInput = {
@@ -569,17 +667,21 @@ export type PaymentInstallmentCreateWithoutClientFileInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   payment?: Prisma.PaymentCreateNestedOneWithoutInstallmentsInput
+  fileWorkflow?: Prisma.FileWorkflowCreateNestedOneWithoutInstallmentsInput
+  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInstallmentInput
 }
 
 export type PaymentInstallmentUncheckedCreateWithoutClientFileInput = {
   id?: number
   paymentId?: number | null
+  fileWorkflowId?: number | null
   dueDate?: Date | string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InstallmentStatus
   remarks?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInstallmentInput
 }
 
 export type PaymentInstallmentCreateOrConnectWithoutClientFileInput = {
@@ -615,12 +717,130 @@ export type PaymentInstallmentScalarWhereInput = {
   id?: Prisma.IntFilter<"PaymentInstallment"> | number
   paymentId?: Prisma.IntNullableFilter<"PaymentInstallment"> | number | null
   clientFileId?: Prisma.IntFilter<"PaymentInstallment"> | number
+  fileWorkflowId?: Prisma.IntNullableFilter<"PaymentInstallment"> | number | null
   dueDate?: Prisma.DateTimeNullableFilter<"PaymentInstallment"> | Date | string | null
   amount?: Prisma.DecimalFilter<"PaymentInstallment"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInstallmentStatusFilter<"PaymentInstallment"> | $Enums.InstallmentStatus
   remarks?: Prisma.StringNullableFilter<"PaymentInstallment"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PaymentInstallment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PaymentInstallment"> | Date | string
+}
+
+export type PaymentInstallmentCreateWithoutFileWorkflowInput = {
+  dueDate?: Date | string | null
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.InstallmentStatus
+  remarks?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  payment?: Prisma.PaymentCreateNestedOneWithoutInstallmentsInput
+  clientFile: Prisma.ClientFileCreateNestedOneWithoutInstallmentsInput
+  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInstallmentInput
+}
+
+export type PaymentInstallmentUncheckedCreateWithoutFileWorkflowInput = {
+  id?: number
+  paymentId?: number | null
+  clientFileId: number
+  dueDate?: Date | string | null
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.InstallmentStatus
+  remarks?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInstallmentInput
+}
+
+export type PaymentInstallmentCreateOrConnectWithoutFileWorkflowInput = {
+  where: Prisma.PaymentInstallmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.PaymentInstallmentCreateWithoutFileWorkflowInput, Prisma.PaymentInstallmentUncheckedCreateWithoutFileWorkflowInput>
+}
+
+export type PaymentInstallmentCreateManyFileWorkflowInputEnvelope = {
+  data: Prisma.PaymentInstallmentCreateManyFileWorkflowInput | Prisma.PaymentInstallmentCreateManyFileWorkflowInput[]
+  skipDuplicates?: boolean
+}
+
+export type PaymentInstallmentUpsertWithWhereUniqueWithoutFileWorkflowInput = {
+  where: Prisma.PaymentInstallmentWhereUniqueInput
+  update: Prisma.XOR<Prisma.PaymentInstallmentUpdateWithoutFileWorkflowInput, Prisma.PaymentInstallmentUncheckedUpdateWithoutFileWorkflowInput>
+  create: Prisma.XOR<Prisma.PaymentInstallmentCreateWithoutFileWorkflowInput, Prisma.PaymentInstallmentUncheckedCreateWithoutFileWorkflowInput>
+}
+
+export type PaymentInstallmentUpdateWithWhereUniqueWithoutFileWorkflowInput = {
+  where: Prisma.PaymentInstallmentWhereUniqueInput
+  data: Prisma.XOR<Prisma.PaymentInstallmentUpdateWithoutFileWorkflowInput, Prisma.PaymentInstallmentUncheckedUpdateWithoutFileWorkflowInput>
+}
+
+export type PaymentInstallmentUpdateManyWithWhereWithoutFileWorkflowInput = {
+  where: Prisma.PaymentInstallmentScalarWhereInput
+  data: Prisma.XOR<Prisma.PaymentInstallmentUpdateManyMutationInput, Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowInput>
+}
+
+export type PaymentInstallmentCreateWithoutAllocationsInput = {
+  dueDate?: Date | string | null
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.InstallmentStatus
+  remarks?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  payment?: Prisma.PaymentCreateNestedOneWithoutInstallmentsInput
+  clientFile: Prisma.ClientFileCreateNestedOneWithoutInstallmentsInput
+  fileWorkflow?: Prisma.FileWorkflowCreateNestedOneWithoutInstallmentsInput
+}
+
+export type PaymentInstallmentUncheckedCreateWithoutAllocationsInput = {
+  id?: number
+  paymentId?: number | null
+  clientFileId: number
+  fileWorkflowId?: number | null
+  dueDate?: Date | string | null
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.InstallmentStatus
+  remarks?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type PaymentInstallmentCreateOrConnectWithoutAllocationsInput = {
+  where: Prisma.PaymentInstallmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.PaymentInstallmentCreateWithoutAllocationsInput, Prisma.PaymentInstallmentUncheckedCreateWithoutAllocationsInput>
+}
+
+export type PaymentInstallmentUpsertWithoutAllocationsInput = {
+  update: Prisma.XOR<Prisma.PaymentInstallmentUpdateWithoutAllocationsInput, Prisma.PaymentInstallmentUncheckedUpdateWithoutAllocationsInput>
+  create: Prisma.XOR<Prisma.PaymentInstallmentCreateWithoutAllocationsInput, Prisma.PaymentInstallmentUncheckedCreateWithoutAllocationsInput>
+  where?: Prisma.PaymentInstallmentWhereInput
+}
+
+export type PaymentInstallmentUpdateToOneWithWhereWithoutAllocationsInput = {
+  where?: Prisma.PaymentInstallmentWhereInput
+  data: Prisma.XOR<Prisma.PaymentInstallmentUpdateWithoutAllocationsInput, Prisma.PaymentInstallmentUncheckedUpdateWithoutAllocationsInput>
+}
+
+export type PaymentInstallmentUpdateWithoutAllocationsInput = {
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumInstallmentStatusFieldUpdateOperationsInput | $Enums.InstallmentStatus
+  remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payment?: Prisma.PaymentUpdateOneWithoutInstallmentsNestedInput
+  clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutInstallmentsNestedInput
+  fileWorkflow?: Prisma.FileWorkflowUpdateOneWithoutInstallmentsNestedInput
+}
+
+export type PaymentInstallmentUncheckedUpdateWithoutAllocationsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  fileWorkflowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumInstallmentStatusFieldUpdateOperationsInput | $Enums.InstallmentStatus
+  remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PaymentInstallmentCreateWithoutPaymentInput = {
@@ -631,17 +851,21 @@ export type PaymentInstallmentCreateWithoutPaymentInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   clientFile: Prisma.ClientFileCreateNestedOneWithoutInstallmentsInput
+  fileWorkflow?: Prisma.FileWorkflowCreateNestedOneWithoutInstallmentsInput
+  allocations?: Prisma.PaymentAllocationCreateNestedManyWithoutInstallmentInput
 }
 
 export type PaymentInstallmentUncheckedCreateWithoutPaymentInput = {
   id?: number
   clientFileId: number
+  fileWorkflowId?: number | null
   dueDate?: Date | string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InstallmentStatus
   remarks?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  allocations?: Prisma.PaymentAllocationUncheckedCreateNestedManyWithoutInstallmentInput
 }
 
 export type PaymentInstallmentCreateOrConnectWithoutPaymentInput = {
@@ -673,6 +897,7 @@ export type PaymentInstallmentUpdateManyWithWhereWithoutPaymentInput = {
 export type PaymentInstallmentCreateManyClientFileInput = {
   id?: number
   paymentId?: number | null
+  fileWorkflowId?: number | null
   dueDate?: Date | string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InstallmentStatus
@@ -689,11 +914,27 @@ export type PaymentInstallmentUpdateWithoutClientFileInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payment?: Prisma.PaymentUpdateOneWithoutInstallmentsNestedInput
+  fileWorkflow?: Prisma.FileWorkflowUpdateOneWithoutInstallmentsNestedInput
+  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInstallmentNestedInput
 }
 
 export type PaymentInstallmentUncheckedUpdateWithoutClientFileInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   paymentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  fileWorkflowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumInstallmentStatusFieldUpdateOperationsInput | $Enums.InstallmentStatus
+  remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInstallmentNestedInput
+}
+
+export type PaymentInstallmentUncheckedUpdateManyWithoutClientFileInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  fileWorkflowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInstallmentStatusFieldUpdateOperationsInput | $Enums.InstallmentStatus
@@ -702,9 +943,47 @@ export type PaymentInstallmentUncheckedUpdateWithoutClientFileInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type PaymentInstallmentUncheckedUpdateManyWithoutClientFileInput = {
+export type PaymentInstallmentCreateManyFileWorkflowInput = {
+  id?: number
+  paymentId?: number | null
+  clientFileId: number
+  dueDate?: Date | string | null
+  amount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.InstallmentStatus
+  remarks?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type PaymentInstallmentUpdateWithoutFileWorkflowInput = {
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumInstallmentStatusFieldUpdateOperationsInput | $Enums.InstallmentStatus
+  remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payment?: Prisma.PaymentUpdateOneWithoutInstallmentsNestedInput
+  clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutInstallmentsNestedInput
+  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInstallmentNestedInput
+}
+
+export type PaymentInstallmentUncheckedUpdateWithoutFileWorkflowInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   paymentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumInstallmentStatusFieldUpdateOperationsInput | $Enums.InstallmentStatus
+  remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInstallmentNestedInput
+}
+
+export type PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInstallmentStatusFieldUpdateOperationsInput | $Enums.InstallmentStatus
@@ -716,6 +995,7 @@ export type PaymentInstallmentUncheckedUpdateManyWithoutClientFileInput = {
 export type PaymentInstallmentCreateManyPaymentInput = {
   id?: number
   clientFileId: number
+  fileWorkflowId?: number | null
   dueDate?: Date | string | null
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.InstallmentStatus
@@ -732,22 +1012,27 @@ export type PaymentInstallmentUpdateWithoutPaymentInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutInstallmentsNestedInput
+  fileWorkflow?: Prisma.FileWorkflowUpdateOneWithoutInstallmentsNestedInput
+  allocations?: Prisma.PaymentAllocationUpdateManyWithoutInstallmentNestedInput
 }
 
 export type PaymentInstallmentUncheckedUpdateWithoutPaymentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  fileWorkflowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInstallmentStatusFieldUpdateOperationsInput | $Enums.InstallmentStatus
   remarks?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  allocations?: Prisma.PaymentAllocationUncheckedUpdateManyWithoutInstallmentNestedInput
 }
 
 export type PaymentInstallmentUncheckedUpdateManyWithoutPaymentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  fileWorkflowId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumInstallmentStatusFieldUpdateOperationsInput | $Enums.InstallmentStatus
@@ -756,12 +1041,42 @@ export type PaymentInstallmentUncheckedUpdateManyWithoutPaymentInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type PaymentInstallmentCountOutputType
+ */
+
+export type PaymentInstallmentCountOutputType = {
+  allocations: number
+}
+
+export type PaymentInstallmentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  allocations?: boolean | PaymentInstallmentCountOutputTypeCountAllocationsArgs
+}
+
+/**
+ * PaymentInstallmentCountOutputType without action
+ */
+export type PaymentInstallmentCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PaymentInstallmentCountOutputType
+   */
+  select?: Prisma.PaymentInstallmentCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * PaymentInstallmentCountOutputType without action
+ */
+export type PaymentInstallmentCountOutputTypeCountAllocationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentAllocationWhereInput
+}
 
 
 export type PaymentInstallmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   paymentId?: boolean
   clientFileId?: boolean
+  fileWorkflowId?: boolean
   dueDate?: boolean
   amount?: boolean
   status?: boolean
@@ -770,6 +1085,9 @@ export type PaymentInstallmentSelect<ExtArgs extends runtime.Types.Extensions.In
   updatedAt?: boolean
   payment?: boolean | Prisma.PaymentInstallment$paymentArgs<ExtArgs>
   clientFile?: boolean | Prisma.ClientFileDefaultArgs<ExtArgs>
+  fileWorkflow?: boolean | Prisma.PaymentInstallment$fileWorkflowArgs<ExtArgs>
+  allocations?: boolean | Prisma.PaymentInstallment$allocationsArgs<ExtArgs>
+  _count?: boolean | Prisma.PaymentInstallmentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["paymentInstallment"]>
 
 
@@ -778,6 +1096,7 @@ export type PaymentInstallmentSelectScalar = {
   id?: boolean
   paymentId?: boolean
   clientFileId?: boolean
+  fileWorkflowId?: boolean
   dueDate?: boolean
   amount?: boolean
   status?: boolean
@@ -786,10 +1105,13 @@ export type PaymentInstallmentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type PaymentInstallmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "paymentId" | "clientFileId" | "dueDate" | "amount" | "status" | "remarks" | "createdAt" | "updatedAt", ExtArgs["result"]["paymentInstallment"]>
+export type PaymentInstallmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "paymentId" | "clientFileId" | "fileWorkflowId" | "dueDate" | "amount" | "status" | "remarks" | "createdAt" | "updatedAt", ExtArgs["result"]["paymentInstallment"]>
 export type PaymentInstallmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   payment?: boolean | Prisma.PaymentInstallment$paymentArgs<ExtArgs>
   clientFile?: boolean | Prisma.ClientFileDefaultArgs<ExtArgs>
+  fileWorkflow?: boolean | Prisma.PaymentInstallment$fileWorkflowArgs<ExtArgs>
+  allocations?: boolean | Prisma.PaymentInstallment$allocationsArgs<ExtArgs>
+  _count?: boolean | Prisma.PaymentInstallmentCountOutputTypeDefaultArgs<ExtArgs>
 }
 
 export type $PaymentInstallmentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -797,11 +1119,14 @@ export type $PaymentInstallmentPayload<ExtArgs extends runtime.Types.Extensions.
   objects: {
     payment: Prisma.$PaymentPayload<ExtArgs> | null
     clientFile: Prisma.$ClientFilePayload<ExtArgs>
+    fileWorkflow: Prisma.$FileWorkflowPayload<ExtArgs> | null
+    allocations: Prisma.$PaymentAllocationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     paymentId: number | null
     clientFileId: number
+    fileWorkflowId: number | null
     dueDate: Date | null
     amount: runtime.Decimal
     status: $Enums.InstallmentStatus
@@ -1150,6 +1475,8 @@ export interface Prisma__PaymentInstallmentClient<T, Null = never, ExtArgs exten
   readonly [Symbol.toStringTag]: "PrismaPromise"
   payment<T extends Prisma.PaymentInstallment$paymentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentInstallment$paymentArgs<ExtArgs>>): Prisma.Prisma__PaymentClient<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   clientFile<T extends Prisma.ClientFileDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ClientFileDefaultArgs<ExtArgs>>): Prisma.Prisma__ClientFileClient<runtime.Types.Result.GetResult<Prisma.$ClientFilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  fileWorkflow<T extends Prisma.PaymentInstallment$fileWorkflowArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentInstallment$fileWorkflowArgs<ExtArgs>>): Prisma.Prisma__FileWorkflowClient<runtime.Types.Result.GetResult<Prisma.$FileWorkflowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  allocations<T extends Prisma.PaymentInstallment$allocationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentInstallment$allocationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentAllocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1182,6 +1509,7 @@ export interface PaymentInstallmentFieldRefs {
   readonly id: Prisma.FieldRef<"PaymentInstallment", 'Int'>
   readonly paymentId: Prisma.FieldRef<"PaymentInstallment", 'Int'>
   readonly clientFileId: Prisma.FieldRef<"PaymentInstallment", 'Int'>
+  readonly fileWorkflowId: Prisma.FieldRef<"PaymentInstallment", 'Int'>
   readonly dueDate: Prisma.FieldRef<"PaymentInstallment", 'DateTime'>
   readonly amount: Prisma.FieldRef<"PaymentInstallment", 'Decimal'>
   readonly status: Prisma.FieldRef<"PaymentInstallment", 'InstallmentStatus'>
@@ -1552,6 +1880,49 @@ export type PaymentInstallment$paymentArgs<ExtArgs extends runtime.Types.Extensi
    */
   include?: Prisma.PaymentInclude<ExtArgs> | null
   where?: Prisma.PaymentWhereInput
+}
+
+/**
+ * PaymentInstallment.fileWorkflow
+ */
+export type PaymentInstallment$fileWorkflowArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FileWorkflow
+   */
+  select?: Prisma.FileWorkflowSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FileWorkflow
+   */
+  omit?: Prisma.FileWorkflowOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FileWorkflowInclude<ExtArgs> | null
+  where?: Prisma.FileWorkflowWhereInput
+}
+
+/**
+ * PaymentInstallment.allocations
+ */
+export type PaymentInstallment$allocationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PaymentAllocation
+   */
+  select?: Prisma.PaymentAllocationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PaymentAllocation
+   */
+  omit?: Prisma.PaymentAllocationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentAllocationInclude<ExtArgs> | null
+  where?: Prisma.PaymentAllocationWhereInput
+  orderBy?: Prisma.PaymentAllocationOrderByWithRelationInput | Prisma.PaymentAllocationOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentAllocationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentAllocationScalarFieldEnum | Prisma.PaymentAllocationScalarFieldEnum[]
 }
 
 /**

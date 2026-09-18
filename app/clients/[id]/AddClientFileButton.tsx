@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 type WorkflowTemplate = {
   id: number;
   name: string;
+  baseAmount?: string | number | null;
   status?: boolean;
 };
 
@@ -34,6 +35,9 @@ export default function AddClientFileButton({
   const [serviceTypeId, setServiceTypeId] = useState("");
   const [thirdPartyId, setThirdPartyId] = useState("");
   const [description, setDescription] = useState("");
+
+  const [baseAmount, setBaseAmount] = useState("");
+  const [discountAmount, setDiscountAmount] = useState("");
 
   const [serviceTypes, setServiceTypes] = useState<
     WorkflowTemplate[]
@@ -238,6 +242,8 @@ export default function AddClientFileButton({
     setServiceTypeId("");
     setThirdPartyId("");
     setDescription("");
+    setBaseAmount("");
+    setDiscountAmount("");
     setError("");
 
     setOpen(true);
@@ -290,6 +296,32 @@ export default function AddClientFileButton({
   };
 
   // --------------------------------------------------
+  // Change Service Type
+  // --------------------------------------------------
+
+  const handleServiceTypeChange = (value: string) => {
+    setServiceTypeId(value);
+    setDiscountAmount("");
+    setError("");
+
+    if (!value) {
+      setBaseAmount("");
+      return;
+    }
+
+    const selectedWorkflow = serviceTypes.find(
+      (workflow) => String(workflow.id) === value
+    );
+
+    setBaseAmount(
+      selectedWorkflow?.baseAmount !== undefined &&
+        selectedWorkflow?.baseAmount !== null
+        ? String(selectedWorkflow.baseAmount)
+        : "0"
+    );
+  };
+
+  // --------------------------------------------------
   // Submit
   // --------------------------------------------------
 
@@ -335,6 +367,12 @@ export default function AddClientFileButton({
 
             description:
               description.trim() || null,
+
+            baseAmount:
+              baseAmount || "0",
+
+            discountAmount:
+              discountAmount || "0",
           }),
         }
       );
@@ -356,6 +394,8 @@ export default function AddClientFileButton({
       setServiceTypeId("");
       setThirdPartyId("");
       setDescription("");
+      setBaseAmount("");
+      setDiscountAmount("");
       setError("");
 
       router.refresh();
@@ -516,7 +556,7 @@ export default function AddClientFileButton({
                   <select
                     value={serviceTypeId}
                     onChange={(e) =>
-                      setServiceTypeId(e.target.value)
+                      handleServiceTypeChange(e.target.value)
                     }
                     disabled={
                       loadingData || saving
@@ -592,6 +632,78 @@ export default function AddClientFileButton({
                       )
                     )}
                   </select>
+                </div>
+
+                {/* Pricing */}
+
+                <div>
+                  <label className="mb-2 block text-xs font-medium">
+                    Service Pricing
+                  </label>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-medium text-black/60">
+                        Base Price (LKR)
+                      </label>
+
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={baseAmount}
+                        readOnly
+                        placeholder="0.00"
+                        disabled={saving || !serviceTypeId}
+                        className="w-full rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-2.5 text-sm outline-none focus:border-[#f9a800] disabled:opacity-60"
+                      />
+                      <p className="mt-1.5 text-[10px] text-black/35">
+                        Loaded automatically from the selected Service Type.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-medium text-black/60">
+                        Discount (LKR)
+                      </label>
+
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={discountAmount}
+                        onChange={(e) =>
+                          setDiscountAmount(e.target.value)
+                        }
+                        placeholder="0.00"
+                        disabled={saving}
+                        className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-3 rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-3">
+                    <p className="text-[10px] uppercase tracking-wider text-black/35">
+                      Final Amount
+                    </p>
+
+                    <p className="mt-1 text-base font-semibold">
+                      LKR {
+                        Math.max(
+                          0,
+                          (Number(baseAmount) || 0) -
+                            (Number(discountAmount) || 0)
+                        ).toLocaleString("en-LK", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })
+                      }
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-black/35">
+                      This price is saved for this workflow instance.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Description */}
