@@ -23,6 +23,7 @@ type Payment = {
     | "PENDING"
     | "CLEARED"
     | "CANCELLED"
+    | "REFUNDED"
     | "RETURNED"
     | "BOUNCED";
   referenceNo: string | null;
@@ -60,7 +61,7 @@ export default function PaymentSummary({
     useState<number | null>(null);
 
   const [paymentFilter, setPaymentFilter] =
-    useState<"CLEARED" | "CANCELLED">("CLEARED");
+    useState<"CLEARED" | "CANCELLED" | "REFUNDED">("CLEARED");
 
   const [paidAt, setPaidAt] = useState("");
   const [referenceNo, setReferenceNo] =
@@ -541,6 +542,7 @@ export default function PaymentSummary({
                 setPaymentFilter(
                   e.target.value as
                     | "CLEARED"
+                    | "REFUNDED"
                     | "CANCELLED"
                 )
               }
@@ -548,6 +550,10 @@ export default function PaymentSummary({
             >
               <option value="CLEARED">
                 Cleared
+              </option>
+
+              <option value="REFUNDED">
+                Refunded
               </option>
 
               <option value="CANCELLED">
@@ -562,7 +568,9 @@ export default function PaymentSummary({
             <p className="text-sm text-black/40">
               {paymentFilter === "CLEARED"
                 ? "No cleared payments recorded yet."
-                : "No cancelled payments."}
+                : paymentFilter === "REFUNDED"
+                  ? "No refunded payments."
+                  : "No cancelled payments."}
             </p>
           </div>
         ) : (
@@ -624,10 +632,12 @@ export default function PaymentSummary({
 
                     <td className="px-4 py-3">
                       <span className="inline-flex rounded-full bg-black/[0.05] px-2.5 py-1 text-[10px] font-medium text-black/55">
-                        {payment.status.replaceAll(
-                          "_",
-                          " "
-                        )}
+                        {payment.status === "REFUNDED"
+                          ? "Refunded"
+                          : payment.status.replaceAll(
+                              "_",
+                              " "
+                            )}
                       </span>
                     </td>
 

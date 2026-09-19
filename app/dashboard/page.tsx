@@ -71,6 +71,11 @@ export default async function DashboardPage() {
 
     // Calculate outstanding balance across ALL client files.
     prisma.clientFile.findMany({
+      where: {
+        status: {
+          not: "CANCELLED",
+        },
+      },
       select: {
         id: true,
         fileNumber: true,
@@ -732,4 +737,13 @@ function EmptyAttention({ text }: { text: string }) {
 
 function AttentionMore({ text }: { text: string }) {
   return <p className="pt-1 text-center text-[10px] text-black/35">{text}</p>;
+}
+
+function formatDueDate(date: Date) {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Colombo",
+  }).format(date);
 }

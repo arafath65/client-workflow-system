@@ -11,6 +11,7 @@ const navigation = [
   { label: "Files", href: "/files", key: "files" },
   { label: "Workflows", href: "/workflows", key: "workflows" },
   { label: "Staff", href: "/staff", key: "staff" },
+  { label: "Staff Work", href: "/staff-work", key: "staff-work" },
   { label: "Third Parties", href: "/third-parties", key: "third-parties" },
   { label: "Calendar", href: "/calendar", key: "calendar" },
   { label: "Payments", href: "/payments", key: "payments" },

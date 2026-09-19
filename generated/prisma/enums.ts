@@ -9,6 +9,16 @@
 * 🟢 You can import this file directly.
 */
 
+export const FileCancellationSettlement = {
+  NO_PAYMENT: 'NO_PAYMENT',
+  REFUND_PAID: 'REFUND_PAID',
+  NON_REFUNDABLE: 'NON_REFUNDABLE',
+  TRANSFER_CREDIT: 'TRANSFER_CREDIT'
+} as const
+
+export type FileCancellationSettlement = (typeof FileCancellationSettlement)[keyof typeof FileCancellationSettlement]
+
+
 export const FileStatus = {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
@@ -64,6 +74,7 @@ export const PaymentStatus = {
   PENDING: 'PENDING',
   CLEARED: 'CLEARED',
   CANCELLED: 'CANCELLED',
+  REFUNDED: 'REFUNDED',
   RETURNED: 'RETURNED',
   BOUNCED: 'BOUNCED'
 } as const

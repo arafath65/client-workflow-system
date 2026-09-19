@@ -82,6 +82,11 @@ generator client {
     status         FileStatus     @default(OPEN)
     openedAt       DateTime       @default(now())
     completedAt    DateTime?
+    cancelledAt                         DateTime?
+  cancellationReason                  String?
+  cancellationSettlement              FileCancellationSettlement?
+  cancellationSettlementAmount        Decimal? @db.Decimal(12, 2)
+  cancellationTransferTargetFileId    Int?
     createdAt      DateTime       @default(now())
     updatedAt      DateTime       @updatedAt
 
@@ -104,6 +109,13 @@ generator client {
   // ==================================================
   // FILE ENUMS
   // ==================================================
+
+  enum FileCancellationSettlement {
+  NO_PAYMENT
+  REFUND_PAID
+  NON_REFUNDABLE
+  TRANSFER_CREDIT
+}
 
   enum FileStatus {
     OPEN
@@ -458,6 +470,7 @@ generator client {
     PENDING
     CLEARED
     CANCELLED
+    REFUNDED
     RETURNED
     BOUNCED
   }

@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 
 import Navigation from "../components/Navigation";
 import LogoutButton from "../dashboard/LogoutButton";
-import PaymentDashboardFilters from "./PaymentDashboardFilters";
 import { prisma } from "@/lib/prisma";
 
 type SearchParams = Record<
@@ -29,7 +28,8 @@ type ClientSummaryRow = {
   clientName: string;
   fileCount: number;
   billed: number;
-  paid: number;
+  received: number;
+  refunded: number;
   due: number;
 };
 
@@ -92,7 +92,12 @@ export default async function PaymentsPage({
   const rangeEndExclusive = sriLankaStartOfDay(addDays(normalizedRange.to, 1));
 
   const rawStatus = getParam(rawParams.status);
-  const status = rawStatus === "CANCELLED" ? "CANCELLED" : "CLEARED";
+  const status =
+    rawStatus === "CLEARED" ||
+    rawStatus === "REFUNDED" ||
+    rawStatus === "CANCELLED"
+      ? rawStatus
+      : "ALL";
   const search = getParam(rawParams.search).trim();
 
   // --------------------------------------------------
@@ -100,8 +105,9 @@ export default async function PaymentsPage({
   //
   // Billed = current value of workflows + file charges
   // on files opened in the selected date range.
-  // Paid = all CLEARED payments against those files.
-  // Due = current outstanding balance of those files.
+  // Received = all CLEARED payments against those files.
+  // Refunded = all REFUNDED payments against those files.
+  // Due = current outstanding balance; cancelled files are always 0 due.
   // --------------------------------------------------
   const selectedFiles = await prisma.clientFile.findMany({
     where: {
@@ -115,6 +121,7 @@ export default async function PaymentsPage({
       clientId: true,
       fileNumber: true,
       title: true,
+      status: true,
       createdAt: true,
       client: {
         select: {
@@ -134,10 +141,13 @@ export default async function PaymentsPage({
       },
       payments: {
         where: {
-          status: "CLEARED",
+          status: {
+            in: ["CLEARED", "REFUNDED"],
+          },
         },
         select: {
           amount: true,
+          status: true,
         },
       },
     },
@@ -168,41 +178,19 @@ export default async function PaymentsPage({
   });
 
   // --------------------------------------------------
-  // Current-year cleared payments for the monthly chart
-  // The chart always shows Jan-Dec of the current year,
-  // independent of the dashboard date-range filter.
-  // --------------------------------------------------
-  const currentYear = Number(nowColombo.year);
-  const currentYearStart = sriLankaStartOfDay(
-    `${currentYear}-01-01`
-  );
-  const nextYearStart = sriLankaStartOfDay(
-    `${currentYear + 1}-01-01`
-  );
-
-  const currentYearClearedPayments = await prisma.payment.findMany({
-    where: {
-      status: "CLEARED",
-      paidAt: {
-        gte: currentYearStart,
-        lt: nextYearStart,
-      },
-    },
-    select: {
-      amount: true,
-      paidAt: true,
-    },
-    orderBy: {
-      paidAt: "asc",
-    },
-  });
-
-  // --------------------------------------------------
   // Payment history in selected period
   // --------------------------------------------------
   const historyPayments = await prisma.payment.findMany({
     where: {
-      status,
+      ...(status === "ALL"
+        ? {
+            status: {
+              in: ["CLEARED", "REFUNDED", "CANCELLED"],
+            },
+          }
+        : {
+            status,
+          }),
       paidAt: {
         gte: rangeStart,
         lt: rangeEndExclusive,
@@ -334,7 +322,6 @@ export default async function PaymentsPage({
   // --------------------------------------------------
   let totalBilled = 0;
   let totalDue = 0;
-  let totalPaidForSelectedFiles = 0;
 
   const clientSummaryMap = new Map<number, ClientSummaryRow>();
 
@@ -350,18 +337,23 @@ export default async function PaymentsPage({
     );
 
     const billed = roundMoney(workflowTotal + extraChargeTotal);
-    const paid = roundMoney(
-      file.payments.reduce(
-        (sum, payment) => sum + Number(payment.amount),
-        0
-      )
+    const received = roundMoney(
+      file.payments
+        .filter((payment) => payment.status === "CLEARED")
+        .reduce((sum, payment) => sum + Number(payment.amount), 0)
     );
-    const due = roundMoney(Math.max(billed - paid, 0));
+    const refunded = roundMoney(
+      file.payments
+        .filter((payment) => payment.status === "REFUNDED")
+        .reduce((sum, payment) => sum + Number(payment.amount), 0)
+    );
+    const due =
+      file.status === "CANCELLED"
+        ? 0
+        : roundMoney(Math.max(billed - received, 0));
 
     totalBilled += billed;
     totalDue += due;
-    totalPaidForSelectedFiles += paid;
-
     const existing = clientSummaryMap.get(file.clientId);
 
     if (!existing) {
@@ -370,24 +362,35 @@ export default async function PaymentsPage({
         clientName: file.client.name,
         fileCount: 1,
         billed,
-        paid,
+        received,
+        refunded,
         due,
       });
     } else {
       existing.fileCount += 1;
       existing.billed = roundMoney(existing.billed + billed);
-      existing.paid = roundMoney(existing.paid + paid);
+      existing.received = roundMoney(existing.received + received);
+      existing.refunded = roundMoney(existing.refunded + refunded);
       existing.due = roundMoney(existing.due + due);
     }
   }
 
   totalBilled = roundMoney(totalBilled);
   totalDue = roundMoney(totalDue);
-  totalPaidForSelectedFiles = roundMoney(totalPaidForSelectedFiles);
-
   const totalPaidInRange = roundMoney(
     periodClearedPayments.reduce(
       (sum, payment) => sum + Number(payment.amount),
+      0
+    )
+  );
+
+  const totalRefundedInRange = roundMoney(
+    selectedFiles.reduce(
+      (sum, file) =>
+        sum +
+        file.payments
+          .filter((payment) => payment.status === "REFUNDED")
+          .reduce((fileSum, payment) => fileSum + Number(payment.amount), 0),
       0
     )
   );
@@ -396,9 +399,10 @@ export default async function PaymentsPage({
     (a, b) => b.due - a.due || a.clientName.localeCompare(b.clientName)
   );
 
-  const monthlyGrowth = buildCurrentYearMonthlySeries(
-    currentYearClearedPayments,
-    currentYear
+  const monthlyGrowth = buildMonthlySeries(
+    periodClearedPayments,
+    normalizedRange.from,
+    normalizedRange.to
   );
 
   const totalClients = clientSummary.length;
@@ -407,6 +411,34 @@ export default async function PaymentsPage({
     normalizedRange.to
   );
 
+  // --------------------------------------------------
+  // Preset links
+  // --------------------------------------------------
+  const thisMonthQuery = buildQuery({
+    from: currentMonthStart,
+    to: currentMonthEnd,
+    status,
+    search,
+  });
+
+  const lastMonth = getPreviousMonth(Number(nowColombo.year), Number(nowColombo.month));
+  const lastMonthStart = `${lastMonth.year}-${pad2(lastMonth.month)}-01`;
+  const lastMonthEnd = getLastDayOfMonth(lastMonth.year, lastMonth.month);
+
+  const lastMonthQuery = buildQuery({
+    from: lastMonthStart,
+    to: lastMonthEnd,
+    status,
+    search,
+  });
+
+  const lastTwelveMonthsStart = getMonthStartYearsAgo(1);
+  const lastTwelveMonthsQuery = buildQuery({
+    from: lastTwelveMonthsStart,
+    to: nowColombo.date,
+    status,
+    search,
+  });
 
   return (
     <main className="min-h-screen bg-[#f6f6f4] text-[#171717]">
@@ -457,31 +489,119 @@ export default async function PaymentsPage({
         </div>
 
         {/* Filters */}
-        <PaymentDashboardFilters
-          from={normalizedRange.from}
-          to={normalizedRange.to}
-          status={status}
-          search={search}
-          currentMonthStart={currentMonthStart}
-          currentMonthEnd={currentMonthEnd}
-          lastMonthStart={(() => {
-            const previous = getPreviousMonth(
-              Number(nowColombo.year),
-              Number(nowColombo.month)
-            );
-            return `${previous.year}-${pad2(previous.month)}-01`;
-          })()}
-          lastMonthEnd={(() => {
-            const previous = getPreviousMonth(
-              Number(nowColombo.year),
-              Number(nowColombo.month)
-            );
-            return getLastDayOfMonth(previous.year, previous.month);
-          })()}
-          lastTwelveMonthsStart={getMonthStartYearsAgo(1)}
-          lastTwelveMonthsEnd={nowColombo.date}
-          selectedRangeLabel={selectedRangeLabel}
-        />
+        <form
+          method="get"
+          className="mt-8 rounded-xl border border-black/10 bg-white p-5 shadow-sm"
+        >
+          <div className="flex flex-wrap items-end gap-4">
+            <div>
+              <label
+                htmlFor="from"
+                className="mb-1.5 block text-xs font-medium text-black/50"
+              >
+                From
+              </label>
+              <input
+                id="from"
+                name="from"
+                type="date"
+                defaultValue={normalizedRange.from}
+                className="h-10 rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="to"
+                className="mb-1.5 block text-xs font-medium text-black/50"
+              >
+                To
+              </label>
+              <input
+                id="to"
+                name="to"
+                type="date"
+                defaultValue={normalizedRange.to}
+                className="h-10 rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
+              />
+            </div>
+
+            <div className="min-w-44">
+              <label
+                htmlFor="status"
+                className="mb-1.5 block text-xs font-medium text-black/50"
+              >
+                Payment History
+              </label>
+              <select
+                id="status"
+                name="status"
+                defaultValue={status}
+                className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
+              >
+                <option value="ALL">All</option>
+                <option value="CLEARED">Cleared</option>
+                <option value="REFUNDED">Refunded</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+
+            <div className="min-w-56 flex-1">
+              <label
+                htmlFor="search"
+                className="mb-1.5 block text-xs font-medium text-black/50"
+              >
+                Search
+              </label>
+              <input
+                id="search"
+                name="search"
+                type="text"
+                defaultValue={search}
+                placeholder="Client, file number, service or reference..."
+                className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="h-10 rounded-lg bg-black px-5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black"
+            >
+              Apply
+            </button>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-[10px] font-semibold uppercase tracking-wider text-black/30">
+              Presets
+            </span>
+
+            <Link
+              href={`?${thisMonthQuery}`}
+              className="rounded-full border border-black/10 px-3 py-1.5 text-[10px] font-medium text-black/55 transition hover:border-[#f9a800]/40 hover:bg-[#fffaf0] hover:text-black"
+            >
+              This Month
+            </Link>
+
+            <Link
+              href={`?${lastMonthQuery}`}
+              className="rounded-full border border-black/10 px-3 py-1.5 text-[10px] font-medium text-black/55 transition hover:border-[#f9a800]/40 hover:bg-[#fffaf0] hover:text-black"
+            >
+              Last Month
+            </Link>
+
+            <Link
+              href={`?${lastTwelveMonthsQuery}`}
+              className="rounded-full border border-black/10 px-3 py-1.5 text-[10px] font-medium text-black/55 transition hover:border-[#f9a800]/40 hover:bg-[#fffaf0] hover:text-black"
+            >
+              Last 12 Months
+            </Link>
+
+            <span className="ml-auto text-[10px] text-black/35">
+              Showing {selectedRangeLabel}
+            </span>
+          </div>
+        </form>
 
         {/* KPI Cards */}
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -498,15 +618,15 @@ export default async function PaymentsPage({
           />
 
           <FinanceCard
-            title="Total Due"
-            value={formatLkr(totalDue)}
-            description="Current outstanding on selected files"
+            title="Total Refunded"
+            value={formatLkr(totalRefundedInRange)}
+            description="Refunded payments in selected range"
           />
 
           <FinanceCard
-            title="Total Clients"
-            value={totalClients.toString()}
-            description="Clients with files in selected range"
+            title="Total Due"
+            value={formatLkr(totalDue)}
+            description="Current outstanding on selected files"
           />
         </div>
 
@@ -516,11 +636,11 @@ export default async function PaymentsPage({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-sm font-semibold">
-                  Monthly Payment Growth · {currentYear}
+                  Monthly Payment Growth
                 </h2>
                 <p className="mt-1 text-xs text-black/40">
-                  Monthly total of CLEARED payments received during the current
-                  year.
+                  Monthly total of CLEARED payments received in the selected
+                  period.
                 </p>
               </div>
 
@@ -588,7 +708,10 @@ export default async function PaymentsPage({
                       Billed
                     </th>
                     <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                      Paid
+                      Received
+                    </th>
+                    <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                      Refunded
                     </th>
                     <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
                       Due
@@ -617,7 +740,10 @@ export default async function PaymentsPage({
                         {formatLkr(row.billed)}
                       </td>
                       <td className="px-4 py-3 text-right text-xs text-black/60">
-                        {formatLkr(row.paid)}
+                        {formatLkr(row.received)}
+                      </td>
+                      <td className="px-4 py-3 text-right text-xs text-black/60">
+                        {formatLkr(row.refunded)}
                       </td>
                       <td className="px-4 py-3 text-right text-xs font-semibold">
                         {formatLkr(row.due)}
@@ -630,9 +756,9 @@ export default async function PaymentsPage({
           )}
 
           <p className="mt-3 text-[10px] text-black/30">
-            Paid in this table is the all-time CLEARED amount received against
-            the selected files. The Total Paid card above is limited to the
-            selected date range.
+            Received is the all-time CLEARED amount retained against the
+            selected files. Refunded is the amount returned to clients.
+            Cancelled files have no current amount due.
           </p>
         </div>
 
@@ -642,8 +768,13 @@ export default async function PaymentsPage({
             <div>
               <h2 className="text-sm font-semibold">Payment History</h2>
               <p className="mt-1 text-xs text-black/40">
-                {status === "CLEARED" ? "Cleared" : "Cancelled"} payments in
-                the selected date range.
+                {status === "ALL"
+                  ? "All"
+                  : status === "CLEARED"
+                    ? "Cleared"
+                    : status === "REFUNDED"
+                      ? "Refunded"
+                      : "Cancelled"} payment activity in the selected date range.
                 {historyPayments.length >= 250 ? " Showing the latest 250." : ""}
               </p>
             </div>
@@ -657,9 +788,13 @@ export default async function PaymentsPage({
           {historyPayments.length === 0 ? (
             <EmptyState
               message={
-                status === "CLEARED"
-                  ? "No cleared payments found for the selected filters."
-                  : "No cancelled payments found for the selected filters."
+                status === "ALL"
+                  ? "No payment activity found for the selected filters."
+                  : status === "CLEARED"
+                    ? "No cleared payments found for the selected filters."
+                    : status === "REFUNDED"
+                      ? "No refunded payments found for the selected filters."
+                      : "No cancelled payments found for the selected filters."
               }
             />
           ) : (
@@ -728,12 +863,16 @@ export default async function PaymentsPage({
                           className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${
                             payment.status === "CLEARED"
                               ? "bg-[#f1f8ea] text-[#4f702d]"
-                              : "bg-[#fff0f0] text-[#9b4141]"
+                              : payment.status === "REFUNDED"
+                                ? "bg-[#fff7e6] text-[#a56e00]"
+                                : "bg-[#fff0f0] text-[#9b4141]"
                           }`}
                         >
                           {payment.status === "CLEARED"
                             ? "Cleared"
-                            : "Cancelled"}
+                            : payment.status === "REFUNDED"
+                              ? "Refunded"
+                              : "Cancelled"}
                         </span>
                       </td>
                     </tr>
@@ -747,8 +886,8 @@ export default async function PaymentsPage({
         {/* Small reconciliation note */}
         <div className="mt-4 rounded-lg border border-black/5 bg-white/60 px-4 py-3">
           <p className="text-[10px] leading-5 text-black/35">
-            Financial totals use CLEARED payments only. Cancelled payments are
-            preserved in history but are not counted as received money.
+            Financial totals use CLEARED payments as Received. Refunded payments
+            are excluded from Received and remain visible in payment history.
           </p>
         </div>
       </section>
@@ -791,21 +930,21 @@ function FinanceCard({
 
 function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
   if (points.length === 0) {
-    return <EmptyState message="No monthly data available." />;
+    return (
+      <EmptyState message="No cleared payments in the selected date range." />
+    );
   }
 
-  const width = 720;
+  const width = Math.max(720, points.length * 76);
   const height = 300;
-  const paddingLeft = 76;
-  const paddingRight = 18;
-  const paddingTop = 24;
-  const paddingBottom = 48;
+  const paddingLeft = 64;
+  const paddingRight = 24;
+  const paddingTop = 22;
+  const paddingBottom = 44;
   const plotWidth = width - paddingLeft - paddingRight;
   const plotHeight = height - paddingTop - paddingBottom;
-
-  const rawMax = Math.max(...points.map((point) => point.amount), 0);
-  const chartMax = getNiceChartMax(rawMax);
-  const gridCount = 4;
+  const maxValue = Math.max(...points.map((point) => point.amount), 1);
+  const gridSteps = [0, 0.25, 0.5, 0.75, 1];
 
   const coords = points.map((point, index) => {
     const x =
@@ -813,12 +952,7 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
       (points.length === 1
         ? plotWidth / 2
         : (index / (points.length - 1)) * plotWidth);
-
-    const y =
-      paddingTop +
-      plotHeight -
-      (point.amount / chartMax) * plotHeight;
-
+    const y = paddingTop + plotHeight - (point.amount / maxValue) * plotHeight;
     return { ...point, x, y };
   });
 
@@ -826,40 +960,19 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
     .map((point) => `${point.x},${point.y}`)
     .join(" ");
 
-  const areaPath =
-    coords.length > 0
-      ? [
-          `M ${coords[0].x} ${paddingTop + plotHeight}`,
-          ...coords.map((point) => `L ${point.x} ${point.y}`),
-          `L ${coords[coords.length - 1].x} ${paddingTop + plotHeight}`,
-          "Z",
-        ].join(" ")
-      : "";
-
   return (
-    <div className="mt-5 overflow-hidden rounded-lg border border-black/5 bg-[#fcfcfb]">
+    <div className="mt-5 overflow-x-auto rounded-lg border border-black/5 bg-[#fcfcfb]">
       <svg
-        width="100%"
+        width={width}
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label="Monthly cleared payment growth chart for the current year"
-        className="block"
+        aria-label="Monthly cleared payment growth chart"
+        className="block min-w-full"
       >
-        <defs>
-          <linearGradient id="paymentArea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#f9a800" stopOpacity="0.16" />
-            <stop offset="100%" stopColor="#f9a800" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-
-        {Array.from({ length: gridCount + 1 }, (_, index) => {
-          const fraction = index / gridCount;
-          const y =
-            paddingTop +
-            plotHeight -
-            fraction * plotHeight;
-          const label = formatCompactLkr(chartMax * fraction);
+        {gridSteps.map((fraction) => {
+          const y = paddingTop + plotHeight - fraction * plotHeight;
+          const label = formatCompactLkr(maxValue * fraction);
 
           return (
             <g key={fraction}>
@@ -884,13 +997,6 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
             </g>
           );
         })}
-
-        {areaPath ? (
-          <path
-            d={areaPath}
-            fill="url(#paymentArea)"
-          />
-        ) : null}
 
         {coords.length > 1 ? (
           <polyline
@@ -917,7 +1023,7 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
               x={point.x}
               y={point.y - 12}
               textAnchor="middle"
-              fontSize="9"
+              fontSize="10"
               fontWeight="600"
               fill="#171717"
             >
@@ -925,7 +1031,7 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
             </text>
             <text
               x={point.x}
-              y={height - 18}
+              y={height - 17}
               textAnchor="middle"
               fontSize="10"
               fill="rgba(0,0,0,0.45)"
@@ -937,27 +1043,6 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
       </svg>
     </div>
   );
-}
-
-function getNiceChartMax(value: number) {
-  if (value <= 0) {
-    return 1000;
-  }
-
-  const roughStep = value / 4;
-  const magnitude = 10 ** Math.floor(Math.log10(roughStep));
-  const normalized = roughStep / magnitude;
-
-  const step =
-    normalized <= 1
-      ? 1 * magnitude
-      : normalized <= 2
-        ? 2 * magnitude
-        : normalized <= 5
-          ? 5 * magnitude
-          : 10 * magnitude;
-
-  return Math.max(step, Math.ceil(value / step) * step);
 }
 
 /* --------------------------------------------------
@@ -1095,21 +1180,23 @@ function getMonthStartYearsAgo(yearsAgo: number) {
   return `${year}-${pad2(month)}-01`;
 }
 
-function buildCurrentYearMonthlySeries(
+function buildMonthlySeries(
   payments: Array<{ amount: unknown; paidAt: Date }>,
-  year: number
+  from: string,
+  to: string
 ): MonthlyPoint[] {
   const totals = new Map<string, number>();
+  const cursor = new Date(`${from}T00:00:00Z`);
+  const end = new Date(`${to}T00:00:00Z`);
 
-  // Always create all 12 months so the current-year axis is complete.
-  for (let month = 1; month <= 12; month += 1) {
-    totals.set(`${year}-${pad2(month)}`, 0);
+  while (cursor <= end) {
+    const key = `${cursor.getUTCFullYear()}-${pad2(cursor.getUTCMonth() + 1)}`;
+    totals.set(key, 0);
+    cursor.setUTCMonth(cursor.getUTCMonth() + 1);
   }
 
   for (const payment of payments) {
     const parts = getColomboDateParts(payment.paidAt);
-    if (Number(parts.year) !== year) continue;
-
     const key = `${parts.year}-${parts.month}`;
     totals.set(
       key,

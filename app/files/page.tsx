@@ -5,6 +5,7 @@ import Navigation from "../components/Navigation";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import FileActions from "./FileActions";
 
 type FilesPageProps = {
   searchParams: Promise<{
@@ -288,7 +289,6 @@ export default async function FilesPage({
               </p>
             </div>
 
-            {/* Live search and status filter */}
             <FilesFilter />
           </div>
 
@@ -333,9 +333,10 @@ export default async function FilesPage({
 
                 <tbody>
                   {files.map((file) => {
-                    const tasks = file.fileWorkflows.flatMap(
-                      (workflow) => workflow.tasks
-                    );
+                    const tasks =
+                      file.fileWorkflows.flatMap(
+                        (workflow) => workflow.tasks
+                      );
 
                     const completedTasks = tasks.filter(
                       (task) => task.status === "COMPLETED"
@@ -437,12 +438,13 @@ export default async function FilesPage({
                         </td>
 
                         <td className="px-4 py-4">
-                          <Link
-                            href={`/files/${file.id}`}
-                            className="inline-flex rounded-lg border border-black/10 px-3 py-2 text-xs font-medium hover:border-[#f9a800] hover:bg-[#fffaf0]"
-                          >
-                            View File →
-                          </Link>
+                          <FileActions
+                            fileId={file.id}
+                            fileNumber={file.fileNumber}
+                            clientName={file.client.name}
+                            title={file.title}
+                            canCancel={file.status !== "CANCELLED" && file.status !== "COMPLETED"}
+                          />
                         </td>
                       </tr>
                     );

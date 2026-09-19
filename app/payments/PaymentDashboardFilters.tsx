@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 type PaymentDashboardFiltersProps = {
   from: string;
   to: string;
-  status: "CLEARED" | "CANCELLED";
+  status: "ALL" | "CLEARED" | "REFUNDED" | "CANCELLED";
   search: string;
   currentMonthStart: string;
   currentMonthEnd: string;
@@ -102,7 +102,7 @@ export default function PaymentDashboardFilters({
     replaceQuery({
       from: currentMonthStart,
       to: currentMonthEnd,
-      status: "CLEARED",
+      status: "ALL",
       search: null,
     });
     setSearchValue("");
@@ -156,12 +156,20 @@ export default function PaymentDashboardFilters({
             onChange={(e) =>
               replaceQuery({
                 status:
-                  e.target.value === "CANCELLED" ? "CANCELLED" : "CLEARED",
+                  e.target.value === "CLEARED"
+                    ? "CLEARED"
+                    : e.target.value === "REFUNDED"
+                      ? "REFUNDED"
+                      : e.target.value === "CANCELLED"
+                        ? "CANCELLED"
+                        : "ALL",
               })
             }
             className={selectClass}
           >
+            <option value="ALL">All</option>
             <option value="CLEARED">Cleared</option>
+            <option value="REFUNDED">Refunded</option>
             <option value="CANCELLED">Cancelled</option>
           </select>
         </div>

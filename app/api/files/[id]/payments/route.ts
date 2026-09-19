@@ -22,6 +22,7 @@ const PAYMENT_STATUSES: PaymentStatus[] = [
   "PENDING",
   "CLEARED",
   "CANCELLED",
+  "REFUNDED",
   "RETURNED",
   "BOUNCED",
 ];
@@ -127,6 +128,7 @@ export async function GET(
       select: {
         id: true,
         fileNumber: true,
+        status: true,
         fileWorkflows: {
           orderBy: {
             createdAt: "asc",
@@ -216,10 +218,13 @@ export async function GET(
       0
     );
 
-    const outstanding = Math.max(
-      totalAmount - totalPaid,
-      0
-    );
+    const outstanding =
+      clientFile.status === "CANCELLED"
+        ? 0
+        : Math.max(
+            totalAmount - totalPaid,
+            0
+          );
 
     return NextResponse.json({
       success: true,
@@ -440,196 +445,6 @@ export async function POST(
       {
         success: false,
         message: "Unable to record payment.",
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// ==================================================
-// PATCH - Reverse / Cancel Payment
-// ==================================================
-
-export async function PATCH(
-  request: NextRequest,
-  { params }: RouteContext
-) {
-  try {
-    const { id } = await params;
-    const clientFileId = parseFileId(id);
-
-    if (clientFileId === null) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid file ID.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const body = await request.json();
-
-    const paymentId = Number(body.paymentId);
-
-    if (
-      !Number.isInteger(paymentId) ||
-      paymentId <= 0
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid payment ID.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const payment =
-      await prisma.payment.findFirst({
-        where: {
-          id: paymentId,
-          clientFileId,
-        },
-        select: {
-          id: true,
-          amount: true,
-          status: true,
-          allocations: {
-            select: {
-              installmentId: true,
-            },
-          },
-        },
-      });
-
-    if (!payment) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Payment not found.",
-        },
-        { status: 404 }
-      );
-    }
-
-    if (payment.status !== "CLEARED") {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Only cleared payments can be reversed.",
-        },
-        { status: 400 }
-      );
-    }
-
-    // --------------------------------------------------
-    // Cancel payment
-    // --------------------------------------------------
-
-    const affectedInstallmentIds =
-      payment.allocations.map(
-        (allocation) =>
-          allocation.installmentId
-      );
-
-    await prisma.$transaction(
-      async (tx) => {
-        await tx.payment.update({
-          where: {
-            id: payment.id,
-          },
-          data: {
-            status: "CANCELLED",
-          },
-        });
-
-        // ------------------------------------------------
-        // Recalculate affected installment statuses
-        // ------------------------------------------------
-
-        for (const installmentId of affectedInstallmentIds) {
-          const installment =
-            await tx.paymentInstallment.findUnique({
-              where: {
-                id: installmentId,
-              },
-              select: {
-                amount: true,
-              },
-            });
-
-          if (!installment) continue;
-
-          const allocations =
-            await tx.paymentAllocation.findMany({
-              where: {
-                installmentId,
-                payment: {
-                  status: "CLEARED",
-                },
-              },
-              select: {
-                amount: true,
-              },
-            });
-
-          const allocatedAmount =
-            allocations.reduce(
-              (total, allocation) =>
-                total +
-                Number(allocation.amount),
-              0
-            );
-
-          const installmentAmount =
-            Number(installment.amount);
-
-          let nextStatus:
-            | "PENDING"
-            | "PARTIALLY_PAID"
-            | "PAID";
-
-          if (
-            allocatedAmount >=
-            installmentAmount
-          ) {
-            nextStatus = "PAID";
-          } else if (
-            allocatedAmount > 0
-          ) {
-            nextStatus = "PARTIALLY_PAID";
-          } else {
-            nextStatus = "PENDING";
-          }
-
-          await tx.paymentInstallment.update({
-            where: {
-              id: installmentId,
-            },
-            data: {
-              status: nextStatus,
-            },
-          });
-        }
-      }
-    );
-
-    return NextResponse.json({
-      success: true,
-      message: "Payment reversed successfully.",
-    });
-  } catch (error) {
-    console.error(
-      "Reverse payment error:",
-      error
-    );
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Unable to reverse payment.",
       },
       { status: 500 }
     );

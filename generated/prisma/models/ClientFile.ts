@@ -30,12 +30,16 @@ export type ClientFileAvgAggregateOutputType = {
   id: number | null
   clientId: number | null
   thirdPartyId: number | null
+  cancellationSettlementAmount: runtime.Decimal | null
+  cancellationTransferTargetFileId: number | null
 }
 
 export type ClientFileSumAggregateOutputType = {
   id: number | null
   clientId: number | null
   thirdPartyId: number | null
+  cancellationSettlementAmount: runtime.Decimal | null
+  cancellationTransferTargetFileId: number | null
 }
 
 export type ClientFileMinAggregateOutputType = {
@@ -49,6 +53,11 @@ export type ClientFileMinAggregateOutputType = {
   status: $Enums.FileStatus | null
   openedAt: Date | null
   completedAt: Date | null
+  cancelledAt: Date | null
+  cancellationReason: string | null
+  cancellationSettlement: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount: runtime.Decimal | null
+  cancellationTransferTargetFileId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -64,6 +73,11 @@ export type ClientFileMaxAggregateOutputType = {
   status: $Enums.FileStatus | null
   openedAt: Date | null
   completedAt: Date | null
+  cancelledAt: Date | null
+  cancellationReason: string | null
+  cancellationSettlement: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount: runtime.Decimal | null
+  cancellationTransferTargetFileId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -79,6 +93,11 @@ export type ClientFileCountAggregateOutputType = {
   status: number
   openedAt: number
   completedAt: number
+  cancelledAt: number
+  cancellationReason: number
+  cancellationSettlement: number
+  cancellationSettlementAmount: number
+  cancellationTransferTargetFileId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -89,12 +108,16 @@ export type ClientFileAvgAggregateInputType = {
   id?: true
   clientId?: true
   thirdPartyId?: true
+  cancellationSettlementAmount?: true
+  cancellationTransferTargetFileId?: true
 }
 
 export type ClientFileSumAggregateInputType = {
   id?: true
   clientId?: true
   thirdPartyId?: true
+  cancellationSettlementAmount?: true
+  cancellationTransferTargetFileId?: true
 }
 
 export type ClientFileMinAggregateInputType = {
@@ -108,6 +131,11 @@ export type ClientFileMinAggregateInputType = {
   status?: true
   openedAt?: true
   completedAt?: true
+  cancelledAt?: true
+  cancellationReason?: true
+  cancellationSettlement?: true
+  cancellationSettlementAmount?: true
+  cancellationTransferTargetFileId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -123,6 +151,11 @@ export type ClientFileMaxAggregateInputType = {
   status?: true
   openedAt?: true
   completedAt?: true
+  cancelledAt?: true
+  cancellationReason?: true
+  cancellationSettlement?: true
+  cancellationSettlementAmount?: true
+  cancellationTransferTargetFileId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -138,6 +171,11 @@ export type ClientFileCountAggregateInputType = {
   status?: true
   openedAt?: true
   completedAt?: true
+  cancelledAt?: true
+  cancellationReason?: true
+  cancellationSettlement?: true
+  cancellationSettlementAmount?: true
+  cancellationTransferTargetFileId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -240,6 +278,11 @@ export type ClientFileGroupByOutputType = {
   status: $Enums.FileStatus
   openedAt: Date
   completedAt: Date | null
+  cancelledAt: Date | null
+  cancellationReason: string | null
+  cancellationSettlement: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount: runtime.Decimal | null
+  cancellationTransferTargetFileId: number | null
   createdAt: Date
   updatedAt: Date
   _count: ClientFileCountAggregateOutputType | null
@@ -278,6 +321,11 @@ export type ClientFileWhereInput = {
   status?: Prisma.EnumFileStatusFilter<"ClientFile"> | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
   completedAt?: Prisma.DateTimeNullableFilter<"ClientFile"> | Date | string | null
+  cancelledAt?: Prisma.DateTimeNullableFilter<"ClientFile"> | Date | string | null
+  cancellationReason?: Prisma.StringNullableFilter<"ClientFile"> | string | null
+  cancellationSettlement?: Prisma.EnumFileCancellationSettlementNullableFilter<"ClientFile"> | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.DecimalNullableFilter<"ClientFile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.IntNullableFilter<"ClientFile"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
   client?: Prisma.XOR<Prisma.ClientScalarRelationFilter, Prisma.ClientWhereInput>
@@ -300,6 +348,11 @@ export type ClientFileOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationSettlement?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationSettlementAmount?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationTransferTargetFileId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   client?: Prisma.ClientOrderByWithRelationInput
@@ -326,6 +379,11 @@ export type ClientFileWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumFileStatusFilter<"ClientFile"> | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
   completedAt?: Prisma.DateTimeNullableFilter<"ClientFile"> | Date | string | null
+  cancelledAt?: Prisma.DateTimeNullableFilter<"ClientFile"> | Date | string | null
+  cancellationReason?: Prisma.StringNullableFilter<"ClientFile"> | string | null
+  cancellationSettlement?: Prisma.EnumFileCancellationSettlementNullableFilter<"ClientFile"> | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.DecimalNullableFilter<"ClientFile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.IntNullableFilter<"ClientFile"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
   client?: Prisma.XOR<Prisma.ClientScalarRelationFilter, Prisma.ClientWhereInput>
@@ -348,6 +406,11 @@ export type ClientFileOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationSettlement?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationSettlementAmount?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationTransferTargetFileId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ClientFileCountOrderByAggregateInput
@@ -371,6 +434,11 @@ export type ClientFileScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumFileStatusWithAggregatesFilter<"ClientFile"> | $Enums.FileStatus
   openedAt?: Prisma.DateTimeWithAggregatesFilter<"ClientFile"> | Date | string
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ClientFile"> | Date | string | null
+  cancelledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ClientFile"> | Date | string | null
+  cancellationReason?: Prisma.StringNullableWithAggregatesFilter<"ClientFile"> | string | null
+  cancellationSettlement?: Prisma.EnumFileCancellationSettlementNullableWithAggregatesFilter<"ClientFile"> | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.DecimalNullableWithAggregatesFilter<"ClientFile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.IntNullableWithAggregatesFilter<"ClientFile"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ClientFile"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ClientFile"> | Date | string
 }
@@ -383,6 +451,11 @@ export type ClientFileCreateInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   client: Prisma.ClientCreateNestedOneWithoutFilesInput
@@ -405,6 +478,11 @@ export type ClientFileUncheckedCreateInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
@@ -422,6 +500,11 @@ export type ClientFileUpdateInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
@@ -444,6 +527,11 @@ export type ClientFileUncheckedUpdateInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
@@ -464,6 +552,11 @@ export type ClientFileCreateManyInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -476,6 +569,11 @@ export type ClientFileUpdateManyMutationInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -491,6 +589,11 @@ export type ClientFileUncheckedUpdateManyInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -522,6 +625,11 @@ export type ClientFileCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrder
+  cancellationReason?: Prisma.SortOrder
+  cancellationSettlement?: Prisma.SortOrder
+  cancellationSettlementAmount?: Prisma.SortOrder
+  cancellationTransferTargetFileId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -530,6 +638,8 @@ export type ClientFileAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clientId?: Prisma.SortOrder
   thirdPartyId?: Prisma.SortOrder
+  cancellationSettlementAmount?: Prisma.SortOrder
+  cancellationTransferTargetFileId?: Prisma.SortOrder
 }
 
 export type ClientFileMaxOrderByAggregateInput = {
@@ -543,6 +653,11 @@ export type ClientFileMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrder
+  cancellationReason?: Prisma.SortOrder
+  cancellationSettlement?: Prisma.SortOrder
+  cancellationSettlementAmount?: Prisma.SortOrder
+  cancellationTransferTargetFileId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -558,6 +673,11 @@ export type ClientFileMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   openedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrder
+  cancellationReason?: Prisma.SortOrder
+  cancellationSettlement?: Prisma.SortOrder
+  cancellationSettlementAmount?: Prisma.SortOrder
+  cancellationTransferTargetFileId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -566,6 +686,8 @@ export type ClientFileSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   clientId?: Prisma.SortOrder
   thirdPartyId?: Prisma.SortOrder
+  cancellationSettlementAmount?: Prisma.SortOrder
+  cancellationTransferTargetFileId?: Prisma.SortOrder
 }
 
 export type ClientFileScalarRelationFilter = {
@@ -630,6 +752,18 @@ export type EnumFileStatusFieldUpdateOperationsInput = {
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
+}
+
+export type NullableEnumFileCancellationSettlementFieldUpdateOperationsInput = {
+  set?: $Enums.FileCancellationSettlement | null
+}
+
+export type NullableDecimalFieldUpdateOperationsInput = {
+  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type NullableIntFieldUpdateOperationsInput = {
@@ -762,6 +896,11 @@ export type ClientFileCreateWithoutClientInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   thirdParty?: Prisma.ThirdPartyCreateNestedOneWithoutClientFilesInput
@@ -782,6 +921,11 @@ export type ClientFileUncheckedCreateWithoutClientInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
@@ -831,6 +975,11 @@ export type ClientFileScalarWhereInput = {
   status?: Prisma.EnumFileStatusFilter<"ClientFile"> | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
   completedAt?: Prisma.DateTimeNullableFilter<"ClientFile"> | Date | string | null
+  cancelledAt?: Prisma.DateTimeNullableFilter<"ClientFile"> | Date | string | null
+  cancellationReason?: Prisma.StringNullableFilter<"ClientFile"> | string | null
+  cancellationSettlement?: Prisma.EnumFileCancellationSettlementNullableFilter<"ClientFile"> | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.DecimalNullableFilter<"ClientFile"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.IntNullableFilter<"ClientFile"> | number | null
   createdAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ClientFile"> | Date | string
 }
@@ -843,6 +992,11 @@ export type ClientFileCreateWithoutFileWorkflowsInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   client: Prisma.ClientCreateNestedOneWithoutFilesInput
@@ -864,6 +1018,11 @@ export type ClientFileUncheckedCreateWithoutFileWorkflowsInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   charges?: Prisma.FileChargeUncheckedCreateNestedManyWithoutClientFileInput
@@ -896,6 +1055,11 @@ export type ClientFileUpdateWithoutFileWorkflowsInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
@@ -917,6 +1081,11 @@ export type ClientFileUncheckedUpdateWithoutFileWorkflowsInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   charges?: Prisma.FileChargeUncheckedUpdateManyWithoutClientFileNestedInput
@@ -933,6 +1102,11 @@ export type ClientFileCreateWithoutChargesInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   client: Prisma.ClientCreateNestedOneWithoutFilesInput
@@ -954,6 +1128,11 @@ export type ClientFileUncheckedCreateWithoutChargesInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
@@ -986,6 +1165,11 @@ export type ClientFileUpdateWithoutChargesInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
@@ -1007,6 +1191,11 @@ export type ClientFileUncheckedUpdateWithoutChargesInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
@@ -1023,6 +1212,11 @@ export type ClientFileCreateWithoutPaymentsInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   client: Prisma.ClientCreateNestedOneWithoutFilesInput
@@ -1044,6 +1238,11 @@ export type ClientFileUncheckedCreateWithoutPaymentsInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
@@ -1076,6 +1275,11 @@ export type ClientFileUpdateWithoutPaymentsInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
@@ -1097,6 +1301,11 @@ export type ClientFileUncheckedUpdateWithoutPaymentsInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
@@ -1113,6 +1322,11 @@ export type ClientFileCreateWithoutInstallmentsInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   client: Prisma.ClientCreateNestedOneWithoutFilesInput
@@ -1134,6 +1348,11 @@ export type ClientFileUncheckedCreateWithoutInstallmentsInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
@@ -1166,6 +1385,11 @@ export type ClientFileUpdateWithoutInstallmentsInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
@@ -1187,6 +1411,11 @@ export type ClientFileUncheckedUpdateWithoutInstallmentsInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
@@ -1203,6 +1432,11 @@ export type ClientFileCreateWithoutCalendarEventsInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   client: Prisma.ClientCreateNestedOneWithoutFilesInput
@@ -1224,6 +1458,11 @@ export type ClientFileUncheckedCreateWithoutCalendarEventsInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
@@ -1256,6 +1495,11 @@ export type ClientFileUpdateWithoutCalendarEventsInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
@@ -1277,6 +1521,11 @@ export type ClientFileUncheckedUpdateWithoutCalendarEventsInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
@@ -1293,6 +1542,11 @@ export type ClientFileCreateWithoutThirdPartyInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   client: Prisma.ClientCreateNestedOneWithoutFilesInput
@@ -1313,6 +1567,11 @@ export type ClientFileUncheckedCreateWithoutThirdPartyInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutClientFileInput
@@ -1358,6 +1617,11 @@ export type ClientFileCreateManyClientInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1370,6 +1634,11 @@ export type ClientFileUpdateWithoutClientInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   thirdParty?: Prisma.ThirdPartyUpdateOneWithoutClientFilesNestedInput
@@ -1390,6 +1659,11 @@ export type ClientFileUncheckedUpdateWithoutClientInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
@@ -1409,6 +1683,11 @@ export type ClientFileUncheckedUpdateManyWithoutClientInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1423,6 +1702,11 @@ export type ClientFileCreateManyThirdPartyInput = {
   status?: $Enums.FileStatus
   openedAt?: Date | string
   completedAt?: Date | string | null
+  cancelledAt?: Date | string | null
+  cancellationReason?: string | null
+  cancellationSettlement?: $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1435,6 +1719,11 @@ export type ClientFileUpdateWithoutThirdPartyInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   client?: Prisma.ClientUpdateOneRequiredWithoutFilesNestedInput
@@ -1455,6 +1744,11 @@ export type ClientFileUncheckedUpdateWithoutThirdPartyInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutClientFileNestedInput
@@ -1474,6 +1768,11 @@ export type ClientFileUncheckedUpdateManyWithoutThirdPartyInput = {
   status?: Prisma.EnumFileStatusFieldUpdateOperationsInput | $Enums.FileStatus
   openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cancellationSettlement?: Prisma.NullableEnumFileCancellationSettlementFieldUpdateOperationsInput | $Enums.FileCancellationSettlement | null
+  cancellationSettlementAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  cancellationTransferTargetFileId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1556,6 +1855,11 @@ export type ClientFileSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   status?: boolean
   openedAt?: boolean
   completedAt?: boolean
+  cancelledAt?: boolean
+  cancellationReason?: boolean
+  cancellationSettlement?: boolean
+  cancellationSettlementAmount?: boolean
+  cancellationTransferTargetFileId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   client?: boolean | Prisma.ClientDefaultArgs<ExtArgs>
@@ -1581,11 +1885,16 @@ export type ClientFileSelectScalar = {
   status?: boolean
   openedAt?: boolean
   completedAt?: boolean
+  cancelledAt?: boolean
+  cancellationReason?: boolean
+  cancellationSettlement?: boolean
+  cancellationSettlementAmount?: boolean
+  cancellationTransferTargetFileId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ClientFileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "thirdPartyId" | "fileNumber" | "fileNumberType" | "title" | "description" | "status" | "openedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["clientFile"]>
+export type ClientFileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "thirdPartyId" | "fileNumber" | "fileNumberType" | "title" | "description" | "status" | "openedAt" | "completedAt" | "cancelledAt" | "cancellationReason" | "cancellationSettlement" | "cancellationSettlementAmount" | "cancellationTransferTargetFileId" | "createdAt" | "updatedAt", ExtArgs["result"]["clientFile"]>
 export type ClientFileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   client?: boolean | Prisma.ClientDefaultArgs<ExtArgs>
   thirdParty?: boolean | Prisma.ClientFile$thirdPartyArgs<ExtArgs>
@@ -1619,6 +1928,11 @@ export type $ClientFilePayload<ExtArgs extends runtime.Types.Extensions.Internal
     status: $Enums.FileStatus
     openedAt: Date
     completedAt: Date | null
+    cancelledAt: Date | null
+    cancellationReason: string | null
+    cancellationSettlement: $Enums.FileCancellationSettlement | null
+    cancellationSettlementAmount: runtime.Decimal | null
+    cancellationTransferTargetFileId: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["clientFile"]>
@@ -2007,6 +2321,11 @@ export interface ClientFileFieldRefs {
   readonly status: Prisma.FieldRef<"ClientFile", 'FileStatus'>
   readonly openedAt: Prisma.FieldRef<"ClientFile", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"ClientFile", 'DateTime'>
+  readonly cancelledAt: Prisma.FieldRef<"ClientFile", 'DateTime'>
+  readonly cancellationReason: Prisma.FieldRef<"ClientFile", 'String'>
+  readonly cancellationSettlement: Prisma.FieldRef<"ClientFile", 'FileCancellationSettlement'>
+  readonly cancellationSettlementAmount: Prisma.FieldRef<"ClientFile", 'Decimal'>
+  readonly cancellationTransferTargetFileId: Prisma.FieldRef<"ClientFile", 'Int'>
   readonly createdAt: Prisma.FieldRef<"ClientFile", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ClientFile", 'DateTime'>
 }

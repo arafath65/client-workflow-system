@@ -134,6 +134,11 @@ export const ClientFileScalarFieldEnum = {
   status: 'status',
   openedAt: 'openedAt',
   completedAt: 'completedAt',
+  cancelledAt: 'cancelledAt',
+  cancellationReason: 'cancellationReason',
+  cancellationSettlement: 'cancellationSettlement',
+  cancellationSettlementAmount: 'cancellationSettlementAmount',
+  cancellationTransferTargetFileId: 'cancellationTransferTargetFileId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -388,7 +393,8 @@ export type ClientOrderByRelevanceFieldEnum = (typeof ClientOrderByRelevanceFiel
 export const ClientFileOrderByRelevanceFieldEnum = {
   fileNumber: 'fileNumber',
   title: 'title',
-  description: 'description'
+  description: 'description',
+  cancellationReason: 'cancellationReason'
 } as const
 
 export type ClientFileOrderByRelevanceFieldEnum = (typeof ClientFileOrderByRelevanceFieldEnum)[keyof typeof ClientFileOrderByRelevanceFieldEnum]
