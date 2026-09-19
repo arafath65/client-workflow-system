@@ -109,9 +109,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       data.description = description || null;
     }
 
-    const newStart = body.startAt === undefined
-      ? existing.startAt
-      : parseSriLankaDate(body.startAt);
+    const date = typeof body.date === "string" ? body.date.trim() : "";
+
+    const newStart =
+      body.startAt === undefined
+        ? existing.startAt
+        : body.startAt === null || body.startAt === ""
+          ? /^\d{4}-\d{2}-\d{2}$/.test(date)
+            ? parseSriLankaDate(`${date}T00:00`)
+            : null
+          : parseSriLankaDate(body.startAt);
 
     const newEnd =
       body.endAt === undefined
@@ -122,7 +129,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (body.startAt !== undefined && !newStart) {
       return NextResponse.json(
-        { success: false, message: "Invalid start date and time." },
+        { success: false, message: "Invalid event date or start time." },
         { status: 400 }
       );
     }
@@ -130,6 +137,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (body.endAt !== undefined && body.endAt && !newEnd) {
       return NextResponse.json(
         { success: false, message: "Invalid end date and time." },
+        { status: 400 }
+      );
+    }
+
+    if (body.endAt && body.startAt === null) {
+      return NextResponse.json(
+        { success: false, message: "Start time is required when an end time is entered." },
         { status: 400 }
       );
     }
@@ -222,6 +236,55 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json(
       { success: false, message: "Unable to update calendar event." },
+      { status: 500 }
+    );
+  }
+}
+
+// ==================================================
+// DELETE - Delete Calendar Event
+// ==================================================
+
+export async function DELETE(
+  _request: NextRequest,
+  context: RouteContext
+) {
+  try {
+    const { id } = await context.params;
+    const eventId = Number(id);
+
+    if (!Number.isInteger(eventId) || eventId <= 0) {
+      return NextResponse.json(
+        { success: false, message: "Invalid calendar event ID." },
+        { status: 400 }
+      );
+    }
+
+    const existing = await prisma.calendarEvent.findUnique({
+      where: { id: eventId },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, message: "Calendar event not found." },
+        { status: 404 }
+      );
+    }
+
+    await prisma.calendarEvent.delete({
+      where: { id: eventId },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Calendar event deleted successfully.",
+    });
+  } catch (error) {
+    console.error("Delete calendar event error:", error);
+
+    return NextResponse.json(
+      { success: false, message: "Unable to delete calendar event." },
       { status: 500 }
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Staff = {
   id: number;
@@ -67,9 +67,29 @@ export default function CalendarBoard({
   const [loaded, setLoaded] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showForm, setShowForm] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
+  const [selectedClientFileId, setSelectedClientFileId] = useState("");
+  const [clientFileSearch, setClientFileSearch] = useState("");
+  const [clientFileDropdownOpen, setClientFileDropdownOpen] = useState(false);
+  const clientFileDropdownRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        clientFileDropdownRef.current &&
+        !clientFileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setClientFileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
 
   const monthDays = useMemo(() => {
     const first = new Date(Date.UTC(year, month - 1, 1));
@@ -176,12 +196,32 @@ export default function CalendarBoard({
 
   const openForm = (day?: number) => {
     setError("");
+    setEditingEvent(null);
+    setSelectedClientFileId("");
+    setClientFileSearch("");
+    setClientFileDropdownOpen(false);
     if (day) {
       setSelectedDate(`${year}-${pad2(month)}-${pad2(day)}`);
     } else {
       setSelectedDate("");
     }
     setShowForm(true);
+  };
+
+  const openEditForm = (event: CalendarEvent) => {
+    setError("");
+    setEditingEvent(event);
+    setSelectedClientFileId(event.clientFile?.id?.toString() ?? "");
+    setClientFileSearch("");
+    setClientFileDropdownOpen(false);
+    setSelectedDate(toColomboDateInput(event.startAt));
+    setShowForm(true);
+  };
+
+  const closeForm = () => {
+    setShowForm(false);
+    setEditingEvent(null);
+    setError("");
   };
 
   const saveEvent = async (form: HTMLFormElement) => {
@@ -196,6 +236,7 @@ export default function CalendarBoard({
     const description = String(formData.get("description") ?? "");
     const clientFileId = String(formData.get("clientFileId") ?? "");
     const staffId = String(formData.get("staffId") ?? "");
+    const status = String(formData.get("status") ?? "");
 
     if (!title || !date) {
       setError("Title and date are required.");
@@ -210,19 +251,24 @@ export default function CalendarBoard({
     }
 
     try {
-      const response = await fetch("/api/calendar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          date,
-          startAt: startTime ? `${date}T${startTime}` : null,
-          endAt: endTime ? `${date}T${endTime}` : null,
-          clientFileId: clientFileId || null,
-          staffId: staffId || null,
-        }),
-      });
+      const isEditing = editingEvent !== null;
+      const response = await fetch(
+        isEditing ? `/api/calendar/${editingEvent.id}` : "/api/calendar",
+        {
+          method: isEditing ? "PATCH" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            description,
+            date,
+            startAt: startTime ? `${date}T${startTime}` : null,
+            endAt: endTime ? `${date}T${endTime}` : null,
+            clientFileId: clientFileId || null,
+            staffId: staffId || null,
+            ...(isEditing ? { status } : {}),
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -230,14 +276,48 @@ export default function CalendarBoard({
         throw new Error(data.message || "Unable to save event.");
       }
 
-      setShowForm(false);
+      closeForm();
       setLoaded(false);
       setRefreshKey((current) => current + 1);
     } catch (err) {
-      console.error("Create calendar event error:", err);
+      console.error("Save calendar event error:", err);
       setError(err instanceof Error ? err.message : "Unable to save event.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const deleteEvent = async () => {
+    if (!editingEvent || deleting) return;
+
+    const confirmed = window.confirm(
+      `Delete "${editingEvent.title}"? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setError("");
+
+    try {
+      const response = await fetch(`/api/calendar/${editingEvent.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to delete event.");
+      }
+
+      closeForm();
+      setLoaded(false);
+      setRefreshKey((current) => current + 1);
+    } catch (err) {
+      console.error("Delete calendar event error:", err);
+      setError(err instanceof Error ? err.message : "Unable to delete event.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -329,9 +409,11 @@ export default function CalendarBoard({
 
                       <div className="space-y-1.5">
                         {dayEvents.map((event) => (
-                          <div
+                          <button
                             key={event.id}
-                            className={`rounded-md border px-2 py-1.5 ${
+                            type="button"
+                            onClick={() => openEditForm(event)}
+                            className={`block w-full rounded-md border px-2 py-1.5 text-left transition hover:shadow-sm ${
                               event.status === "CANCELLED"
                                 ? "border-black/5 bg-black/[0.03] opacity-50"
                                 : event.status === "COMPLETED"
@@ -350,7 +432,7 @@ export default function CalendarBoard({
                                 {event.clientFile.client.name} · {event.clientFile.fileNumber}
                               </p>
                             ) : null}
-                          </div>
+                          </button>
                         ))}
                       </div>
                     </>
@@ -364,13 +446,18 @@ export default function CalendarBoard({
 
       {showForm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-2xl rounded-2xl border border-black/10 bg-white p-6 shadow-2xl">
+          <div
+            key={editingEvent ? `edit-${editingEvent.id}` : "new"}
+            className="w-full max-w-2xl rounded-2xl border border-black/10 bg-white p-6 shadow-2xl"
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f9a800]">
                   Calendar
                 </p>
-                <h3 className="mt-1 text-xl font-semibold">New Event</h3>
+                <h3 className="mt-1 text-xl font-semibold">
+                  {editingEvent ? "Edit Event" : "New Event"}
+                </h3>
               </div>
               <button
                 type="button"
@@ -397,6 +484,7 @@ export default function CalendarBoard({
                     name="title"
                     required
                     placeholder="Client appointment / follow-up..."
+                    defaultValue={editingEvent ? editingEvent.title : ""}
                     className="h-10 w-full rounded-lg border border-black/10 px-3 text-sm outline-none focus:border-[#f9a800]"
                   />
                 </div>
@@ -409,7 +497,11 @@ export default function CalendarBoard({
                     name="date"
                     type="date"
                     required
-                    defaultValue={selectedDate}
+                    defaultValue={
+                      editingEvent
+                        ? toColomboDateInput(editingEvent.startAt)
+                        : selectedDate
+                    }
                     className="h-10 w-full rounded-lg border border-black/10 px-3 text-sm outline-none focus:border-[#f9a800]"
                   />
                 </div>
@@ -421,6 +513,9 @@ export default function CalendarBoard({
                   <input
                     name="startTime"
                     type="time"
+                    defaultValue={
+                      editingEvent ? toColomboTimeInput(editingEvent.startAt) : ""
+                    }
                     className="h-10 w-full rounded-lg border border-black/10 px-3 text-sm outline-none focus:border-[#f9a800]"
                   />
                 </div>
@@ -432,6 +527,9 @@ export default function CalendarBoard({
                   <input
                     name="endTime"
                     type="time"
+                    defaultValue={
+                      editingEvent?.endAt ? toColomboTimeInput(editingEvent.endAt) : ""
+                    }
                     className="h-10 w-full rounded-lg border border-black/10 px-3 text-sm outline-none focus:border-[#f9a800]"
                   />
                 </div>
@@ -442,6 +540,7 @@ export default function CalendarBoard({
                   </label>
                   <select
                     name="staffId"
+                    defaultValue={editingEvent?.staff?.id?.toString() ?? ""}
                     className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800]"
                   >
                     <option value="">No staff assigned</option>
@@ -453,51 +552,176 @@ export default function CalendarBoard({
                   </select>
                 </div>
 
-                <div className="sm:col-span-2">
+                <div className="sm:col-span-2" ref={clientFileDropdownRef}>
                   <label className="mb-1.5 block text-xs font-medium text-black/50">
                     Client File
                   </label>
-                  <select
+
+                  <input
+                    type="hidden"
                     name="clientFileId"
-                    className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800]"
-                  >
-                    <option value="">No client file</option>
-                    {files.map((file) => (
-                      <option key={file.id} value={file.id}>
-                        {file.fileNumber} — {file.client.name} — {file.title}
-                      </option>
-                    ))}
-                  </select>
+                    value={selectedClientFileId}
+                    readOnly
+                  />
+
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setClientFileDropdownOpen((current) => !current);
+                        setClientFileSearch("");
+                      }}
+                      className="flex h-10 w-full items-center justify-between rounded-lg border border-black/10 bg-white px-3 text-left text-sm outline-none transition hover:border-black/20 focus:border-[#f9a800]"
+                    >
+                      <span className={selectedClientFileId ? "text-black" : "text-black/40"}>
+                        {getSelectedClientFileLabel(files, selectedClientFileId)}
+                      </span>
+                      <span className="ml-3 text-black/35">⌄</span>
+                    </button>
+
+                    {clientFileDropdownOpen ? (
+                      <div className="absolute left-0 right-0 top-11 z-30 overflow-hidden rounded-xl border border-black/10 bg-white shadow-xl">
+                        <div className="border-b border-black/10 p-2.5">
+                          <input
+                            autoFocus
+                            type="text"
+                            value={clientFileSearch}
+                            onChange={(event) => setClientFileSearch(event.target.value)}
+                            onClick={(event) => event.stopPropagation()}
+                            placeholder="Search by client name or file number..."
+                            className="h-9 w-full rounded-lg border border-black/10 px-3 text-sm outline-none focus:border-[#f9a800]"
+                          />
+                        </div>
+
+                        <div className="max-h-64 overflow-y-auto py-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedClientFileId("");
+                              setClientFileSearch("");
+                              setClientFileDropdownOpen(false);
+                            }}
+                            className={`block w-full px-3 py-2 text-left text-xs hover:bg-[#fffaf0] ${
+                              selectedClientFileId === "" ? "bg-[#fffaf0] font-semibold" : ""
+                            }`}
+                          >
+                            No client file
+                          </button>
+
+                          {files
+                            .filter((file) => {
+                              const query = clientFileSearch.trim().toLowerCase();
+                              if (!query) return true;
+
+                              return (
+                                file.client.name.toLowerCase().includes(query) ||
+                                file.fileNumber.toLowerCase().includes(query)
+                              );
+                            })
+                            .map((file) => (
+                              <button
+                                key={file.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedClientFileId(file.id.toString());
+                                  setClientFileSearch("");
+                                  setClientFileDropdownOpen(false);
+                                }}
+                                className={`block w-full px-3 py-2 text-left hover:bg-[#fffaf0] ${
+                                  selectedClientFileId === file.id.toString()
+                                    ? "bg-[#fffaf0]"
+                                    : ""
+                                }`}
+                              >
+                                <p className="truncate text-xs font-medium">
+                                  {file.fileNumber} — {file.client.name}
+                                </p>
+                                <p className="truncate text-[10px] text-black/40">
+                                  {file.title}
+                                </p>
+                              </button>
+                            ))}
+
+                          {files.filter((file) => {
+                            const query = clientFileSearch.trim().toLowerCase();
+                            if (!query) return true;
+                            return (
+                              file.client.name.toLowerCase().includes(query) ||
+                              file.fileNumber.toLowerCase().includes(query)
+                            );
+                          }).length === 0 ? (
+                            <p className="px-3 py-3 text-xs text-black/40">
+                              No client files found.
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
 
-                <div className="sm:col-span-2">
+                {editingEvent ? (
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-black/50">
+                      Status
+                    </label>
+                    <select
+                      name="status"
+                      defaultValue={editingEvent.status}
+                      className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800]"
+                    >
+                      <option value="SCHEDULED">Scheduled</option>
+                      <option value="COMPLETED">Completed</option>
+                      <option value="CANCELLED">Cancelled</option>
+                    </select>
+                  </div>
+                ) : null}
+
+                <div className={editingEvent ? "sm:col-span-1" : "sm:col-span-2"}>
                   <label className="mb-1.5 block text-xs font-medium text-black/50">
                     Description
                   </label>
                   <textarea
                     name="description"
                     rows={3}
+                    defaultValue={editingEvent?.description ?? ""}
                     placeholder="Optional notes..."
                     className="w-full resize-none rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
                   />
                 </div>
               </div>
 
-              <div className="mt-5 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="rounded-lg border border-black/10 px-4 py-2.5 text-xs font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded-lg bg-black px-5 py-2.5 text-xs font-semibold text-white disabled:opacity-50"
-                >
-                  {saving ? "Saving..." : "Save Event"}
-                </button>
+              <div className="mt-5 flex items-center justify-between gap-2">
+                <div>
+                  {editingEvent ? (
+                    <button
+                      type="button"
+                      onClick={() => void deleteEvent()}
+                      disabled={saving || deleting}
+                      className="rounded-lg border border-red-200 px-4 py-2.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                    >
+                      {deleting ? "Deleting..." : "Delete Event"}
+                    </button>
+                  ) : null}
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={closeForm}
+                    disabled={saving || deleting}
+                    className="rounded-lg border border-black/10 px-4 py-2.5 text-xs font-medium disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving || deleting}
+                    className="rounded-lg bg-black px-5 py-2.5 text-xs font-semibold text-white disabled:opacity-50"
+                  >
+                    {saving ? "Saving..." : editingEvent ? "Update Event" : "Save Event"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
@@ -507,8 +731,48 @@ export default function CalendarBoard({
   );
 }
 
+function getSelectedClientFileLabel(files: FileOption[], selectedId: string) {
+  if (!selectedId) return "No client file";
+
+  const selected = files.find((file) => file.id.toString() === selectedId);
+  if (!selected) return "Select client file";
+
+  return `${selected.fileNumber} — ${selected.client.name} — ${selected.title}`;
+}
+
 function pad2(value: number) {
   return String(value).padStart(2, "0");
+}
+
+function getColomboParts(value: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Colombo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(value));
+
+  const map = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== "literal")
+      .map((part) => [part.type, part.value])
+  );
+
+  return {
+    date: `${map.year}-${map.month}-${map.day}`,
+    time: `${map.hour}:${map.minute}`,
+  };
+}
+
+function toColomboDateInput(value: string) {
+  return getColomboParts(value).date;
+}
+
+function toColomboTimeInput(value: string) {
+  return getColomboParts(value).time;
 }
 
 function formatEventTime(event: CalendarEvent) {
