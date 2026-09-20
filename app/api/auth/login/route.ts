@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,6 +62,16 @@ export async function POST(request: NextRequest) {
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 8,
+    });
+
+    // Audit successful login only
+    await writeAuditLog({
+      userId: user.id,
+      module: "AUTH",
+      action: "LOGIN",
+      entity: "USER",
+      entityId: user.id,
+      description: `User "${username}" logged in successfully.`,
     });
 
     return response;

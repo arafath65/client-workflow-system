@@ -410,11 +410,13 @@ export const ModelName = {
   FileWorkflowSubTask: 'FileWorkflowSubTask',
   TaskHistory: 'TaskHistory',
   FileCharge: 'FileCharge',
+  Expense: 'Expense',
   Payment: 'Payment',
   PaymentInstallment: 'PaymentInstallment',
   CalendarEvent: 'CalendarEvent',
   ThirdParty: 'ThirdParty',
-  FileNumberSequence: 'FileNumberSequence'
+  FileNumberSequence: 'FileNumberSequence',
+  AuditLog: 'AuditLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -430,7 +432,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "paymentAllocation" | "workflowTask" | "fileWorkflowSubTask" | "taskHistory" | "fileCharge" | "payment" | "paymentInstallment" | "calendarEvent" | "thirdParty" | "fileNumberSequence"
+    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "paymentAllocation" | "workflowTask" | "fileWorkflowSubTask" | "taskHistory" | "fileCharge" | "expense" | "payment" | "paymentInstallment" | "calendarEvent" | "thirdParty" | "fileNumberSequence" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1292,6 +1294,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Expense: {
+      payload: Prisma.$ExpensePayload<ExtArgs>
+      fields: Prisma.ExpenseFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExpenseFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExpenseFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePayload>
+        }
+        findFirst: {
+          args: Prisma.ExpenseFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExpenseFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePayload>
+        }
+        findMany: {
+          args: Prisma.ExpenseFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePayload>[]
+        }
+        create: {
+          args: Prisma.ExpenseCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePayload>
+        }
+        createMany: {
+          args: Prisma.ExpenseCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.ExpenseDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePayload>
+        }
+        update: {
+          args: Prisma.ExpenseUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePayload>
+        }
+        deleteMany: {
+          args: Prisma.ExpenseDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExpenseUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.ExpenseUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpensePayload>
+        }
+        aggregate: {
+          args: Prisma.ExpenseAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExpense>
+        }
+        groupBy: {
+          args: Prisma.ExpenseGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExpenseGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExpenseCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExpenseCountAggregateOutputType> | number
+        }
+      }
+    }
     Payment: {
       payload: Prisma.$PaymentPayload<ExtArgs>
       fields: Prisma.PaymentFieldRefs
@@ -1622,6 +1690,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AuditLog: {
+      payload: Prisma.$AuditLogPayload<ExtArgs>
+      fields: Prisma.AuditLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AuditLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AuditLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        findFirst: {
+          args: Prisma.AuditLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AuditLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        findMany: {
+          args: Prisma.AuditLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>[]
+        }
+        create: {
+          args: Prisma.AuditLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        createMany: {
+          args: Prisma.AuditLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.AuditLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        update: {
+          args: Prisma.AuditLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.AuditLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AuditLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.AuditLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditLogPayload>
+        }
+        aggregate: {
+          args: Prisma.AuditLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditLog>
+        }
+        groupBy: {
+          args: Prisma.AuditLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AuditLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditLogCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1851,6 +1985,23 @@ export const FileChargeScalarFieldEnum = {
 export type FileChargeScalarFieldEnum = (typeof FileChargeScalarFieldEnum)[keyof typeof FileChargeScalarFieldEnum]
 
 
+export const ExpenseScalarFieldEnum = {
+  id: 'id',
+  expenseDate: 'expenseDate',
+  category: 'category',
+  description: 'description',
+  amount: 'amount',
+  paymentMethod: 'paymentMethod',
+  referenceNo: 'referenceNo',
+  remarks: 'remarks',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExpenseScalarFieldEnum = (typeof ExpenseScalarFieldEnum)[keyof typeof ExpenseScalarFieldEnum]
+
+
 export const PaymentScalarFieldEnum = {
   id: 'id',
   clientFileId: 'clientFileId',
@@ -1920,6 +2071,21 @@ export const FileNumberSequenceScalarFieldEnum = {
 } as const
 
 export type FileNumberSequenceScalarFieldEnum = (typeof FileNumberSequenceScalarFieldEnum)[keyof typeof FileNumberSequenceScalarFieldEnum]
+
+
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  module: 'module',
+  action: 'action',
+  entity: 'entity',
+  entityId: 'entityId',
+  description: 'description',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2026,6 +2192,16 @@ export const FileChargeOrderByRelevanceFieldEnum = {
 export type FileChargeOrderByRelevanceFieldEnum = (typeof FileChargeOrderByRelevanceFieldEnum)[keyof typeof FileChargeOrderByRelevanceFieldEnum]
 
 
+export const ExpenseOrderByRelevanceFieldEnum = {
+  category: 'category',
+  description: 'description',
+  referenceNo: 'referenceNo',
+  remarks: 'remarks'
+} as const
+
+export type ExpenseOrderByRelevanceFieldEnum = (typeof ExpenseOrderByRelevanceFieldEnum)[keyof typeof ExpenseOrderByRelevanceFieldEnum]
+
+
 export const PaymentOrderByRelevanceFieldEnum = {
   referenceNo: 'referenceNo',
   remarks: 'remarks'
@@ -2055,6 +2231,17 @@ export const ThirdPartyOrderByRelevanceFieldEnum = {
 } as const
 
 export type ThirdPartyOrderByRelevanceFieldEnum = (typeof ThirdPartyOrderByRelevanceFieldEnum)[keyof typeof ThirdPartyOrderByRelevanceFieldEnum]
+
+
+export const AuditLogOrderByRelevanceFieldEnum = {
+  module: 'module',
+  action: 'action',
+  entity: 'entity',
+  description: 'description',
+  metadata: 'metadata'
+} as const
+
+export type AuditLogOrderByRelevanceFieldEnum = (typeof AuditLogOrderByRelevanceFieldEnum)[keyof typeof AuditLogOrderByRelevanceFieldEnum]
 
 
 
@@ -2331,11 +2518,13 @@ export type GlobalOmitConfig = {
   fileWorkflowSubTask?: Prisma.FileWorkflowSubTaskOmit
   taskHistory?: Prisma.TaskHistoryOmit
   fileCharge?: Prisma.FileChargeOmit
+  expense?: Prisma.ExpenseOmit
   payment?: Prisma.PaymentOmit
   paymentInstallment?: Prisma.PaymentInstallmentOmit
   calendarEvent?: Prisma.CalendarEventOmit
   thirdParty?: Prisma.ThirdPartyOmit
   fileNumberSequence?: Prisma.FileNumberSequenceOmit
+  auditLog?: Prisma.AuditLogOmit
 }
 
 /* Types for Logging */

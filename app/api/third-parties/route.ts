@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
+
+// ==================================================
+// GET - Load Third Parties
+// ==================================================
 
 export async function GET() {
   try {
@@ -14,10 +19,7 @@ export async function GET() {
       thirdParties,
     });
   } catch (error) {
-    console.error(
-      "Get third parties error:",
-      error
-    );
+    console.error("Get third parties error:", error);
 
     return NextResponse.json(
       {
@@ -30,6 +32,10 @@ export async function GET() {
     );
   }
 }
+
+// ==================================================
+// POST - Create Third Party
+// ==================================================
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,14 +63,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existing =
-      await prisma.thirdParty.findFirst({
-        where: {
-          name: {
-            equals: name,
-          },
+    const existing = await prisma.thirdParty.findFirst({
+      where: {
+        name: {
+          equals: name,
         },
-      });
+      },
+    });
 
     if (existing) {
       return NextResponse.json(
@@ -79,20 +84,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const thirdParty =
-      await prisma.thirdParty.create({
-        data: {
-          name,
-          whatsapp: whatsapp || null,
-          status: true,
-        },
-      });
+    const thirdParty = await prisma.thirdParty.create({
+      data: {
+        name,
+        whatsapp: whatsapp || null,
+        status: true,
+      },
+    });
+
+    // Audit log: third party created
+    await writeAuditLog({
+      module: "THIRD_PARTY",
+      action: "CREATE",
+      entity: "THIRD_PARTY",
+      entityId: thirdParty.id,
+      description: `Created third party: ${thirdParty.name}`,
+      metadata: {
+        thirdPartyId: thirdParty.id,
+        name: thirdParty.name,
+        whatsapp: thirdParty.whatsapp,
+        status: thirdParty.status,
+      },
+    });
 
     return NextResponse.json(
       {
         success: true,
-        message:
-          "Third party created successfully.",
+        message: "Third party created successfully.",
         thirdParty,
       },
       {
@@ -100,10 +118,7 @@ export async function POST(request: NextRequest) {
       }
     );
   } catch (error) {
-    console.error(
-      "Create third party error:",
-      error
-    );
+    console.error("Create third party error:", error);
 
     return NextResponse.json(
       {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{
@@ -82,7 +83,12 @@ export async function POST(
       );
     }
 
+    // --------------------------------------------------
     // Validate default staff when selected
+    // --------------------------------------------------
+
+    let defaultStaffName: string | null = null;
+
     if (defaultStaffId !== null) {
       if (
         !Number.isInteger(defaultStaffId) ||
@@ -123,7 +129,13 @@ export async function POST(
           { status: 400 }
         );
       }
+
+      defaultStaffName = staff.name;
     }
+
+    // --------------------------------------------------
+    // Generate next subtask number
+    // --------------------------------------------------
 
     const lastSubTask =
       await prisma.workflowSubTask.findFirst({
@@ -141,6 +153,10 @@ export async function POST(
     const nextSubTaskNumber =
       (lastSubTask?.subTaskNumber ?? 0) + 1;
 
+    // --------------------------------------------------
+    // Create subtask
+    // --------------------------------------------------
+
     const subTask =
       await prisma.workflowSubTask.create({
         data: {
@@ -152,6 +168,28 @@ export async function POST(
           status: true,
         },
       });
+
+    // --------------------------------------------------
+    // Audit log
+    // --------------------------------------------------
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: "CREATE_SUBTASK",
+      entity: "WorkflowSubTask",
+      entityId: subTask.id,
+      description: `Created subtask "${title}" under workflow step "${step.title}"`,
+      metadata: {
+        subTaskId: subTask.id,
+        subTaskNumber: nextSubTaskNumber,
+        title,
+        description,
+        workflowStepId,
+        workflowStepTitle: step.title,
+        defaultStaffId,
+        defaultStaffName,
+      },
+    });
 
     return NextResponse.json(
       {

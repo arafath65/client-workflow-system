@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type ReorderItem = {
   id: number;
   stepNumber: number;
 };
 
-export async function PATCH(
-  request: NextRequest
-) {
+export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
 
@@ -39,6 +38,59 @@ export async function PATCH(
         );
       }
     }
+
+    // --------------------------------------------------
+    // Get existing step order for audit logging
+    // --------------------------------------------------
+
+    const stepIds = steps.map((step) => step.id);
+
+    const existingSteps = await prisma.workflowStep.findMany({
+      where: {
+        id: {
+          in: stepIds,
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        stepNumber: true,
+      },
+    });
+
+    if (existingSteps.length !== stepIds.length) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "One or more workflow steps were not found.",
+        },
+        { status: 404 }
+      );
+    }
+
+    const existingStepsMap = new Map(
+      existingSteps.map((step) => [step.id, step])
+    );
+
+    const previousOrder = steps.map((step) => {
+      const existingStep = existingStepsMap.get(step.id)!;
+
+      return {
+        id: existingStep.id,
+        title: existingStep.title,
+        stepNumber: existingStep.stepNumber,
+      };
+    });
+
+    const newOrder = steps.map((step) => {
+      const existingStep = existingStepsMap.get(step.id)!;
+
+      return {
+        id: step.id,
+        title: existingStep.title,
+        stepNumber: step.stepNumber,
+      };
+    });
 
     /*
      * Use temporary negative numbers first.
@@ -74,10 +126,25 @@ export async function PATCH(
       }
     });
 
+    // --------------------------------------------------
+    // Audit log
+    // --------------------------------------------------
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: "REORDER_STEPS",
+      entity: "WorkflowStep",
+      description: `Reordered ${steps.length} workflow step(s).`,
+      metadata: {
+        stepCount: steps.length,
+        previousOrder,
+        newOrder,
+      },
+    });
+
     return NextResponse.json({
       success: true,
-      message:
-        "Workflow step order updated successfully.",
+      message: "Workflow step order updated successfully.",
     });
   } catch (error) {
     console.error(
@@ -88,8 +155,7 @@ export async function PATCH(
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Unable to update workflow step order.",
+        message: "Unable to update workflow step order.",
       },
       { status: 500 }
     );

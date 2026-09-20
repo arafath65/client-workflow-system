@@ -1,6 +1,6 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 // ==================================================
 // GET - Load Staff
@@ -71,6 +71,22 @@ export async function POST(request: NextRequest) {
         phone: phone || null,
         email: email || null,
         position: position || null,
+      },
+    });
+
+    // Audit log: staff created
+    await writeAuditLog({
+      module: "STAFF",
+      action: "CREATE",
+      entity: "STAFF",
+      entityId: staff.id,
+      description: `Created staff member: ${staff.name}`,
+      metadata: {
+        staffId: staff.id,
+        name: staff.name,
+        position: staff.position,
+        phone: staff.phone,
+        email: staff.email,
       },
     });
 

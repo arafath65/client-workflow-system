@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{
@@ -96,6 +97,18 @@ export async function PATCH(
         whatsapp: whatsapp || null,
       },
     });
+
+    await writeAuditLog({
+  module: "CLIENTS",
+  action: "UPDATE",
+  entity: "Client",
+  entityId: client.id,
+  description: `Updated client: ${client.name}`,
+  metadata: {
+    name: client.name,
+    whatsapp: client.whatsapp,
+  },
+});
 
     return NextResponse.json({
       success: true,

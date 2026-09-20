@@ -83,6 +83,11 @@ export type TaskHistory = Prisma.TaskHistoryModel
  */
 export type FileCharge = Prisma.FileChargeModel
 /**
+ * Model Expense
+ * 
+ */
+export type Expense = Prisma.ExpenseModel
+/**
  * Model Payment
  * 
  */
@@ -107,3 +112,8 @@ export type ThirdParty = Prisma.ThirdPartyModel
  * 
  */
 export type FileNumberSequence = Prisma.FileNumberSequenceModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel

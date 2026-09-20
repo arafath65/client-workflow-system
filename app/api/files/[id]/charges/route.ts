@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{
@@ -49,7 +50,6 @@ function parsePositiveInteger(value: unknown): number | null {
 
 function parseFileId(value: string): number | null {
   const id = Number(value);
-
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
@@ -81,6 +81,7 @@ export async function GET(
       },
       select: {
         id: true,
+        fileNumber: true,
       },
     });
 
@@ -154,6 +155,12 @@ export async function POST(
       },
       select: {
         id: true,
+        fileNumber: true,
+        client: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
 
@@ -229,6 +236,24 @@ export async function POST(
     const charge = await prisma.fileCharge.create({
       data: {
         clientFileId,
+        description,
+        quantity,
+        unitAmount,
+        totalAmount,
+      },
+    });
+
+    await writeAuditLog({
+      module: "FILES",
+      action: "CREATE",
+      entity: "FILE_CHARGE",
+      entityId: charge.id,
+      description: `Extra charge of ${totalAmount} added to file ${clientFile.fileNumber}.`,
+      metadata: {
+        chargeId: charge.id,
+        clientFileId,
+        fileNumber: clientFile.fileNumber,
+        clientName: clientFile.client.name,
         description,
         quantity,
         unitAmount,

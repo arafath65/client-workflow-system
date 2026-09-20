@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 function parseMoney(value: unknown): string | null {
   const raw = String(value ?? "").trim();
@@ -67,6 +69,7 @@ export async function POST(request: NextRequest) {
     const baseAmount = parseMoney(body.baseAmount);
 
     const rawDefaultStaffId = body.defaultStaffId;
+
     let defaultStaffId: number | null = null;
 
     if (
@@ -115,14 +118,17 @@ export async function POST(request: NextRequest) {
           id: defaultStaffId,
           status: true,
         },
-        select: { id: true },
+        select: {
+          id: true,
+        },
       });
 
       if (!staff) {
         return NextResponse.json(
           {
             success: false,
-            message: "Selected staff member is not active or does not exist.",
+            message:
+              "Selected staff member is not active or does not exist.",
           },
           { status: 400 }
         );
@@ -131,7 +137,9 @@ export async function POST(request: NextRequest) {
 
     const existingWorkflow = await prisma.workflowTemplate.findFirst({
       where: {
-        name: { equals: name },
+        name: {
+          equals: name,
+        },
       },
     });
 
@@ -160,6 +168,27 @@ export async function POST(request: NextRequest) {
             name: true,
           },
         },
+      },
+    });
+
+    // ==============================================
+    // Audit log: workflow created
+    // ==============================================
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: "CREATE",
+      entity: "WORKFLOW_TEMPLATE",
+      entityId: workflow.id,
+      description: `Created workflow: ${workflow.name}`,
+      metadata: {
+        workflowId: workflow.id,
+        name: workflow.name,
+        description: workflow.description,
+        baseAmount: workflow.baseAmount,
+        defaultStaffId: workflow.defaultStaffId,
+        defaultStaffName: workflow.defaultStaff?.name ?? null,
+        status: workflow.status,
       },
     });
 

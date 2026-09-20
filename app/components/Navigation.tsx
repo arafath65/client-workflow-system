@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 
 type NavigationProps = {
@@ -14,12 +13,12 @@ const navigation = [
   { label: "Staff Work", href: "/staff-work", key: "staff-work" },
   { label: "Third Parties", href: "/third-parties", key: "third-parties" },
   { label: "Calendar", href: "/calendar", key: "calendar" },
-  { label: "Payments", href: "/payments", key: "payments" },
+  { label: "Finance", href: "/payments", key: "finance" },
+  { label: "Audit Logs", href: "/audit-logs", key: "audit-logs" },
+  { label: "Settings", href: "/settings", key: "settings" },
 ];
 
-export default function Navigation({
-  currentPage,
-}: NavigationProps) {
+export default function Navigation({ currentPage }: NavigationProps) {
   return (
     <nav className="border-b border-black/10 bg-white">
       <div className="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-6">

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{
@@ -16,13 +17,8 @@ export async function POST(
 
     const workflowId = Number(id);
 
-    // ---------------------------------------------
     // Validate workflow ID
-    // ---------------------------------------------
-    if (
-      !Number.isInteger(workflowId) ||
-      workflowId <= 0
-    ) {
+    if (!Number.isInteger(workflowId) || workflowId <= 0) {
       return NextResponse.json(
         {
           success: false,
@@ -32,15 +28,12 @@ export async function POST(
       );
     }
 
-    // ---------------------------------------------
     // Check workflow exists
-    // ---------------------------------------------
-    const workflow =
-      await prisma.workflowTemplate.findUnique({
-        where: {
-          id: workflowId,
-        },
-      });
+    const workflow = await prisma.workflowTemplate.findUnique({
+      where: {
+        id: workflowId,
+      },
+    });
 
     if (!workflow) {
       return NextResponse.json(
@@ -52,14 +45,10 @@ export async function POST(
       );
     }
 
-    // ---------------------------------------------
     // Read request body
-    // ---------------------------------------------
     const body = await request.json();
 
-    const title = String(
-      body.title ?? ""
-    ).trim();
+    const title = String(body.title ?? "").trim();
 
     const defaultStaffId =
       body.defaultStaffId === null ||
@@ -68,9 +57,7 @@ export async function POST(
         ? null
         : Number(body.defaultStaffId);
 
-    // ---------------------------------------------
     // Validate step title
-    // ---------------------------------------------
     if (!title) {
       return NextResponse.json(
         {
@@ -81,9 +68,7 @@ export async function POST(
       );
     }
 
-    // ---------------------------------------------
     // Validate staff if supplied
-    // ---------------------------------------------
     if (
       defaultStaffId !== null &&
       (!Number.isInteger(defaultStaffId) ||
@@ -98,11 +83,17 @@ export async function POST(
       );
     }
 
+    let defaultStaffName: string | null = null;
+
     if (defaultStaffId !== null) {
       const staff = await prisma.staff.findFirst({
         where: {
           id: defaultStaffId,
           status: true,
+        },
+        select: {
+          id: true,
+          name: true,
         },
       });
 
@@ -116,30 +107,26 @@ export async function POST(
           { status: 400 }
         );
       }
+
+      defaultStaffName = staff.name;
     }
 
-    // ---------------------------------------------
     // Calculate next step number
-    // ---------------------------------------------
-    const lastStep =
-      await prisma.workflowStep.findFirst({
-        where: {
-          workflowTemplateId: workflowId,
-        },
-        orderBy: {
-          stepNumber: "desc",
-        },
-        select: {
-          stepNumber: true,
-        },
-      });
+    const lastStep = await prisma.workflowStep.findFirst({
+      where: {
+        workflowTemplateId: workflowId,
+      },
+      orderBy: {
+        stepNumber: "desc",
+      },
+      select: {
+        stepNumber: true,
+      },
+    });
 
-    const nextStepNumber =
-      (lastStep?.stepNumber ?? 0) + 1;
+    const nextStepNumber = (lastStep?.stepNumber ?? 0) + 1;
 
-    // ---------------------------------------------
     // Create step
-    // ---------------------------------------------
     const step = await prisma.workflowStep.create({
       data: {
         workflowTemplateId: workflowId,
@@ -157,6 +144,27 @@ export async function POST(
       },
     });
 
+    // ==============================================
+    // Audit log: workflow step created
+    // ==============================================
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: "CREATE_STEP",
+      entity: "WORKFLOW_STEP",
+      entityId: step.id,
+      description: `Created step "${step.title}" in workflow "${workflow.name}"`,
+      metadata: {
+        workflowId: workflow.id,
+        workflowName: workflow.name,
+        stepId: step.id,
+        stepNumber: step.stepNumber,
+        title: step.title,
+        defaultStaffId: step.defaultStaffId,
+        defaultStaffName,
+      },
+    });
+
     return NextResponse.json(
       {
         success: true,
@@ -166,10 +174,7 @@ export async function POST(
       { status: 201 }
     );
   } catch (error) {
-    console.error(
-      "Create workflow step error:",
-      error
-    );
+    console.error("Create workflow step error:", error);
 
     return NextResponse.json(
       {

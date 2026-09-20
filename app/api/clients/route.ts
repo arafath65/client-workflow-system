@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 export async function GET(request: NextRequest) {
   try {
@@ -98,11 +99,25 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await writeAuditLog({
+  module: "CLIENTS",
+  action: "CREATE",
+  entity: "Client",
+  entityId: client.id,
+  description: `Created client: ${client.name}`,
+  metadata: {
+    name: client.name,
+    whatsapp: client.whatsapp,
+  },
+});
+
     return NextResponse.json({
       success: true,
       client,
       message: "Client created successfully.",
     });
+
+    
   } catch (error) {
     console.error("Create client error:", error);
 

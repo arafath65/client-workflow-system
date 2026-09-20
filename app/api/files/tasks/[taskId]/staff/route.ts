@@ -1,6 +1,6 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{
@@ -44,8 +44,20 @@ export async function PATCH(
       );
     }
 
+    // --------------------------------------------------
+    // Find workflow task and current staff assignment
+    // --------------------------------------------------
+
     const task = await prisma.workflowTask.findUnique({
       where: { id },
+      include: {
+        assignedStaff: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     if (!task) {
@@ -57,6 +69,10 @@ export async function PATCH(
         { status: 404 }
       );
     }
+
+    // --------------------------------------------------
+    // Validate selected staff member
+    // --------------------------------------------------
 
     if (
       assignedStaffId !== null &&
@@ -79,6 +95,10 @@ export async function PATCH(
       }
     }
 
+    // --------------------------------------------------
+    // Update staff assignment
+    // --------------------------------------------------
+
     const updatedTask =
       await prisma.workflowTask.update({
         where: { id },
@@ -97,6 +117,36 @@ export async function PATCH(
           },
         },
       });
+
+    // --------------------------------------------------
+    // Audit Log: Staff assignment change
+    // --------------------------------------------------
+
+    const previousStaff = task.assignedStaff;
+    const newStaff = updatedTask.assignedStaff;
+
+    const isUnassignment = newStaff === null;
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: isUnassignment
+        ? "UNASSIGN_STAFF"
+        : "ASSIGN_STAFF",
+      entity: "WORKFLOW_TASK",
+      entityId: task.id,
+      description: isUnassignment
+        ? `Removed staff assignment from workflow task #${task.id}.`
+        : `Assigned ${newStaff.name} to workflow task #${task.id}.`,
+      metadata: {
+        taskId: task.id,
+        previousStaffId:
+          previousStaff?.id ?? null,
+        previousStaffName:
+          previousStaff?.name ?? null,
+        newStaffId: newStaff?.id ?? null,
+        newStaffName: newStaff?.name ?? null,
+      },
+    });
 
     return NextResponse.json({
       success: true,

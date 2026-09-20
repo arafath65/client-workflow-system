@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 import { TaskStatus } from "@/generated/prisma/client";
 
 
@@ -535,6 +536,25 @@ export async function POST(request: NextRequest) {
         return clientFile;
       }
     );
+
+    await writeAuditLog({
+      module: "FILES",
+      action: "CREATE",
+      entity: "CLIENT_FILE",
+      entityId: result.id,
+      description: `Client file ${fileNumber} created for ${client.name}.`,
+      metadata: {
+        fileNumber,
+        clientId,
+        workflowTemplateId: workflow.id,
+        workflowName: workflow.name,
+        assignedStaffId: effectiveAssignedStaffId,
+        thirdPartyId,
+        baseAmount,
+        discountAmount,
+        finalAmount,
+      },
+    });
 
     return NextResponse.json(
       {

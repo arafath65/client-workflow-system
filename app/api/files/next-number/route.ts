@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 export async function GET() {
   try {
@@ -62,6 +63,21 @@ export async function GET() {
     const fileNumber = `AIG-${String(
       nextNumber
     ).padStart(6, "0")}`;
+
+    // --------------------------------------------------
+    // Audit Log: Preview next file number
+    // --------------------------------------------------
+
+    await writeAuditLog({
+      module: "FILES",
+      action: "PREVIEW_NEXT_NUMBER",
+      entity: "CLIENT_FILE",
+      description: `Previewed next file number: ${fileNumber}`,
+      metadata: {
+        fileNumber,
+        nextNumber,
+      },
+    });
 
     return NextResponse.json({
       success: true,

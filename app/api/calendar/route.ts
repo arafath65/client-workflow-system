@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -9,6 +10,7 @@ const STATUSES = ["SCHEDULED", "COMPLETED", "CANCELLED"] as const;
 
 function parseSriLankaDate(value: unknown): Date | null {
   if (typeof value !== "string" || !value.trim()) return null;
+
   const raw = value.trim();
 
   // Accept a datetime-local value: 2026-09-18T14:30
@@ -21,16 +23,25 @@ function parseSriLankaDate(value: unknown): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function isStatus(value: unknown): value is (typeof STATUSES)[number] {
-  return typeof value === "string" && STATUSES.includes(value as (typeof STATUSES)[number]);
+function isStatus(
+  value: unknown
+): value is (typeof STATUSES)[number] {
+  return (
+    typeof value === "string" &&
+    STATUSES.includes(value as (typeof STATUSES)[number])
+  );
 }
 
-async function validateRelations(clientFileId: number | null, staffId: number | null) {
+async function validateRelations(
+  clientFileId: number | null,
+  staffId: number | null
+) {
   if (clientFileId !== null) {
     const clientFile = await prisma.clientFile.findUnique({
       where: { id: clientFileId },
       select: { id: true },
     });
+
     if (!clientFile) {
       return "Selected client file was not found.";
     }
@@ -41,6 +52,7 @@ async function validateRelations(clientFileId: number | null, staffId: number | 
       where: { id: staffId },
       select: { id: true },
     });
+
     if (!staff) {
       return "Selected staff member was not found.";
     }
@@ -56,6 +68,7 @@ async function validateRelations(clientFileId: number | null, staffId: number | 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+
     const fromRaw = searchParams.get("from");
     const toRaw = searchParams.get("to");
 
@@ -134,7 +147,9 @@ export async function POST(request: NextRequest) {
         : parseSriLankaDate(body.startAt);
 
     const endAt =
-      body.endAt === null || body.endAt === undefined || body.endAt === ""
+      body.endAt === null ||
+      body.endAt === undefined ||
+      body.endAt === ""
         ? null
         : parseSriLankaDate(body.endAt);
 
@@ -154,42 +169,61 @@ export async function POST(request: NextRequest) {
 
     if (!title) {
       return NextResponse.json(
-        { success: false, message: "Event title is required." },
+        {
+          success: false,
+          message: "Event title is required.",
+        },
         { status: 400 }
       );
     }
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return NextResponse.json(
-        { success: false, message: "Valid event date is required." },
+        {
+          success: false,
+          message: "Valid event date is required.",
+        },
         { status: 400 }
       );
     }
 
     if (!startAt) {
       return NextResponse.json(
-        { success: false, message: "Valid event date is required." },
+        {
+          success: false,
+          message: "Valid event date is required.",
+        },
         { status: 400 }
       );
     }
 
     if (body.endAt && !body.startAt) {
       return NextResponse.json(
-        { success: false, message: "Start time is required when an end time is entered." },
+        {
+          success: false,
+          message:
+            "Start time is required when an end time is entered.",
+        },
         { status: 400 }
       );
     }
 
     if (body.endAt && !endAt) {
       return NextResponse.json(
-        { success: false, message: "Invalid end date and time." },
+        {
+          success: false,
+          message: "Invalid end date and time.",
+        },
         { status: 400 }
       );
     }
 
     if (endAt && endAt <= startAt) {
       return NextResponse.json(
-        { success: false, message: "End time must be after start time." },
+        {
+          success: false,
+          message: "End time must be after start time.",
+        },
         { status: 400 }
       );
     }
@@ -215,7 +249,10 @@ export async function POST(request: NextRequest) {
 
     if (relationError) {
       return NextResponse.json(
-        { success: false, message: relationError },
+        {
+          success: false,
+          message: relationError,
+        },
         { status: 400 }
       );
     }
@@ -236,12 +273,44 @@ export async function POST(request: NextRequest) {
             id: true,
             fileNumber: true,
             title: true,
-            client: { select: { id: true, name: true } },
+            client: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         staff: {
-          select: { id: true, name: true },
+          select: {
+            id: true,
+            name: true,
+          },
         },
+      },
+    });
+
+    // --------------------------------------------------
+    // Audit log
+    // --------------------------------------------------
+
+    await writeAuditLog({
+      module: "CALENDAR",
+      action: "CREATE_EVENT",
+      entity: "CalendarEvent",
+      entityId: event.id,
+      description: `Created calendar event: ${event.title}`,
+      metadata: {
+        eventId: event.id,
+        title: event.title,
+        description: event.description,
+        startAt: event.startAt.toISOString(),
+        endAt: event.endAt?.toISOString() ?? null,
+        clientFileId: event.clientFileId,
+        clientFileNumber: event.clientFile?.fileNumber ?? null,
+        staffId: event.staffId,
+        staffName: event.staff?.name ?? null,
+        status: event.status,
       },
     });
 
@@ -254,7 +323,10 @@ export async function POST(request: NextRequest) {
     console.error("Create calendar event error:", error);
 
     return NextResponse.json(
-      { success: false, message: "Unable to create calendar event." },
+      {
+        success: false,
+        message: "Unable to create calendar event.",
+      },
       { status: 500 }
     );
   }

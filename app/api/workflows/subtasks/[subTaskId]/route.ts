@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{
@@ -45,9 +46,7 @@ export async function PATCH(
 
     const body = await request.json();
 
-    const title = String(
-      body.title ?? ""
-    ).trim();
+    const title = String(body.title ?? "").trim();
 
     const description =
       body.description === null ||
@@ -128,10 +127,35 @@ export async function PATCH(
         },
       });
 
+    // --------------------------------------------------
+    // Audit log
+    // --------------------------------------------------
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: "UPDATE_SUBTASK",
+      entity: "WorkflowSubTask",
+      entityId: id,
+      description: `Updated workflow subtask: ${updatedSubTask.title}`,
+      metadata: {
+        subTaskId: id,
+        workflowStepId: subTask.workflowStepId,
+        previous: {
+          title: subTask.title,
+          description: subTask.description,
+          defaultStaffId: subTask.defaultStaffId,
+        },
+        updated: {
+          title: updatedSubTask.title,
+          description: updatedSubTask.description,
+          defaultStaffId: updatedSubTask.defaultStaffId,
+        },
+      },
+    });
+
     return NextResponse.json({
       success: true,
-      message:
-        "Sub task updated successfully.",
+      message: "Sub task updated successfully.",
       subTask: updatedSubTask,
     });
   } catch (error) {
@@ -143,8 +167,7 @@ export async function PATCH(
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Unable to update sub task.",
+        message: "Unable to update sub task.",
       },
       { status: 500 }
     );
@@ -193,10 +216,30 @@ export async function DELETE(
       },
     });
 
+    // --------------------------------------------------
+    // Audit log
+    // --------------------------------------------------
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: "DELETE_SUBTASK",
+      entity: "WorkflowSubTask",
+      entityId: id,
+      description: `Deleted workflow subtask: ${subTask.title}`,
+      metadata: {
+        subTaskId: id,
+        workflowStepId: subTask.workflowStepId,
+        subTaskNumber: subTask.subTaskNumber,
+        title: subTask.title,
+        description: subTask.description,
+        defaultStaffId: subTask.defaultStaffId,
+        status: subTask.status,
+      },
+    });
+
     return NextResponse.json({
       success: true,
-      message:
-        "Sub task deleted successfully.",
+      message: "Sub task deleted successfully.",
     });
   } catch (error) {
     console.error(
@@ -207,8 +250,7 @@ export async function DELETE(
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Unable to delete sub task.",
+        message: "Unable to delete sub task.",
       },
       { status: 500 }
     );

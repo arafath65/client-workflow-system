@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type ReorderItem = {
   id: number;
@@ -50,6 +51,8 @@ export async function PATCH(request: NextRequest) {
         select: {
           id: true,
           workflowStepId: true,
+          subTaskNumber: true,
+          title: true,
         },
       });
 
@@ -80,12 +83,53 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    // --------------------------------------------------
+    // Prepare audit information
+    // --------------------------------------------------
+
+    const existingSubTasksMap = new Map(
+      existingSubTasks.map((subTask) => [
+        subTask.id,
+        subTask,
+      ])
+    );
+
+    const previousOrder = steps.map((step) => {
+      const existingSubTask =
+        existingSubTasksMap.get(step.id)!;
+
+      return {
+        id: existingSubTask.id,
+        title: existingSubTask.title,
+        subTaskNumber: existingSubTask.subTaskNumber,
+      };
+    });
+
+    const newOrder = steps.map((step) => {
+      const existingSubTask =
+        existingSubTasksMap.get(step.id)!;
+
+      return {
+        id: step.id,
+        title: existingSubTask.title,
+        subTaskNumber: step.subTaskNumber,
+      };
+    });
+
+    const workflowStepId =
+      existingSubTasks[0].workflowStepId;
+
+    // --------------------------------------------------
+    // Reorder subtasks
+    // --------------------------------------------------
+
     await prisma.$transaction(async (tx) => {
       /*
        * First move the numbers to temporary negative values.
        * This prevents the unique constraint
        * (workflowStepId, subTaskNumber) from causing conflicts.
        */
+
       for (const subTask of steps) {
         await tx.workflowSubTask.update({
           where: {
@@ -100,6 +144,7 @@ export async function PATCH(request: NextRequest) {
       /*
        * Now assign the final numbers.
        */
+
       for (const subTask of steps) {
         await tx.workflowSubTask.update({
           where: {
@@ -110,6 +155,23 @@ export async function PATCH(request: NextRequest) {
           },
         });
       }
+    });
+
+    // --------------------------------------------------
+    // Audit log
+    // --------------------------------------------------
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: "REORDER_SUBTASKS",
+      entity: "WorkflowSubTask",
+      description: `Reordered ${steps.length} subtask(s) in workflow step ID ${workflowStepId}.`,
+      metadata: {
+        workflowStepId,
+        subTaskCount: steps.length,
+        previousOrder,
+        newOrder,
+      },
     });
 
     return NextResponse.json({

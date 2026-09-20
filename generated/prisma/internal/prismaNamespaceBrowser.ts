@@ -64,11 +64,13 @@ export const ModelName = {
   FileWorkflowSubTask: 'FileWorkflowSubTask',
   TaskHistory: 'TaskHistory',
   FileCharge: 'FileCharge',
+  Expense: 'Expense',
   Payment: 'Payment',
   PaymentInstallment: 'PaymentInstallment',
   CalendarEvent: 'CalendarEvent',
   ThirdParty: 'ThirdParty',
-  FileNumberSequence: 'FileNumberSequence'
+  FileNumberSequence: 'FileNumberSequence',
+  AuditLog: 'AuditLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -277,6 +279,23 @@ export const FileChargeScalarFieldEnum = {
 export type FileChargeScalarFieldEnum = (typeof FileChargeScalarFieldEnum)[keyof typeof FileChargeScalarFieldEnum]
 
 
+export const ExpenseScalarFieldEnum = {
+  id: 'id',
+  expenseDate: 'expenseDate',
+  category: 'category',
+  description: 'description',
+  amount: 'amount',
+  paymentMethod: 'paymentMethod',
+  referenceNo: 'referenceNo',
+  remarks: 'remarks',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExpenseScalarFieldEnum = (typeof ExpenseScalarFieldEnum)[keyof typeof ExpenseScalarFieldEnum]
+
+
 export const PaymentScalarFieldEnum = {
   id: 'id',
   clientFileId: 'clientFileId',
@@ -346,6 +365,21 @@ export const FileNumberSequenceScalarFieldEnum = {
 } as const
 
 export type FileNumberSequenceScalarFieldEnum = (typeof FileNumberSequenceScalarFieldEnum)[keyof typeof FileNumberSequenceScalarFieldEnum]
+
+
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  module: 'module',
+  action: 'action',
+  entity: 'entity',
+  entityId: 'entityId',
+  description: 'description',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -452,6 +486,16 @@ export const FileChargeOrderByRelevanceFieldEnum = {
 export type FileChargeOrderByRelevanceFieldEnum = (typeof FileChargeOrderByRelevanceFieldEnum)[keyof typeof FileChargeOrderByRelevanceFieldEnum]
 
 
+export const ExpenseOrderByRelevanceFieldEnum = {
+  category: 'category',
+  description: 'description',
+  referenceNo: 'referenceNo',
+  remarks: 'remarks'
+} as const
+
+export type ExpenseOrderByRelevanceFieldEnum = (typeof ExpenseOrderByRelevanceFieldEnum)[keyof typeof ExpenseOrderByRelevanceFieldEnum]
+
+
 export const PaymentOrderByRelevanceFieldEnum = {
   referenceNo: 'referenceNo',
   remarks: 'remarks'
@@ -481,4 +525,15 @@ export const ThirdPartyOrderByRelevanceFieldEnum = {
 } as const
 
 export type ThirdPartyOrderByRelevanceFieldEnum = (typeof ThirdPartyOrderByRelevanceFieldEnum)[keyof typeof ThirdPartyOrderByRelevanceFieldEnum]
+
+
+export const AuditLogOrderByRelevanceFieldEnum = {
+  module: 'module',
+  action: 'action',
+  entity: 'entity',
+  description: 'description',
+  metadata: 'metadata'
+} as const
+
+export type AuditLogOrderByRelevanceFieldEnum = (typeof AuditLogOrderByRelevanceFieldEnum)[keyof typeof AuditLogOrderByRelevanceFieldEnum]
 

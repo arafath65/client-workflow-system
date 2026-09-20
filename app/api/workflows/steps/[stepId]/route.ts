@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{
@@ -54,6 +55,22 @@ export async function PATCH(
         },
         data: {
           status: body.status,
+        },
+      });
+
+      await writeAuditLog({
+        module: "WORKFLOW",
+        action: body.status ? "ACTIVATE_STEP" : "DEACTIVATE_STEP",
+        entity: "WorkflowStep",
+        entityId: id,
+        description: body.status
+          ? `Activated workflow step: ${existingStep.title}`
+          : `Deactivated workflow step: ${existingStep.title}`,
+        metadata: {
+          workflowStepId: id,
+          title: existingStep.title,
+          previousStatus: existingStep.status,
+          newStatus: body.status,
         },
       });
 
@@ -137,6 +154,26 @@ export async function PATCH(
             id: true,
             name: true,
           },
+        },
+      },
+    });
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: "UPDATE_STEP",
+      entity: "WorkflowStep",
+      entityId: id,
+      description: `Updated workflow step: ${title}`,
+      metadata: {
+        workflowStepId: id,
+        previous: {
+          title: existingStep.title,
+          defaultStaffId: existingStep.defaultStaffId,
+        },
+        updated: {
+          title: updatedStep.title,
+          defaultStaffId: updatedStep.defaultStaffId,
+          defaultStaffName: updatedStep.defaultStaff?.name ?? null,
         },
       },
     });

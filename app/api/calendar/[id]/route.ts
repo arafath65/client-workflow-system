@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -9,9 +10,10 @@ const STATUSES = ["SCHEDULED", "COMPLETED", "CANCELLED"] as const;
 
 function parseSriLankaDate(value: unknown): Date | null {
   if (typeof value !== "string" || !value.trim()) return null;
+
   const raw = value.trim();
 
-  if (/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(raw)) {
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)) {
     const date = new Date(`${raw}:00+05:30`);
     return Number.isNaN(date.getTime()) ? null : date;
   }
@@ -20,17 +22,28 @@ function parseSriLankaDate(value: unknown): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function isStatus(value: unknown): value is (typeof STATUSES)[number] {
-  return typeof value === "string" && STATUSES.includes(value as (typeof STATUSES)[number]);
+function isStatus(
+  value: unknown
+): value is (typeof STATUSES)[number] {
+  return (
+    typeof value === "string" &&
+    STATUSES.includes(value as (typeof STATUSES)[number])
+  );
 }
 
-async function validateRelations(clientFileId: number | null, staffId: number | null) {
+async function validateRelations(
+  clientFileId: number | null,
+  staffId: number | null
+) {
   if (clientFileId !== null) {
     const clientFile = await prisma.clientFile.findUnique({
       where: { id: clientFileId },
       select: { id: true },
     });
-    if (!clientFile) return "Selected client file was not found.";
+
+    if (!clientFile) {
+      return "Selected client file was not found.";
+    }
   }
 
   if (staffId !== null) {
@@ -38,7 +51,10 @@ async function validateRelations(clientFileId: number | null, staffId: number | 
       where: { id: staffId },
       select: { id: true },
     });
-    if (!staff) return "Selected staff member was not found.";
+
+    if (!staff) {
+      return "Selected staff member was not found.";
+    }
   }
 
   return null;
@@ -48,14 +64,20 @@ async function validateRelations(clientFileId: number | null, staffId: number | 
 // PATCH - Update Calendar Event
 // ==================================================
 
-export async function PATCH(request: NextRequest, context: RouteContext) {
+export async function PATCH(
+  request: NextRequest,
+  context: RouteContext
+) {
   try {
     const { id } = await context.params;
     const eventId = Number(id);
 
     if (!Number.isInteger(eventId) || eventId <= 0) {
       return NextResponse.json(
-        { success: false, message: "Invalid calendar event ID." },
+        {
+          success: false,
+          message: "Invalid calendar event ID.",
+        },
         { status: 400 }
       );
     }
@@ -78,7 +100,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (!existing) {
       return NextResponse.json(
-        { success: false, message: "Calendar event not found." },
+        {
+          success: false,
+          message: "Calendar event not found.",
+        },
         { status: 404 }
       );
     }
@@ -95,21 +120,32 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (body.title !== undefined) {
       const title = String(body.title ?? "").trim();
+
       if (!title) {
         return NextResponse.json(
-          { success: false, message: "Event title cannot be empty." },
+          {
+            success: false,
+            message: "Event title cannot be empty.",
+          },
           { status: 400 }
         );
       }
+
       data.title = title;
     }
 
     if (body.description !== undefined) {
-      const description = String(body.description ?? "").trim();
+      const description = String(
+        body.description ?? ""
+      ).trim();
+
       data.description = description || null;
     }
 
-    const date = typeof body.date === "string" ? body.date.trim() : "";
+    const date =
+      typeof body.date === "string"
+        ? body.date.trim()
+        : "";
 
     const newStart =
       body.startAt === undefined
@@ -129,38 +165,57 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (body.startAt !== undefined && !newStart) {
       return NextResponse.json(
-        { success: false, message: "Invalid event date or start time." },
+        {
+          success: false,
+          message: "Invalid event date or start time.",
+        },
         { status: 400 }
       );
     }
 
     if (body.endAt !== undefined && body.endAt && !newEnd) {
       return NextResponse.json(
-        { success: false, message: "Invalid end date and time." },
+        {
+          success: false,
+          message: "Invalid end date and time.",
+        },
         { status: 400 }
       );
     }
 
     if (body.endAt && body.startAt === null) {
       return NextResponse.json(
-        { success: false, message: "Start time is required when an end time is entered." },
+        {
+          success: false,
+          message:
+            "Start time is required when an end time is entered.",
+        },
         { status: 400 }
       );
     }
 
     if (newEnd && newStart && newEnd <= newStart) {
       return NextResponse.json(
-        { success: false, message: "End time must be after start time." },
+        {
+          success: false,
+          message: "End time must be after start time.",
+        },
         { status: 400 }
       );
     }
 
-    if (body.startAt !== undefined) data.startAt = newStart as Date;
-    if (body.endAt !== undefined) data.endAt = newEnd;
+    if (body.startAt !== undefined) {
+      data.startAt = newStart as Date;
+    }
+
+    if (body.endAt !== undefined) {
+      data.endAt = newEnd;
+    }
 
     if (body.clientFileId !== undefined) {
       const value =
-        body.clientFileId === null || body.clientFileId === ""
+        body.clientFileId === null ||
+        body.clientFileId === ""
           ? null
           : Number(body.clientFileId);
 
@@ -174,7 +229,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (body.staffId !== undefined) {
       const value =
-        body.staffId === null || body.staffId === ""
+        body.staffId === null ||
+        body.staffId === ""
           ? null
           : Number(body.staffId);
 
@@ -189,21 +245,32 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (body.status !== undefined) {
       if (!isStatus(body.status)) {
         return NextResponse.json(
-          { success: false, message: "Invalid calendar event status." },
+          {
+            success: false,
+            message: "Invalid calendar event status.",
+          },
           { status: 400 }
         );
       }
+
       data.status = body.status;
     }
 
     const relationError = await validateRelations(
-      data.clientFileId === undefined ? existing.clientFileId : data.clientFileId,
-      data.staffId === undefined ? existing.staffId : data.staffId
+      data.clientFileId === undefined
+        ? existing.clientFileId
+        : data.clientFileId,
+      data.staffId === undefined
+        ? existing.staffId
+        : data.staffId
     );
 
     if (relationError) {
       return NextResponse.json(
-        { success: false, message: relationError },
+        {
+          success: false,
+          message: relationError,
+        },
         { status: 400 }
       );
     }
@@ -217,11 +284,52 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
             id: true,
             fileNumber: true,
             title: true,
-            client: { select: { id: true, name: true } },
+            client: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         staff: {
-          select: { id: true, name: true },
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    // --------------------------------------------------
+    // Audit log
+    // --------------------------------------------------
+
+    await writeAuditLog({
+      module: "CALENDAR",
+      action: "UPDATE_EVENT",
+      entity: "CalendarEvent",
+      entityId: event.id,
+      description: `Updated calendar event: ${event.title}`,
+      metadata: {
+        eventId: event.id,
+        previous: {
+          title: existing.title,
+          description: existing.description,
+          startAt: existing.startAt.toISOString(),
+          endAt: existing.endAt?.toISOString() ?? null,
+          clientFileId: existing.clientFileId,
+          staffId: existing.staffId,
+          status: existing.status,
+        },
+        updated: {
+          title: event.title,
+          description: event.description,
+          startAt: event.startAt.toISOString(),
+          endAt: event.endAt?.toISOString() ?? null,
+          clientFileId: event.clientFileId,
+          staffId: event.staffId,
+          status: event.status,
         },
       },
     });
@@ -235,7 +343,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     console.error("Update calendar event error:", error);
 
     return NextResponse.json(
-      { success: false, message: "Unable to update calendar event." },
+      {
+        success: false,
+        message: "Unable to update calendar event.",
+      },
       { status: 500 }
     );
   }
@@ -255,25 +366,62 @@ export async function DELETE(
 
     if (!Number.isInteger(eventId) || eventId <= 0) {
       return NextResponse.json(
-        { success: false, message: "Invalid calendar event ID." },
+        {
+          success: false,
+          message: "Invalid calendar event ID.",
+        },
         { status: 400 }
       );
     }
 
     const existing = await prisma.calendarEvent.findUnique({
       where: { id: eventId },
-      select: { id: true },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        startAt: true,
+        endAt: true,
+        clientFileId: true,
+        staffId: true,
+        status: true,
+      },
     });
 
     if (!existing) {
       return NextResponse.json(
-        { success: false, message: "Calendar event not found." },
+        {
+          success: false,
+          message: "Calendar event not found.",
+        },
         { status: 404 }
       );
     }
 
     await prisma.calendarEvent.delete({
       where: { id: eventId },
+    });
+
+    // --------------------------------------------------
+    // Audit log
+    // --------------------------------------------------
+
+    await writeAuditLog({
+      module: "CALENDAR",
+      action: "DELETE_EVENT",
+      entity: "CalendarEvent",
+      entityId: existing.id,
+      description: `Deleted calendar event: ${existing.title}`,
+      metadata: {
+        eventId: existing.id,
+        title: existing.title,
+        description: existing.description,
+        startAt: existing.startAt.toISOString(),
+        endAt: existing.endAt?.toISOString() ?? null,
+        clientFileId: existing.clientFileId,
+        staffId: existing.staffId,
+        status: existing.status,
+      },
     });
 
     return NextResponse.json({
@@ -284,7 +432,10 @@ export async function DELETE(
     console.error("Delete calendar event error:", error);
 
     return NextResponse.json(
-      { success: false, message: "Unable to delete calendar event." },
+      {
+        success: false,
+        message: "Unable to delete calendar event.",
+      },
       { status: 500 }
     );
   }

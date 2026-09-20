@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{ stepId: string }>;
@@ -25,6 +26,20 @@ export async function PATCH(
 
     const step = await prisma.workflowStep.findUnique({
       where: { id },
+      include: {
+        workflowTemplate: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        defaultStaff: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     if (!step) {
@@ -78,6 +93,9 @@ export async function PATCH(
           id: defaultStaffId,
           status: true,
         },
+        select: {
+          id: true,
+        },
       });
 
       if (!staff) {
@@ -104,6 +122,34 @@ export async function PATCH(
             id: true,
             name: true,
           },
+        },
+      },
+    });
+
+    // ==============================================
+    // Audit log: workflow step updated
+    // ==============================================
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: "UPDATE_STEP",
+      entity: "WORKFLOW_STEP",
+      entityId: updatedStep.id,
+      description: `Updated step "${updatedStep.title}" in workflow "${step.workflowTemplate.name}"`,
+      metadata: {
+        workflowId: step.workflowTemplate.id,
+        workflowName: step.workflowTemplate.name,
+        stepId: updatedStep.id,
+        stepNumber: updatedStep.stepNumber,
+        previousValues: {
+          title: step.title,
+          defaultStaffId: step.defaultStaffId,
+          defaultStaffName: step.defaultStaff?.name ?? null,
+        },
+        newValues: {
+          title: updatedStep.title,
+          defaultStaffId: updatedStep.defaultStaffId,
+          defaultStaffName: updatedStep.defaultStaff?.name ?? null,
         },
       },
     });

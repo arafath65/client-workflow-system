@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{
@@ -43,7 +44,10 @@ export async function PATCH(
       );
     }
 
+    // ==============================================
     // Status-only update
+    // ==============================================
+
     if (typeof body.status === "boolean") {
       const staff = await prisma.staff.update({
         where: {
@@ -51,6 +55,23 @@ export async function PATCH(
         },
         data: {
           status: body.status,
+        },
+      });
+
+      // Audit log: staff activated/deactivated
+      await writeAuditLog({
+        module: "STAFF",
+        action: body.status ? "ACTIVATE" : "DEACTIVATE",
+        entity: "STAFF",
+        entityId: staff.id,
+        description: body.status
+          ? `Activated staff member: ${staff.name}`
+          : `Deactivated staff member: ${staff.name}`,
+        metadata: {
+          staffId: staff.id,
+          name: staff.name,
+          previousStatus: existingStaff.status,
+          newStatus: staff.status,
         },
       });
 
@@ -63,7 +84,10 @@ export async function PATCH(
       });
     }
 
+    // ==============================================
     // Staff details update
+    // ==============================================
+
     const name = String(body.name ?? "").trim();
     const position = String(body.position ?? "").trim();
     const phone = String(body.phone ?? "").trim();
@@ -108,6 +132,30 @@ export async function PATCH(
         position,
         phone,
         email: email || null,
+      },
+    });
+
+    // Audit log: staff details updated
+    await writeAuditLog({
+      module: "STAFF",
+      action: "UPDATE",
+      entity: "STAFF",
+      entityId: staff.id,
+      description: `Updated staff details: ${staff.name}`,
+      metadata: {
+        staffId: staff.id,
+        previousValues: {
+          name: existingStaff.name,
+          position: existingStaff.position,
+          phone: existingStaff.phone,
+          email: existingStaff.email,
+        },
+        newValues: {
+          name: staff.name,
+          position: staff.position,
+          phone: staff.phone,
+          email: staff.email,
+        },
       },
     });
 

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Navigation from "../components/Navigation";
 import LogoutButton from "../dashboard/LogoutButton";
 import { prisma } from "@/lib/prisma";
+import ExpenseManager from "./ExpenseManager";
 
 type SearchParams = Record<
   string,
@@ -175,6 +176,68 @@ export default async function PaymentsPage({
     orderBy: {
       paidAt: "asc",
     },
+  });
+
+  // --------------------------------------------------
+  // Refunded payments in selected period
+  // --------------------------------------------------
+  const periodRefundedPayments = await prisma.payment.findMany({
+    where: {
+      status: "REFUNDED",
+      paidAt: {
+        gte: rangeStart,
+        lt: rangeEndExclusive,
+      },
+    },
+    select: {
+      id: true,
+      amount: true,
+      paidAt: true,
+    },
+    orderBy: {
+      paidAt: "asc",
+    },
+  });
+
+  // --------------------------------------------------
+  // Expenses in selected period
+  // --------------------------------------------------
+  const periodExpenses = await prisma.expense.findMany({
+    where: {
+      expenseDate: {
+        gte: rangeStart,
+        lt: rangeEndExclusive,
+      },
+      ...(search
+        ? {
+            OR: [
+              { category: { contains: search } },
+              { description: { contains: search } },
+              { referenceNo: { contains: search } },
+              { remarks: { contains: search } },
+            ],
+          }
+        : {}),
+    },
+    select: {
+      id: true,
+      expenseDate: true,
+      category: true,
+      description: true,
+      amount: true,
+      paymentMethod: true,
+      referenceNo: true,
+      remarks: true,
+      createdBy: {
+        select: {
+          username: true,
+        },
+      },
+    },
+    orderBy: {
+      expenseDate: "desc",
+    },
+    take: 250,
   });
 
   // --------------------------------------------------
@@ -377,22 +440,41 @@ export default async function PaymentsPage({
 
   totalBilled = roundMoney(totalBilled);
   totalDue = roundMoney(totalDue);
-  const totalPaidInRange = roundMoney(
+
+  // Gross income = all payments that were actually received.
+  // A refunded payment was received first, so it remains part of
+  // gross income and is deducted separately below.
+  const totalIncome = roundMoney(
     periodClearedPayments.reduce(
+      (sum, payment) => sum + Number(payment.amount),
+      0
+    ) +
+      periodRefundedPayments.reduce(
+        (sum, payment) => sum + Number(payment.amount),
+        0
+      )
+  );
+
+  const totalRefunded = roundMoney(
+    periodRefundedPayments.reduce(
       (sum, payment) => sum + Number(payment.amount),
       0
     )
   );
 
-  const totalRefundedInRange = roundMoney(
-    selectedFiles.reduce(
-      (sum, file) =>
-        sum +
-        file.payments
-          .filter((payment) => payment.status === "REFUNDED")
-          .reduce((fileSum, payment) => fileSum + Number(payment.amount), 0),
+  const totalExpenses = roundMoney(
+    periodExpenses.reduce(
+      (sum, expense) => sum + Number(expense.amount),
       0
     )
+  );
+
+  const netIncome = roundMoney(
+    totalIncome - totalRefunded
+  );
+
+  const totalProfit = roundMoney(
+    netIncome - totalExpenses
   );
 
   const clientSummary = Array.from(clientSummaryMap.values()).sort(
@@ -400,12 +482,11 @@ export default async function PaymentsPage({
   );
 
   const monthlyGrowth = buildMonthlySeries(
-    periodClearedPayments,
+    [...periodClearedPayments, ...periodRefundedPayments],
     normalizedRange.from,
     normalizedRange.to
   );
 
-  const totalClients = clientSummary.length;
   const selectedRangeLabel = formatDisplayRange(
     normalizedRange.from,
     normalizedRange.to
@@ -469,7 +550,7 @@ export default async function PaymentsPage({
         </div>
       </header>
 
-      <Navigation currentPage="payments" />
+      <Navigation currentPage="finance" />
 
       <section className="mx-auto max-w-7xl px-6 py-8">
         {/* Heading */}
@@ -479,12 +560,12 @@ export default async function PaymentsPage({
           </p>
 
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            Payments
+            Finance
           </h1>
 
           <p className="mt-2 max-w-3xl text-sm leading-6 text-black/50">
-            Financial dashboard for collections, outstanding balances and
-            client acquisition sources.
+            Track income, refunds, expenses, outstanding balances and profit
+            from one financial workspace.
           </p>
         </div>
 
@@ -604,23 +685,29 @@ export default async function PaymentsPage({
         </form>
 
         {/* KPI Cards */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <FinanceCard
-            title="Total Billed"
-            value={formatLkr(totalBilled)}
-            description="Files opened in selected range"
-          />
-
-          <FinanceCard
-            title="Total Paid"
-            value={formatLkr(totalPaidInRange)}
+            title="Total Income"
+            value={formatLkr(totalIncome)}
             description="Cleared payments received in range"
           />
 
           <FinanceCard
             title="Total Refunded"
-            value={formatLkr(totalRefundedInRange)}
-            description="Refunded payments in selected range"
+            value={formatLkr(totalRefunded)}
+            description="Payments returned to clients"
+          />
+
+          <FinanceCard
+            title="Total Expenses"
+            value={formatLkr(totalExpenses)}
+            description="Business expenses in selected range"
+          />
+
+          <FinanceCard
+            title="Net Profit"
+            value={formatLkr(totalProfit)}
+            description="Income − refunds − expenses"
           />
 
           <FinanceCard
@@ -636,16 +723,16 @@ export default async function PaymentsPage({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-sm font-semibold">
-                  Monthly Payment Growth
+                  Monthly Income
                 </h2>
                 <p className="mt-1 text-xs text-black/40">
-                  Monthly total of CLEARED payments received in the selected
-                  period.
+                  Monthly gross payments received in the selected period.
+                  Refunded payments are included in gross income and deducted separately.
                 </p>
               </div>
 
               <span className="rounded-full bg-[#fff7e6] px-3 py-1 text-[10px] font-semibold text-[#a56e00]">
-                Paid Amount
+                Income
               </span>
             </div>
 
@@ -760,6 +847,43 @@ export default async function PaymentsPage({
             selected files. Refunded is the amount returned to clients.
             Cancelled files have no current amount due.
           </p>
+        </div>
+
+        {/* Expenses */}
+        <ExpenseManager
+          initialExpenses={periodExpenses.map((expense) => ({
+            id: expense.id,
+            expenseDate: expense.expenseDate.toISOString(),
+            category: expense.category,
+            description: expense.description,
+            amount: Number(expense.amount),
+            paymentMethod: expense.paymentMethod,
+            referenceNo: expense.referenceNo,
+            remarks: expense.remarks,
+            createdByName: expense.createdBy.username,
+          }))}
+          totalExpenses={totalExpenses}
+        />
+
+        {/* Profit reconciliation */}
+        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <FinanceCard
+            title="Net Income"
+            value={formatLkr(netIncome)}
+            description="Income after refunds"
+          />
+
+          <FinanceCard
+            title="Total Profit"
+            value={formatLkr(totalProfit)}
+            description="Net income after expenses"
+          />
+
+          <FinanceCard
+            title="Total Billed"
+            value={formatLkr(totalBilled)}
+            description="Original billed value in selected range"
+          />
         </div>
 
         {/* Payment history */}
@@ -935,24 +1059,39 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
     );
   }
 
-  const width = Math.max(720, points.length * 76);
-  const height = 300;
-  const paddingLeft = 64;
-  const paddingRight = 24;
-  const paddingTop = 22;
-  const paddingBottom = 44;
-  const plotWidth = width - paddingLeft - paddingRight;
+  const width = Math.max(760, points.length * 82);
+  const height = 320;
+  const paddingLeft = 76;
+  const paddingRight = 76;
+  const plotInsetLeft = 58;
+  const plotInsetRight = 28;
+  const paddingTop = 36;
+  const paddingBottom = 52;
+  const plotLeft = paddingLeft + plotInsetLeft;
+  const plotRight = width - paddingRight - plotInsetRight;
+  const plotWidth = plotRight - plotLeft;
   const plotHeight = height - paddingTop - paddingBottom;
-  const maxValue = Math.max(...points.map((point) => point.amount), 1);
+
+  // Leave some headroom so the highest point and its label never touch the top.
+  const highestAmount = Math.max(
+    ...points.map((point) => point.amount),
+    1
+  );
+  const maxValue = Math.max(highestAmount * 1.2, 1);
   const gridSteps = [0, 0.25, 0.5, 0.75, 1];
 
   const coords = points.map((point, index) => {
     const x =
-      paddingLeft +
-      (points.length === 1
-        ? plotWidth / 2
-        : (index / (points.length - 1)) * plotWidth);
-    const y = paddingTop + plotHeight - (point.amount / maxValue) * plotHeight;
+      points.length === 1
+        ? plotLeft + plotWidth / 2
+        : plotLeft +
+          (index / (points.length - 1)) * plotWidth;
+
+    const y =
+      paddingTop +
+      plotHeight -
+      (point.amount / maxValue) * plotHeight;
+
     return { ...point, x, y };
   });
 
@@ -967,26 +1106,32 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label="Monthly cleared payment growth chart"
+        aria-label="Monthly gross income chart"
         className="block min-w-full"
       >
         {gridSteps.map((fraction) => {
-          const y = paddingTop + plotHeight - fraction * plotHeight;
+          const y =
+            paddingTop +
+            plotHeight -
+            fraction * plotHeight;
           const label = formatCompactLkr(maxValue * fraction);
 
           return (
             <g key={fraction}>
               <line
-                x1={paddingLeft}
-                x2={width - paddingRight}
+                x1={plotLeft}
+                x2={plotRight}
                 y1={y}
                 y2={y}
                 stroke="rgba(0,0,0,0.08)"
                 strokeWidth="1"
-                strokeDasharray={fraction === 0 ? undefined : "4 4"}
+                strokeDasharray={
+                  fraction === 0 ? undefined : "4 4"
+                }
               />
+
               <text
-                x={paddingLeft - 10}
+                x={paddingLeft - 12}
                 y={y + 4}
                 textAnchor="end"
                 fontSize="10"
@@ -1003,7 +1148,7 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
             points={polyline}
             fill="none"
             stroke="#f9a800"
-            strokeWidth="3"
+            strokeWidth="3.5"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -1014,14 +1159,15 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
             <circle
               cx={point.x}
               cy={point.y}
-              r="4.5"
+              r="5"
               fill="#171717"
               stroke="#f9a800"
-              strokeWidth="2"
+              strokeWidth="2.5"
             />
+
             <text
               x={point.x}
-              y={point.y - 12}
+              y={Math.max(point.y - 16, 18)}
               textAnchor="middle"
               fontSize="10"
               fontWeight="600"
@@ -1029,11 +1175,13 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
             >
               {formatCompactLkr(point.amount)}
             </text>
+
             <text
               x={point.x}
-              y={height - 17}
+              y={height - 20}
               textAnchor="middle"
               fontSize="10"
+              fontWeight="500"
               fill="rgba(0,0,0,0.45)"
             >
               {point.label}
@@ -1175,7 +1323,7 @@ function getPreviousMonth(year: number, month: number) {
 
 function getMonthStartYearsAgo(yearsAgo: number) {
   const now = getColomboDateParts(new Date());
-  let year = Number(now.year) - yearsAgo;
+  const year = Number(now.year) - yearsAgo;
   const month = Number(now.month);
   return `${year}-${pad2(month)}-01`;
 }

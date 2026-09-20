@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 import {
   PaymentMethod,
   PaymentStatus,
@@ -57,9 +58,7 @@ function parseMoney(value: unknown): string | null {
   return amount.toFixed(2);
 }
 
-function parseDate(
-  value: unknown
-): Date | null {
+function parseDate(value: unknown): Date | null {
   if (value === undefined || value === null || value === "") {
     return new Date();
   }
@@ -77,18 +76,14 @@ function parseDate(
   return date;
 }
 
-function isPaymentMethod(
-  value: unknown
-): value is PaymentMethod {
+function isPaymentMethod(value: unknown): value is PaymentMethod {
   return (
     typeof value === "string" &&
     PAYMENT_METHODS.includes(value as PaymentMethod)
   );
 }
 
-function isPaymentStatus(
-  value: unknown
-): value is PaymentStatus {
+function isPaymentStatus(value: unknown): value is PaymentStatus {
   return (
     typeof value === "string" &&
     PAYMENT_STATUSES.includes(value as PaymentStatus)
@@ -254,6 +249,147 @@ export async function GET(
 }
 
 // ==================================================
+// PATCH - Reverse Payment
+// ==================================================
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: RouteContext
+) {
+  try {
+    const { id } = await params;
+    const clientFileId = parseFileId(id);
+
+    if (clientFileId === null) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid file ID.",
+        },
+        { status: 400 }
+      );
+    }
+
+    let body: unknown;
+
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid request body.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const paymentId =
+      typeof body === "object" &&
+      body !== null &&
+      "paymentId" in body
+        ? Number((body as { paymentId?: unknown }).paymentId)
+        : NaN;
+
+    if (!Number.isInteger(paymentId) || paymentId <= 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid payment ID.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const payment = await prisma.payment.findUnique({
+      where: {
+        id: paymentId,
+      },
+      select: {
+        id: true,
+        clientFileId: true,
+        amount: true,
+        status: true,
+        clientFile: {
+          select: { fileNumber: true },
+        },
+      },
+    });
+
+    if (!payment) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Payment not found.",
+        },
+        { status: 404 }
+      );
+    }
+
+    if (payment.clientFileId !== clientFileId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Payment does not belong to this client file.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (payment.status !== "CLEARED") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Only a cleared payment can be reversed.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const updatedPayment = await prisma.payment.update({
+      where: {
+        id: paymentId,
+      },
+      data: {
+        status: "CANCELLED",
+      },
+    });
+
+    await writeAuditLog({
+      module: "PAYMENTS",
+      action: "REVERSE",
+      entity: "PAYMENT",
+      entityId: updatedPayment.id,
+      description: `Payment #${updatedPayment.id} reversed for client file ${payment.clientFile.fileNumber}.`,
+      metadata: {
+        paymentId: updatedPayment.id,
+        clientFileId,
+        fileNumber: payment.clientFile.fileNumber,
+        amount: Number(payment.amount),
+        previousStatus: payment.status,
+        newStatus: updatedPayment.status,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Payment reversed successfully.",
+      payment: updatedPayment,
+    });
+  } catch (error) {
+    console.error("Reverse payment error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Unable to reverse payment.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// ==================================================
 // POST - Record Payment Receipt
 // ==================================================
 
@@ -275,7 +411,19 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
+    let body: Record<string, unknown>;
+
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid request body.",
+        },
+        { status: 400 }
+      );
+    }
 
     const amount = parseMoney(body.amount);
     const paymentMethod = body.paymentMethod;
@@ -367,6 +515,7 @@ export async function POST(
       },
       select: {
         id: true,
+        fileNumber: true,
       },
     });
 
@@ -427,6 +576,25 @@ export async function POST(
             },
           },
         },
+      },
+    });
+
+    await writeAuditLog({
+      module: "PAYMENTS",
+      action: "CREATE",
+      entity: "PAYMENT",
+      entityId: payment.id,
+      description: `Payment #${payment.id} of ${amount} recorded for client file ${clientFile.fileNumber}.`,
+      metadata: {
+        paymentId: payment.id,
+        clientFileId,
+        fileNumber: clientFile.fileNumber,
+        fileWorkflowId: rawFileWorkflowId,
+        amount: Number(payment.amount),
+        paymentMethod: payment.paymentMethod,
+        status: payment.status,
+        referenceNo: payment.referenceNo,
+        paidAt: payment.paidAt.toISOString(),
       },
     });
 

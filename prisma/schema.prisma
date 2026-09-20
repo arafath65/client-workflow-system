@@ -18,6 +18,9 @@ generator client {
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt
 
+    expenses     Expense[]
+    auditLogs    AuditLog[]
+
     @@map("users")
   }
 
@@ -395,6 +398,32 @@ generator client {
   }
 
   // ==================================================
+  // EXPENSE
+  // ==================================================
+
+  model Expense {
+    id              Int           @id @default(autoincrement())
+    expenseDate     DateTime
+    category        String
+    description     String
+    amount          Decimal       @db.Decimal(12, 2)
+    paymentMethod   PaymentMethod  @default(CASH)
+    referenceNo     String?
+    remarks         String?
+    createdByUserId Int
+    createdAt       DateTime      @default(now())
+    updatedAt       DateTime      @updatedAt
+
+    createdBy User @relation(fields: [createdByUserId], references: [id])
+
+    @@index([expenseDate])
+    @@index([category])
+    @@index([paymentMethod])
+    @@index([createdByUserId])
+    @@map("expenses")
+  }
+
+  // ==================================================
   // PAYMENT
   // ==================================================
 
@@ -549,3 +578,29 @@ generator client {
 
     @@map("file_number_sequences")
   }
+
+
+// ==================================================
+// AUDIT LOG
+// ==================================================
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  module      String
+  action      String
+  entity      String?
+  entityId    Int?
+  description String
+  metadata    String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([module])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

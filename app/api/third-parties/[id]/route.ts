@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 export async function PATCH(
   request: NextRequest,
@@ -28,12 +29,11 @@ export async function PATCH(
       );
     }
 
-    const existing =
-      await prisma.thirdParty.findUnique({
-        where: {
-          id,
-        },
-      });
+    const existing = await prisma.thirdParty.findUnique({
+      where: {
+        id,
+      },
+    });
 
     if (!existing) {
       return NextResponse.json(
@@ -49,19 +49,35 @@ export async function PATCH(
 
     const body = await request.json();
 
-    /*
-     * Activate / Deactivate
-     */
+    // ==============================================
+    // Activate / Deactivate
+    // ==============================================
+
     if (typeof body.status === "boolean") {
-      const thirdParty =
-        await prisma.thirdParty.update({
-          where: {
-            id,
-          },
-          data: {
-            status: body.status,
-          },
-        });
+      const thirdParty = await prisma.thirdParty.update({
+        where: {
+          id,
+        },
+        data: {
+          status: body.status,
+        },
+      });
+
+      await writeAuditLog({
+        module: "THIRD_PARTY",
+        action: body.status ? "ACTIVATE" : "DEACTIVATE",
+        entity: "THIRD_PARTY",
+        entityId: thirdParty.id,
+        description: body.status
+          ? `Activated third party: ${thirdParty.name}`
+          : `Deactivated third party: ${thirdParty.name}`,
+        metadata: {
+          thirdPartyId: thirdParty.id,
+          name: thirdParty.name,
+          previousStatus: existing.status,
+          newStatus: thirdParty.status,
+        },
+      });
 
       return NextResponse.json({
         success: true,
@@ -72,9 +88,10 @@ export async function PATCH(
       });
     }
 
-    /*
-     * Edit
-     */
+    // ==============================================
+    // Edit
+    // ==============================================
+
     const name =
       typeof body.name === "string"
         ? body.name.trim()
@@ -97,21 +114,17 @@ export async function PATCH(
       );
     }
 
-    /*
-     * Prevent duplicate third party names.
-     * Exclude the current record.
-     */
-    const duplicate =
-      await prisma.thirdParty.findFirst({
-        where: {
-          name: {
-            equals: name,
-          },
-          NOT: {
-            id,
-          },
+    // Prevent duplicate names, excluding current record
+    const duplicate = await prisma.thirdParty.findFirst({
+      where: {
+        name: {
+          equals: name,
         },
-      });
+        NOT: {
+          id,
+        },
+      },
+    });
 
     if (duplicate) {
       return NextResponse.json(
@@ -126,34 +139,48 @@ export async function PATCH(
       );
     }
 
-    const thirdParty =
-      await prisma.thirdParty.update({
-        where: {
-          id,
+    const thirdParty = await prisma.thirdParty.update({
+      where: {
+        id,
+      },
+      data: {
+        name,
+        whatsapp: whatsapp || null,
+      },
+    });
+
+    // Audit log: third party details updated
+    await writeAuditLog({
+      module: "THIRD_PARTY",
+      action: "UPDATE",
+      entity: "THIRD_PARTY",
+      entityId: thirdParty.id,
+      description: `Updated third party: ${thirdParty.name}`,
+      metadata: {
+        thirdPartyId: thirdParty.id,
+        previousValues: {
+          name: existing.name,
+          whatsapp: existing.whatsapp,
         },
-        data: {
-          name,
-          whatsapp: whatsapp || null,
+        newValues: {
+          name: thirdParty.name,
+          whatsapp: thirdParty.whatsapp,
         },
-      });
+      },
+    });
 
     return NextResponse.json({
       success: true,
-      message:
-        "Third party updated successfully.",
+      message: "Third party updated successfully.",
       thirdParty,
     });
   } catch (error) {
-    console.error(
-      "Update third party error:",
-      error
-    );
+    console.error("Update third party error:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Unable to update third party.",
+        message: "Unable to update third party.",
       },
       {
         status: 500,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 import {
   FileCancellationSettlement,
   FileStatus,
@@ -480,6 +481,22 @@ export async function POST(
             transferTargetId,
         },
       });
+    });
+
+    await writeAuditLog({
+      module: "FILES",
+      action: "CANCEL",
+      entity: "CLIENT_FILE",
+      entityId: fileId,
+      description: `Client file ${details.fileNumber} cancelled.`,
+      metadata: {
+        fileNumber: details.fileNumber,
+        clientName: details.clientName,
+        reason,
+        settlement,
+        settlementAmount: details.totalPaid,
+        transferTargetFileId: transferTargetId,
+      },
     });
 
     return NextResponse.json({

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{
@@ -28,27 +29,31 @@ export async function PATCH(
 
     const body = await request.json();
 
-    const completed =
-      body.completed === true;
+    const completed = body.completed === true;
 
-    const task =
-      await prisma.workflowTask.findUnique({
-        where: {
-          id,
-        },
-        include: {
-          workflowStep: true,
-          fileWorkflow: {
-            include: {
-              tasks: {
-                include: {
-                  workflowStep: true,
-                },
+    const task = await prisma.workflowTask.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        workflowStep: true,
+        fileWorkflow: {
+          include: {
+            clientFile: {
+              select: {
+                id: true,
+                fileNumber: true,
+              },
+            },
+            tasks: {
+              include: {
+                workflowStep: true,
               },
             },
           },
         },
-      });
+      },
+    });
 
     if (!task) {
       return NextResponse.json(
@@ -79,11 +84,64 @@ export async function PATCH(
         );
       }
 
-      await prisma.$transaction(
-        async (tx) => {
+      const nextTask = task.fileWorkflow.tasks
+        .filter(
+          (item) =>
+            item.status !== "CANCELLED" &&
+            item.id !== task.id
+        )
+        .sort(
+          (a, b) =>
+            a.workflowStep.stepNumber -
+            b.workflowStep.stepNumber
+        )
+        .find(
+          (item) =>
+            item.workflowStep.stepNumber >
+            task.workflowStep.stepNumber
+        );
+
+      await prisma.$transaction(async (tx) => {
+        await tx.workflowTask.update({
+          where: {
+            id: task.id,
+          },
+          data: {
+            status: "COMPLETED",
+            completedAt: now,
+          },
+        });
+
+        await tx.taskHistory.create({
+          data: {
+            workflowTaskId: task.id,
+            oldStatus: task.status,
+            newStatus: "COMPLETED",
+            remarks: "Workflow step completed.",
+            changedAt: now,
+          },
+        });
+
+        // ------------------------------------------
+        // Activate next step
+        // ------------------------------------------
+
+        if (nextTask) {
           await tx.workflowTask.update({
             where: {
-              id: task.id,
+              id: nextTask.id,
+            },
+            data: {
+              status: "ACTIVE",
+              startedAt: now,
+              completedAt: null,
+            },
+          });
+
+          // Complete all subtasks when main step is completed.
+          await tx.fileWorkflowSubTask.updateMany({
+            where: {
+              workflowTaskId: task.id,
             },
             data: {
               status: "COMPLETED",
@@ -93,127 +151,94 @@ export async function PATCH(
 
           await tx.taskHistory.create({
             data: {
-              workflowTaskId: task.id,
-              oldStatus: task.status,
-              newStatus: "COMPLETED",
+              workflowTaskId: nextTask.id,
+              oldStatus: nextTask.status,
+              newStatus: "ACTIVE",
               remarks:
-                "Workflow step completed.",
+                "Automatically activated after previous step was completed.",
               changedAt: now,
             },
           });
 
-          // ------------------------------------------
-          // Find next step
-          // ------------------------------------------
+          await tx.fileWorkflow.update({
+            where: {
+              id: task.fileWorkflow.id,
+            },
+            data: {
+              status: "IN_PROGRESS",
+            },
+          });
 
-          const nextTask =
-            task.fileWorkflow.tasks
-              .filter(
-                (item) =>
-                  item.status !==
-                    "CANCELLED" &&
-                  item.id !== task.id
-              )
-              .sort(
-                (a, b) =>
-                  a.workflowStep.stepNumber -
-                  b.workflowStep.stepNumber
-              )
-              .find(
-                (item) =>
-                  item.workflowStep.stepNumber >
-                  task.workflowStep.stepNumber
-              );
+          await tx.clientFile.update({
+            where: {
+              id: task.fileWorkflow.clientFileId,
+            },
+            data: {
+              status: "IN_PROGRESS",
+            },
+          });
+        } else {
+          // ----------------------------------------
+          // Last step completed
+          // ----------------------------------------
 
-          if (nextTask) {
-            await tx.workflowTask.update({
-              where: {
-                id: nextTask.id,
-              },
-              data: {
-                status: "ACTIVE",
-                startedAt: now,
-                completedAt: null,
-              },
-            });
+          await tx.fileWorkflow.update({
+            where: {
+              id: task.fileWorkflow.id,
+            },
+            data: {
+              status: "COMPLETED",
+              completedAt: now,
+            },
+          });
 
-            // Complete all subtasks when main step is completed
-await tx.fileWorkflowSubTask.updateMany({
-  where: {
-    workflowTaskId: task.id,
-  },
-  data: {
-    status: "COMPLETED",
-    completedAt: now,
-  },
-});
-
-            await tx.taskHistory.create({
-              data: {
-                workflowTaskId:
-                  nextTask.id,
-                oldStatus:
-                  nextTask.status,
-                newStatus: "ACTIVE",
-                remarks:
-                  "Automatically activated after previous step was completed.",
-                changedAt: now,
-              },
-            });
-
-            await tx.fileWorkflow.update({
-              where: {
-                id: task.fileWorkflow.id,
-              },
-              data: {
-                status: "IN_PROGRESS",
-              },
-            });
-
-            await tx.clientFile.update({
-              where: {
-                id:
-                  task.fileWorkflow
-                    .clientFileId,
-              },
-              data: {
-                status: "IN_PROGRESS",
-              },
-            });
-          } else {
-            // ----------------------------------------
-            // Last step completed
-            // ----------------------------------------
-
-            await tx.fileWorkflow.update({
-              where: {
-                id: task.fileWorkflow.id,
-              },
-              data: {
-                status: "COMPLETED",
-                completedAt: now,
-              },
-            });
-
-            await tx.clientFile.update({
-              where: {
-                id:
-                  task.fileWorkflow
-                    .clientFileId,
-              },
-              data: {
-                status: "COMPLETED",
-                completedAt: now,
-              },
-            });
-          }
+          await tx.clientFile.update({
+            where: {
+              id: task.fileWorkflow.clientFileId,
+            },
+            data: {
+              status: "COMPLETED",
+              completedAt: now,
+            },
+          });
         }
-      );
+      });
+
+      // --------------------------------------------------
+      // Audit Log: Complete workflow task
+      // --------------------------------------------------
+
+      await writeAuditLog({
+        module: "WORKFLOW",
+        action: "COMPLETE_TASK",
+        entity: "WORKFLOW_TASK",
+        entityId: task.id,
+        description: nextTask
+          ? `Completed workflow step "${task.workflowStep.title}" and activated the next step.`
+          : `Completed final workflow step "${task.workflowStep.title}". The workflow is now completed.`,
+        metadata: {
+          taskId: task.id,
+          taskTitle: task.workflowStep.title,
+          stepNumber: task.workflowStep.stepNumber,
+          fileWorkflowId: task.fileWorkflow.id,
+          clientFileId: task.fileWorkflow.clientFileId,
+          fileNumber: task.fileWorkflow.clientFile.fileNumber,
+          previousStatus: task.status,
+          newStatus: "COMPLETED",
+          nextTaskId: nextTask?.id ?? null,
+          nextTaskTitle:
+            nextTask?.workflowStep.title ?? null,
+          nextTaskStatus: nextTask ? "ACTIVE" : null,
+          workflowStatus: nextTask
+            ? "IN_PROGRESS"
+            : "COMPLETED",
+          completedAt: now.toISOString(),
+        },
+      });
 
       return NextResponse.json({
         success: true,
-        message:
-          "Workflow step completed.",
+        message: "Workflow step completed.",
       });
     }
 
@@ -232,119 +257,141 @@ await tx.fileWorkflowSubTask.updateMany({
       );
     }
 
-    await prisma.$transaction(
-      async (tx) => {
-        // ----------------------------------------------
-        // Current completed task becomes ACTIVE
-        // ----------------------------------------------
-
-        await tx.workflowTask.update({
-          where: {
-            id: task.id,
-          },
-          data: {
-            status: "ACTIVE",
-            completedAt: null,
-            startedAt:
-              task.fileWorkflow.startedAt ||
-              now,
-          },
-        });
-
-        // Reset all subtasks when main step is reopened
-await tx.fileWorkflowSubTask.updateMany({
-  where: {
-    workflowTaskId: task.id,
-  },
-  data: {
-    status: "PENDING",
-    completedAt: null,
-  },
-});
-
-        await tx.taskHistory.create({
-          data: {
-            workflowTaskId: task.id,
-            oldStatus: "COMPLETED",
-            newStatus: "ACTIVE",
-            remarks:
-              "Workflow step reopened.",
-            changedAt: now,
-          },
-        });
-
-        // ----------------------------------------------
-        // Reset later tasks to PENDING
-        // ----------------------------------------------
-
-        const laterTasks =
-          task.fileWorkflow.tasks.filter(
-            (item) =>
-              item.id !== task.id &&
-              item.workflowStep.stepNumber >
-                task.workflowStep.stepNumber &&
-              item.status !== "CANCELLED"
-          );
-
-        for (const laterTask of laterTasks) {
-          if (
-            laterTask.status !==
-              "PENDING"
-          ) {
-            await tx.workflowTask.update({
-              where: {
-                id: laterTask.id,
-              },
-              data: {
-                status: "PENDING",
-                startedAt: null,
-                completedAt: null,
-              },
-            });
-
-            await tx.taskHistory.create({
-              data: {
-                workflowTaskId:
-                  laterTask.id,
-                oldStatus:
-                  laterTask.status,
-                newStatus: "PENDING",
-                remarks:
-                  "Reset because a previous workflow step was reopened.",
-                changedAt: now,
-              },
-            });
-          }
-        }
-
-        await tx.fileWorkflow.update({
-          where: {
-            id: task.fileWorkflow.id,
-          },
-          data: {
-            status: "IN_PROGRESS",
-            completedAt: null,
-          },
-        });
-
-        await tx.clientFile.update({
-          where: {
-            id:
-              task.fileWorkflow
-                .clientFileId,
-          },
-          data: {
-            status: "IN_PROGRESS",
-            completedAt: null,
-          },
-        });
-      }
+    const laterTasks = task.fileWorkflow.tasks.filter(
+      (item) =>
+        item.id !== task.id &&
+        item.workflowStep.stepNumber >
+          task.workflowStep.stepNumber &&
+        item.status !== "CANCELLED"
     );
+
+    await prisma.$transaction(async (tx) => {
+      // ----------------------------------------------
+      // Current completed task becomes ACTIVE
+      // ----------------------------------------------
+
+      await tx.workflowTask.update({
+        where: {
+          id: task.id,
+        },
+        data: {
+          status: "ACTIVE",
+          completedAt: null,
+          startedAt:
+            task.fileWorkflow.startedAt || now,
+        },
+      });
+
+      // Reset all subtasks when main step is reopened.
+      await tx.fileWorkflowSubTask.updateMany({
+        where: {
+          workflowTaskId: task.id,
+        },
+        data: {
+          status: "PENDING",
+          completedAt: null,
+        },
+      });
+
+      await tx.taskHistory.create({
+        data: {
+          workflowTaskId: task.id,
+          oldStatus: "COMPLETED",
+          newStatus: "ACTIVE",
+          remarks: "Workflow step reopened.",
+          changedAt: now,
+        },
+      });
+
+      // ----------------------------------------------
+      // Reset later tasks to PENDING
+      // ----------------------------------------------
+
+      for (const laterTask of laterTasks) {
+        if (laterTask.status !== "PENDING") {
+          await tx.workflowTask.update({
+            where: {
+              id: laterTask.id,
+            },
+            data: {
+              status: "PENDING",
+              startedAt: null,
+              completedAt: null,
+            },
+          });
+
+          await tx.taskHistory.create({
+            data: {
+              workflowTaskId: laterTask.id,
+              oldStatus: laterTask.status,
+              newStatus: "PENDING",
+              remarks:
+                "Reset because a previous workflow step was reopened.",
+              changedAt: now,
+            },
+          });
+        }
+      }
+
+      await tx.fileWorkflow.update({
+        where: {
+          id: task.fileWorkflow.id,
+        },
+        data: {
+          status: "IN_PROGRESS",
+          completedAt: null,
+        },
+      });
+
+      await tx.clientFile.update({
+        where: {
+          id: task.fileWorkflow.clientFileId,
+        },
+        data: {
+          status: "IN_PROGRESS",
+          completedAt: null,
+        },
+      });
+    });
+
+    // --------------------------------------------------
+    // Audit Log: Reopen workflow task
+    // --------------------------------------------------
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: "REOPEN_TASK",
+      entity: "WORKFLOW_TASK",
+      entityId: task.id,
+      description: `Reopened workflow step "${task.workflowStep.title}" and reset later workflow steps to pending.`,
+      metadata: {
+        taskId: task.id,
+        taskTitle: task.workflowStep.title,
+        stepNumber: task.workflowStep.stepNumber,
+        fileWorkflowId: task.fileWorkflow.id,
+        clientFileId: task.fileWorkflow.clientFileId,
+        fileNumber: task.fileWorkflow.clientFile.fileNumber,
+        previousStatus: "COMPLETED",
+        newStatus: "ACTIVE",
+        resetTasks: laterTasks.map((laterTask) => ({
+          taskId: laterTask.id,
+          taskTitle: laterTask.workflowStep.title,
+          stepNumber: laterTask.workflowStep.stepNumber,
+          previousStatus: laterTask.status,
+          newStatus: "PENDING",
+        })),
+        resetTaskCount: laterTasks.filter(
+          (laterTask) =>
+            laterTask.status !== "PENDING"
+        ).length,
+        workflowStatus: "IN_PROGRESS",
+        reopenedAt: now.toISOString(),
+      },
+    });
 
     return NextResponse.json({
       success: true,
-      message:
-        "Workflow step reopened.",
+      message: "Workflow step reopened.",
     });
   } catch (error) {
     console.error(
