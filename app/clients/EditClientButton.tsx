@@ -1,7 +1,13 @@
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+type ApiResponse = {
+  message?: string;
+  success?: boolean;
+};
 
 type EditClientButtonProps = {
   id: number;
@@ -18,9 +24,7 @@ export default function EditClientButton({
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(initialName);
-  const [whatsapp, setWhatsapp] = useState(
-    initialWhatsapp || ""
-  );
+  const [whatsapp, setWhatsapp] = useState(initialWhatsapp || "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -38,7 +42,9 @@ export default function EditClientButton({
     setError("");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
     const cleanName = name.trim();
@@ -66,18 +72,16 @@ export default function EditClientButton({
 
       const text = await response.text();
 
-      let data: any = {};
+      let data: ApiResponse = {};
 
       try {
-        data = text ? JSON.parse(text) : {};
+        data = text ? (JSON.parse(text) as ApiResponse) : {};
       } catch {
         data = {};
       }
 
       if (!response.ok) {
-        setError(
-          data?.message || "Unable to update client."
-        );
+        setError(data.message || "Unable to update client.");
         return;
       }
 
@@ -152,9 +156,7 @@ export default function EditClientButton({
                 <input
                   type="text"
                   value={whatsapp}
-                  onChange={(e) =>
-                    setWhatsapp(e.target.value)
-                  }
+                  onChange={(e) => setWhatsapp(e.target.value)}
                   className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
                 />
               </div>

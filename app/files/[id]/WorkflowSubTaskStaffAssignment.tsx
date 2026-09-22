@@ -36,18 +36,6 @@ export default function WorkflowSubTaskStaffAssignment({
   const [savingStatus, setSavingStatus] = useState(false);
   const [error, setError] = useState("");
 
-  // Keep checkbox state synchronized with server updates.
-  useEffect(() => {
-    setCompleted(status === "COMPLETED");
-  }, [status]);
-
-  // Synchronize staff selection when server data refreshes.
-  useEffect(() => {
-    setSelectedStaffId(
-      assignedStaffId?.toString() ?? ""
-    );
-  }, [assignedStaffId]);
-
   // Load available staff.
   useEffect(() => {
     let cancelled = false;
@@ -63,7 +51,7 @@ export default function WorkflowSubTaskStaffAssignment({
           );
         }
 
-        const staffList = Array.isArray(data)
+        const staffList: Staff[] = Array.isArray(data)
           ? data
           : data.staff ?? [];
 
@@ -85,7 +73,7 @@ export default function WorkflowSubTaskStaffAssignment({
       }
     }
 
-    loadStaff();
+    void loadStaff();
 
     return () => {
       cancelled = true;
@@ -108,9 +96,7 @@ export default function WorkflowSubTaskStaffAssignment({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            assignedStaffId: value
-              ? Number(value)
-              : null,
+            assignedStaffId: value ? Number(value) : null,
           }),
         }
       );
@@ -119,8 +105,7 @@ export default function WorkflowSubTaskStaffAssignment({
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.message ||
-            "Unable to update subtask staff."
+          data.message || "Unable to update subtask staff."
         );
       }
 
@@ -164,8 +149,7 @@ export default function WorkflowSubTaskStaffAssignment({
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.message ||
-            "Unable to update subtask status."
+          data.message || "Unable to update subtask status."
         );
       }
 
@@ -265,9 +249,7 @@ export default function WorkflowSubTaskStaffAssignment({
 
       {/* Error message */}
       {error && (
-        <p className="text-sm text-red-600">
-          {error}
-        </p>
+        <p className="text-sm text-red-600">{error}</p>
       )}
     </div>
   );

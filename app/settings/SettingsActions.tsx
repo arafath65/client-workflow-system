@@ -1,3 +1,4 @@
+
 "use client";
 
 import { FormEvent, useState } from "react";
@@ -23,11 +24,13 @@ export default function SettingsActions({ username }: { username: string }) {
 
       if (!response.ok) {
         let data: { message?: string } = {};
+
         try {
           data = await response.json();
         } catch {
           // Ignore non-JSON responses.
         }
+
         throw new Error(data.message || "Unable to create database backup.");
       }
 
@@ -38,6 +41,7 @@ export default function SettingsActions({ username }: { username: string }) {
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
+
       link.href = url;
       link.download = filename;
       document.body.appendChild(link);
@@ -83,8 +87,8 @@ export default function SettingsActions({ username }: { username: string }) {
       return;
     }
 
-    if (newPassword.length < 8) {
-      setError("New password must be at least 8 characters.");
+    if (newPassword.length < 4) {
+      setError("New password must be at least 4 characters.");
       return;
     }
 
@@ -133,15 +137,18 @@ export default function SettingsActions({ username }: { username: string }) {
 
   return (
     <div className="space-y-6">
+      {/* Database Backup */}
       <div className="rounded-xl border border-black/10 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f9a800]">
               Database
             </p>
+
             <h2 className="mt-2 text-base font-semibold">
               SQL Database Backup
             </h2>
+
             <p className="mt-1 max-w-2xl text-sm text-black/45">
               Create a complete MySQL .sql backup of the current client workflow database.
             </p>
@@ -158,14 +165,17 @@ export default function SettingsActions({ username }: { username: string }) {
         </div>
       </div>
 
+      {/* Change Password */}
       <div className="rounded-xl border border-black/10 bg-white p-6 shadow-sm">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f9a800]">
             Security
           </p>
+
           <h2 className="mt-2 text-base font-semibold">
             Change Password
           </h2>
+
           <p className="mt-1 text-sm text-black/45">
             Change the password for the current login account: {username}
           </p>
@@ -173,8 +183,10 @@ export default function SettingsActions({ username }: { username: string }) {
 
         <form
           onSubmit={handlePasswordChange}
+          autoComplete="off"
           className="mt-6 max-w-md space-y-4"
         >
+          {/* Current Password */}
           <div>
             <label
               htmlFor="current-password"
@@ -182,15 +194,18 @@ export default function SettingsActions({ username }: { username: string }) {
             >
               Current Password
             </label>
+
             <input
               id="current-password"
               name="currentPassword"
               type="password"
-              autoComplete="current-password"
+              autoComplete="off"
+              spellCheck={false}
               className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
             />
           </div>
 
+          {/* New Password */}
           <div>
             <label
               htmlFor="new-password"
@@ -198,18 +213,22 @@ export default function SettingsActions({ username }: { username: string }) {
             >
               New Password
             </label>
+
             <input
               id="new-password"
               name="newPassword"
               type="password"
-              autoComplete="new-password"
+              autoComplete="off"
+              spellCheck={false}
               className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
             />
+
             <p className="mt-1.5 text-[10px] text-black/35">
               Use at least 8 characters.
             </p>
           </div>
 
+          {/* Confirm New Password */}
           <div>
             <label
               htmlFor="confirm-password"
@@ -217,11 +236,13 @@ export default function SettingsActions({ username }: { username: string }) {
             >
               Confirm New Password
             </label>
+
             <input
               id="confirm-password"
               name="confirmPassword"
               type="password"
-              autoComplete="new-password"
+              autoComplete="off"
+              spellCheck={false}
               className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
             />
           </div>

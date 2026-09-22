@@ -33,17 +33,22 @@ type Payment = {
 
 type PaymentSummaryProps = {
   fileId: number;
+  clientName: string;
+  whatsapp: string | null;
+  fileNumber: string;
 };
 
 export default function PaymentSummary({
   fileId,
+  clientName,
+  whatsapp,
+  fileNumber,
 }: PaymentSummaryProps) {
   const [summary, setSummary] =
     useState<Summary | null>(null);
 
-  const [payments, setPayments] = useState<Payment[]>(
-    []
-  );
+  const [payments, setPayments] =
+    useState<Payment[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -52,6 +57,7 @@ export default function PaymentSummary({
     useState(false);
 
   const [amount, setAmount] = useState("");
+
   const [paymentMethod, setPaymentMethod] =
     useState<
       "CASH" | "CARD" | "BANK_TRANSFER" | "CHEQUE"
@@ -61,13 +67,13 @@ export default function PaymentSummary({
     useState<number | null>(null);
 
   const [paymentFilter, setPaymentFilter] =
-    useState<"CLEARED" | "CANCELLED" | "REFUNDED">("CLEARED");
+    useState<"CLEARED" | "CANCELLED" | "REFUNDED">(
+      "CLEARED"
+    );
 
   const [paidAt, setPaidAt] = useState("");
-  const [referenceNo, setReferenceNo] =
-    useState("");
+  const [referenceNo, setReferenceNo] = useState("");
   const [remarks, setRemarks] = useState("");
-
   const [error, setError] = useState("");
 
   // --------------------------------------------------
@@ -81,9 +87,7 @@ export default function PaymentSummary({
 
       const response = await fetch(
         `/api/files/${fileId}/payments`,
-        {
-          cache: "no-store",
-        }
+        { cache: "no-store" }
       );
 
       const data = await response.json();
@@ -116,6 +120,283 @@ export default function PaymentSummary({
   }, [fileId]);
 
   // --------------------------------------------------
+  // Helpers
+  // --------------------------------------------------
+
+  const money = (value: string | number) =>
+    Number(value).toLocaleString("en-LK", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+  const date = (value: string) =>
+    new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date(value));
+
+  const escapeHtml = (value: string) =>
+    value
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  // --------------------------------------------------
+  // Normalize Sri Lankan WhatsApp numbers
+  // --------------------------------------------------
+
+  const getWhatsAppNumber = () => {
+    if (!whatsapp) return "";
+
+    let phone = whatsapp.replace(/\D/g, "");
+
+    // Convert local Sri Lankan number:
+    // 0771234567 -> 94771234567
+    if (phone.startsWith("0")) {
+      phone = "94" + phone.substring(1);
+    }
+
+    return phone;
+  };
+
+  // --------------------------------------------------
+  // Generate printable receipt
+  // --------------------------------------------------
+
+  const generateReceipt = (payment: Payment) => {
+    const receiptWindow = window.open(
+      "",
+      "_blank",
+      "width=800,height=700"
+    );
+
+    if (!receiptWindow) {
+      alert(
+        "Please allow pop-ups in your browser to generate the receipt."
+      );
+      return;
+    }
+
+    const safeClientName =
+      escapeHtml(clientName);
+
+    const safeFileNumber =
+      escapeHtml(fileNumber);
+
+    const safeMethod = escapeHtml(
+      payment.paymentMethod.replaceAll("_", " ")
+    );
+
+    const safeReference = escapeHtml(
+      payment.referenceNo || "—"
+    );
+
+    const safeRemarks = escapeHtml(
+      payment.remarks || "—"
+    );
+
+    const receiptDate = date(payment.paidAt);
+
+    receiptWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Receipt-${safeFileNumber}-${payment.id}</title>
+          <meta charset="UTF-8" />
+          <style>
+            * {
+              box-sizing: border-box;
+            }
+
+            body {
+              font-family: Arial, sans-serif;
+              padding: 40px;
+              color: #222;
+              background: #fff;
+            }
+
+            .receipt {
+              max-width: 700px;
+              margin: 0 auto;
+              border: 1px solid #ddd;
+              padding: 36px;
+            }
+
+            .header {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              gap: 20px;
+            }
+
+            h1 {
+              margin: 0;
+              font-size: 26px;
+            }
+
+            .muted {
+              color: #666;
+              font-size: 13px;
+            }
+
+            .row {
+              display: flex;
+              justify-content: space-between;
+              gap: 20px;
+              padding: 13px 0;
+              border-bottom: 1px solid #eee;
+              font-size: 14px;
+            }
+
+            .row span {
+              color: #666;
+            }
+
+            .amount {
+              font-size: 25px;
+              font-weight: bold;
+            }
+
+            .footer {
+              margin-top: 35px;
+              font-size: 12px;
+              color: #777;
+            }
+
+            @media print {
+              body {
+                padding: 0;
+              }
+
+              .receipt {
+                border: none;
+                max-width: none;
+              }
+            }
+          </style>
+        </head>
+
+        <body>
+          <div class="receipt">
+            <div class="header">
+              <div>
+                <h1>PAYMENT RECEIPT</h1>
+                <p class="muted">A&I Global</p>
+              </div>
+
+              <div style="text-align:right">
+                <p class="muted">Receipt No.</p>
+                <strong>${payment.id}</strong>
+              </div>
+            </div>
+
+            <hr />
+
+            <div class="row">
+              <span>Client Name</span>
+              <strong>${safeClientName}</strong>
+            </div>
+
+            <div class="row">
+              <span>File Number</span>
+              <strong>${safeFileNumber}</strong>
+            </div>
+
+            <div class="row">
+              <span>Payment Date</span>
+              <strong>${receiptDate}</strong>
+            </div>
+
+            <div class="row">
+              <span>Payment Method</span>
+              <strong>${safeMethod}</strong>
+            </div>
+
+            <div class="row">
+              <span>Reference Number</span>
+              <strong>${safeReference}</strong>
+            </div>
+
+            <div class="row">
+              <span>Remarks</span>
+              <strong>${safeRemarks}</strong>
+            </div>
+
+            <div class="row">
+              <span>Amount Received</span>
+              <strong class="amount">
+                LKR ${money(payment.amount)}
+              </strong>
+            </div>
+
+            <div class="footer">
+              <p>Thank you for your payment.</p>
+              <p>A&I Global</p>
+            </div>
+          </div>
+
+          <script>
+            window.onload = function () {
+              window.focus();
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+
+    receiptWindow.document.close();
+  };
+
+  // --------------------------------------------------
+  // Send payment summary through WhatsApp
+  // --------------------------------------------------
+
+  const sendPaymentSummaryWhatsApp = () => {
+    const phone = getWhatsAppNumber();
+
+    if (!phone) {
+      alert(
+        "This client does not have a WhatsApp number saved."
+      );
+      return;
+    }
+
+    if (!summary) {
+      alert("Payment summary is not available.");
+      return;
+    }
+
+    const message = [
+      `Hello ${clientName},`,
+      "",
+      `Payment summary for file ${fileNumber}:`,
+      "",
+      `Service Fees: LKR ${money(summary.workflowFees)}`,
+      `Extra Charges: LKR ${money(summary.extraCharges)}`,
+      `Total Amount: LKR ${money(summary.totalAmount)}`,
+      `Total Paid: LKR ${money(summary.totalPaid)}`,
+      `Outstanding Balance: LKR ${money(summary.outstanding)}`,
+      "",
+      "Thank you.",
+      "A&I Global",
+    ].join("\n");
+
+    const url =
+      `https://wa.me/${phone}?text=` +
+      encodeURIComponent(message);
+
+    window.open(
+      url,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  // --------------------------------------------------
   // Record payment
   // --------------------------------------------------
 
@@ -129,11 +410,10 @@ export default function PaymentSummary({
     const cleanAmount = amount.trim();
 
     if (
-      !/^\d+(?:\.\d{1,2})?$/.test(cleanAmount)
+      !/^\d+(?:\.\d{1,2})?$/.test(cleanAmount) ||
+      Number(cleanAmount) <= 0
     ) {
-      setError(
-        "Enter a valid payment amount."
-      );
+      setError("Enter a valid payment amount.");
       return;
     }
 
@@ -169,6 +449,9 @@ export default function PaymentSummary({
         return;
       }
 
+      const savedPayment =
+        data.payment as Payment | undefined;
+
       setAmount("");
       setPaymentMethod("CASH");
       setPaidAt("");
@@ -177,6 +460,15 @@ export default function PaymentSummary({
       setShowPaymentForm(false);
 
       await loadPaymentSummary();
+
+      if (
+        savedPayment &&
+        window.confirm(
+          "Payment saved successfully. Do you want to generate the receipt PDF now?"
+        )
+      ) {
+        generateReceipt(savedPayment);
+      }
     } catch (error) {
       console.error(
         "Record payment error:",
@@ -192,52 +484,15 @@ export default function PaymentSummary({
   };
 
   // --------------------------------------------------
-  // Helpers
+  // Reverse payment
   // --------------------------------------------------
-
-  const money = (value: string | number) =>
-    Number(value).toLocaleString("en-LK", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-
-  const date = (value: string) =>
-    new Intl.DateTimeFormat("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }).format(new Date(value));
-
-  // --------------------------------------------------
-  // UI
-  // --------------------------------------------------
-
-  if (loading && !summary) {
-    return (
-      <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#f9a800]">
-          Payments
-        </p>
-
-        <h2 className="mt-1 text-lg font-semibold">
-          Payment Summary
-        </h2>
-
-        <div className="mt-5 rounded-lg bg-[#fafaf9] p-6 text-center">
-          <p className="text-sm text-black/40">
-            Loading payment information...
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   const handleReversePayment = async (
     paymentId: number,
-    amount: string
+    paymentAmount: string
   ) => {
     const confirmed = window.confirm(
-      `Reverse this payment of ${money(amount)}?\n\n` +
+      `Reverse this payment of ${money(paymentAmount)}?\n\n` +
         "The payment will remain in history but will no longer count as paid."
     );
 
@@ -286,8 +541,37 @@ export default function PaymentSummary({
   };
 
   const visiblePayments = payments.filter(
-    (payment) => payment.status === paymentFilter
+    (payment) =>
+      payment.status === paymentFilter
   );
+
+  // --------------------------------------------------
+  // Loading UI
+  // --------------------------------------------------
+
+  if (loading && !summary) {
+    return (
+      <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#f9a800]">
+          Payments
+        </p>
+
+        <h2 className="mt-1 text-lg font-semibold">
+          Payment Summary
+        </h2>
+
+        <div className="mt-5 rounded-lg bg-[#fafaf9] p-6 text-center">
+          <p className="text-sm text-black/40">
+            Loading payment information...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // --------------------------------------------------
+  // Main UI
+  // --------------------------------------------------
 
   return (
     <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
@@ -304,20 +588,30 @@ export default function PaymentSummary({
           </h2>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setError("");
-            setShowPaymentForm(
-              (value) => !value
-            );
-          }}
-          className="rounded-lg bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black"
-        >
-          {showPaymentForm
-            ? "Cancel"
-            : "+ Record Payment"}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={sendPaymentSummaryWhatsApp}
+            className="rounded-lg border border-green-600 px-4 py-2.5 text-xs font-semibold text-green-700 transition hover:bg-green-50"
+          >
+            Send Payment Summary
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setError("");
+              setShowPaymentForm(
+                (value) => !value
+              );
+            }}
+            className="rounded-lg bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black"
+          >
+            {showPaymentForm
+              ? "Cancel"
+              : "+ Record Payment"}
+          </button>
+        </div>
       </div>
 
       {/* Summary */}
@@ -326,37 +620,27 @@ export default function PaymentSummary({
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <SummaryItem
             label="Service Fees"
-            value={money(
-              summary.workflowFees
-            )}
+            value={money(summary.workflowFees)}
           />
 
           <SummaryItem
             label="Extra Charges"
-            value={money(
-              summary.extraCharges
-            )}
+            value={money(summary.extraCharges)}
           />
 
           <SummaryItem
             label="Total Amount"
-            value={money(
-              summary.totalAmount
-            )}
+            value={money(summary.totalAmount)}
           />
 
           <SummaryItem
             label="Total Paid"
-            value={money(
-              summary.totalPaid
-            )}
+            value={money(summary.totalPaid)}
           />
 
           <SummaryItem
             label="Outstanding"
-            value={money(
-              summary.outstanding
-            )}
+            value={money(summary.outstanding)}
             highlight
           />
         </div>
@@ -378,8 +662,6 @@ export default function PaymentSummary({
           className="mt-5 rounded-xl border border-black/10 bg-[#fafaf9] p-5"
         >
           <div className="grid gap-4 md:grid-cols-2">
-            {/* Amount */}
-
             <div>
               <label className="mb-1.5 block text-xs font-medium text-black/60">
                 Payment Amount *
@@ -393,11 +675,10 @@ export default function PaymentSummary({
                   setAmount(e.target.value)
                 }
                 placeholder="0.00"
+                required
                 className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
               />
             </div>
-
-            {/* Payment Method */}
 
             <div>
               <label className="mb-1.5 block text-xs font-medium text-black/60">
@@ -417,25 +698,14 @@ export default function PaymentSummary({
                 }
                 className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
               >
-                <option value="CASH">
-                  Cash
-                </option>
-
-                <option value="CARD">
-                  Card
-                </option>
-
+                <option value="CASH">Cash</option>
+                <option value="CARD">Card</option>
                 <option value="BANK_TRANSFER">
                   Bank Transfer
                 </option>
-
-                <option value="CHEQUE">
-                  Cheque
-                </option>
+                <option value="CHEQUE">Cheque</option>
               </select>
             </div>
-
-            {/* Paid Date */}
 
             <div>
               <label className="mb-1.5 block text-xs font-medium text-black/60">
@@ -452,8 +722,6 @@ export default function PaymentSummary({
               />
             </div>
 
-            {/* Reference */}
-
             <div>
               <label className="mb-1.5 block text-xs font-medium text-black/60">
                 Reference No
@@ -463,17 +731,13 @@ export default function PaymentSummary({
                 type="text"
                 value={referenceNo}
                 onChange={(e) =>
-                  setReferenceNo(
-                    e.target.value
-                  )
+                  setReferenceNo(e.target.value)
                 }
                 placeholder="Optional"
                 className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
               />
             </div>
           </div>
-
-          {/* Remarks */}
 
           <div className="mt-4">
             <label className="mb-1.5 block text-xs font-medium text-black/60">
@@ -491,8 +755,6 @@ export default function PaymentSummary({
             />
           </div>
 
-          {/* Form Button */}
-
           <div className="mt-4 flex justify-end">
             <button
               type="submit"
@@ -506,6 +768,8 @@ export default function PaymentSummary({
           </div>
         </form>
       )}
+
+      {/* Extra Charges */}
 
       <ExtraCharges
         fileId={fileId}
@@ -523,7 +787,9 @@ export default function PaymentSummary({
 
             <p className="mt-1 text-[10px] text-black/35">
               {visiblePayments.length} payment
-              {visiblePayments.length === 1 ? "" : "s"}
+              {visiblePayments.length === 1
+                ? ""
+                : "s"}
             </p>
           </div>
 
@@ -551,11 +817,9 @@ export default function PaymentSummary({
               <option value="CLEARED">
                 Cleared
               </option>
-
               <option value="REFUNDED">
                 Refunded
               </option>
-
               <option value="CANCELLED">
                 Cancelled
               </option>
@@ -626,8 +890,7 @@ export default function PaymentSummary({
                     </td>
 
                     <td className="px-4 py-3 text-xs text-black/50">
-                      {payment.referenceNo ||
-                        "—"}
+                      {payment.referenceNo || "—"}
                     </td>
 
                     <td className="px-4 py-3">
@@ -678,6 +941,10 @@ export default function PaymentSummary({
     </div>
   );
 }
+
+// --------------------------------------------------
+// Summary Item
+// --------------------------------------------------
 
 function SummaryItem({
   label,

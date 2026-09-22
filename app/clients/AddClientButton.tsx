@@ -1,7 +1,13 @@
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+type ApiResponse = {
+  message?: string;
+  success?: boolean;
+};
 
 export default function AddClientButton() {
   const router = useRouter();
@@ -28,7 +34,7 @@ export default function AddClientButton() {
     setError("");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const cleanName = name.trim();
@@ -56,18 +62,16 @@ export default function AddClientButton() {
 
       const text = await response.text();
 
-      let data: any = {};
+      let data: ApiResponse = {};
 
       try {
-        data = text ? JSON.parse(text) : {};
+        data = text ? (JSON.parse(text) as ApiResponse) : {};
       } catch {
         data = {};
       }
 
       if (!response.ok) {
-        setError(
-          data?.message || "Unable to create client."
-        );
+        setError(data.message || "Unable to create client.");
         return;
       }
 
@@ -100,9 +104,7 @@ export default function AddClientButton() {
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-lg font-semibold">
-                  Add Client
-                </h2>
+                <h2 className="text-lg font-semibold">Add Client</h2>
 
                 <p className="mt-1 text-xs text-black/40">
                   Register a new client.
@@ -119,10 +121,7 @@ export default function AddClientButton() {
               </button>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="mt-6 space-y-4"
-            >
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div>
                 <label className="mb-1.5 block text-xs font-medium">
                   Full Name
@@ -146,9 +145,7 @@ export default function AddClientButton() {
                 <input
                   type="text"
                   value={whatsapp}
-                  onChange={(e) =>
-                    setWhatsapp(e.target.value)
-                  }
+                  onChange={(e) => setWhatsapp(e.target.value)}
                   placeholder="Enter WhatsApp number"
                   className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
                 />

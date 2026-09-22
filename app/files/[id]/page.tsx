@@ -610,7 +610,12 @@ export default async function FileDetailsPage({
 </div>
 
         {/* Payments Placeholder */}
-        <PaymentSummary fileId={clientFile.id} />
+        <PaymentSummary
+  fileId={clientFile.id}
+  clientName={clientFile.client.name}
+  whatsapp={clientFile.client.whatsapp}
+  fileNumber={clientFile.fileNumber}
+/>
       </section>
     </main>
   );
