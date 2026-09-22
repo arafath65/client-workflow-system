@@ -38,6 +38,14 @@ export const FileNumberType = {
 export type FileNumberType = (typeof FileNumberType)[keyof typeof FileNumberType]
 
 
+export const WorkflowTrackingMode = {
+  STANDARD: 'STANDARD',
+  DOCUMENT_BASED: 'DOCUMENT_BASED'
+} as const
+
+export type WorkflowTrackingMode = (typeof WorkflowTrackingMode)[keyof typeof WorkflowTrackingMode]
+
+
 export const WorkflowStatus = {
   NOT_STARTED: 'NOT_STARTED',
   IN_PROGRESS: 'IN_PROGRESS',

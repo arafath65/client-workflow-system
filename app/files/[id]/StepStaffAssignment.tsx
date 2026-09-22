@@ -12,12 +12,14 @@ type StepStaffAssignmentProps = {
   taskId: number;
   assignedStaffId: number | null;
   inheritedStaffName: string;
+  compact?: boolean;
 };
 
 export default function StepStaffAssignment({
   taskId,
   assignedStaffId,
   inheritedStaffName,
+  compact = false,
 }: StepStaffAssignmentProps) {
   const router = useRouter();
 
@@ -145,9 +147,63 @@ export default function StepStaffAssignment({
   const hasOverride =
     selectedStaffId !== "";
 
+  if (compact) {
+    return (
+      <div className="w-full">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[9px] font-semibold uppercase tracking-wider text-black/30">
+            Responsible Staff
+          </span>
+
+          {hasOverride ? (
+            <span className="rounded-full bg-[#f9a800]/15 px-2 py-0.5 text-[8px] font-semibold text-black">
+              Step Override
+            </span>
+          ) : (
+            <span className="truncate text-[10px] font-medium text-black/45">
+              {inheritedStaffName || "Unassigned"}
+            </span>
+          )}
+        </div>
+
+        <select
+          value={selectedStaffId}
+          onChange={(e) => handleChange(e.target.value)}
+          disabled={loadingStaff || saving}
+          className="mt-1.5 h-9 w-full rounded-lg border border-black/10 bg-white px-2.5 text-[10px] outline-none transition focus:border-[#f9a800] disabled:cursor-wait disabled:bg-black/[0.03]"
+        >
+          <option value="">
+            {inheritedStaffName
+              ? `Inherit — ${inheritedStaffName}`
+              : "Inherit Main Responsible"}
+          </option>
+
+          {staff.map((member) => (
+            <option key={member.id} value={member.id}>
+              {member.name}
+            </option>
+          ))}
+        </select>
+
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <p className="text-[8px] text-black/25">
+            {hasOverride
+              ? "This step has its own staff."
+              : "Inherits main responsible staff."}
+          </p>
+
+          {saving && (
+            <span className="shrink-0 text-[8px] text-black/35">
+              Saving...
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-3">
-      {/* Assignment Label */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-black/30">
           Responsible Staff
@@ -166,16 +222,11 @@ export default function StepStaffAssignment({
         )}
       </div>
 
-      {/* Staff Select */}
       <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
         <select
           value={selectedStaffId}
-          onChange={(e) =>
-            handleChange(e.target.value)
-          }
-          disabled={
-            loadingStaff || saving
-          }
+          onChange={(e) => handleChange(e.target.value)}
+          disabled={loadingStaff || saving}
           className="w-full max-w-xs rounded-lg border border-black/10 bg-white px-3 py-2 text-xs outline-none transition focus:border-[#f9a800] disabled:cursor-wait disabled:bg-black/[0.03]"
         >
           <option value="">
@@ -185,10 +236,7 @@ export default function StepStaffAssignment({
           </option>
 
           {staff.map((member) => (
-            <option
-              key={member.id}
-              value={member.id}
-            >
+            <option key={member.id} value={member.id}>
               {member.name}
             </option>
           ))}
@@ -201,10 +249,8 @@ export default function StepStaffAssignment({
         )}
       </div>
 
-      {/* Helper */}
       <p className="mt-1.5 text-[9px] text-black/30">
-        Leave as Inherit to use the main
-        responsible staff.
+        Leave as Inherit to use the main responsible staff.
       </p>
     </div>
   );

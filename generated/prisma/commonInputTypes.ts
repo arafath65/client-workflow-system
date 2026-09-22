@@ -280,6 +280,13 @@ export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
 }
 
+export type EnumWorkflowTrackingModeFilter<$PrismaModel = never> = {
+  equals?: $Enums.WorkflowTrackingMode | Prisma.EnumWorkflowTrackingModeFieldRefInput<$PrismaModel>
+  in?: $Enums.WorkflowTrackingMode[]
+  notIn?: $Enums.WorkflowTrackingMode[]
+  not?: Prisma.NestedEnumWorkflowTrackingModeFilter<$PrismaModel> | $Enums.WorkflowTrackingMode
+}
+
 export type DecimalFilter<$PrismaModel = never> = {
   equals?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel>
   in?: runtime.Decimal[] | runtime.DecimalJsLike[] | number[] | string[]
@@ -289,6 +296,16 @@ export type DecimalFilter<$PrismaModel = never> = {
   gt?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel>
   gte?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel>
   not?: Prisma.NestedDecimalFilter<$PrismaModel> | runtime.Decimal | runtime.DecimalJsLike | number | string
+}
+
+export type EnumWorkflowTrackingModeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WorkflowTrackingMode | Prisma.EnumWorkflowTrackingModeFieldRefInput<$PrismaModel>
+  in?: $Enums.WorkflowTrackingMode[]
+  notIn?: $Enums.WorkflowTrackingMode[]
+  not?: Prisma.NestedEnumWorkflowTrackingModeWithAggregatesFilter<$PrismaModel> | $Enums.WorkflowTrackingMode
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWorkflowTrackingModeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWorkflowTrackingModeFilter<$PrismaModel>
 }
 
 export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
@@ -709,6 +726,13 @@ export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
 }
 
+export type NestedEnumWorkflowTrackingModeFilter<$PrismaModel = never> = {
+  equals?: $Enums.WorkflowTrackingMode | Prisma.EnumWorkflowTrackingModeFieldRefInput<$PrismaModel>
+  in?: $Enums.WorkflowTrackingMode[]
+  notIn?: $Enums.WorkflowTrackingMode[]
+  not?: Prisma.NestedEnumWorkflowTrackingModeFilter<$PrismaModel> | $Enums.WorkflowTrackingMode
+}
+
 export type NestedDecimalFilter<$PrismaModel = never> = {
   equals?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel>
   in?: runtime.Decimal[] | runtime.DecimalJsLike[] | number[] | string[]
@@ -718,6 +742,16 @@ export type NestedDecimalFilter<$PrismaModel = never> = {
   gt?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel>
   gte?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel>
   not?: Prisma.NestedDecimalFilter<$PrismaModel> | runtime.Decimal | runtime.DecimalJsLike | number | string
+}
+
+export type NestedEnumWorkflowTrackingModeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WorkflowTrackingMode | Prisma.EnumWorkflowTrackingModeFieldRefInput<$PrismaModel>
+  in?: $Enums.WorkflowTrackingMode[]
+  notIn?: $Enums.WorkflowTrackingMode[]
+  not?: Prisma.NestedEnumWorkflowTrackingModeWithAggregatesFilter<$PrismaModel> | $Enums.WorkflowTrackingMode
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWorkflowTrackingModeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWorkflowTrackingModeFilter<$PrismaModel>
 }
 
 export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {

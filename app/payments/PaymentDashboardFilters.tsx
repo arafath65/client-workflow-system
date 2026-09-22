@@ -56,7 +56,11 @@ export default function PaymentDashboardFilters({
   };
 
   useEffect(() => {
-    setSearchValue(search);
+    const timer = window.setTimeout(() => {
+      setSearchValue(search);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [search]);
 
   useEffect(() => {

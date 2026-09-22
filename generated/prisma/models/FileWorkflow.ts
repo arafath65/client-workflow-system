@@ -300,6 +300,7 @@ export type FileWorkflowWhereInput = {
   workflowTemplate?: Prisma.XOR<Prisma.WorkflowTemplateScalarRelationFilter, Prisma.WorkflowTemplateWhereInput>
   assignedStaff?: Prisma.XOR<Prisma.StaffNullableScalarRelationFilter, Prisma.StaffWhereInput> | null
   tasks?: Prisma.WorkflowTaskListRelationFilter
+  documents?: Prisma.FileWorkflowDocumentListRelationFilter
   payments?: Prisma.PaymentListRelationFilter
   installments?: Prisma.PaymentInstallmentListRelationFilter
 }
@@ -321,6 +322,7 @@ export type FileWorkflowOrderByWithRelationInput = {
   workflowTemplate?: Prisma.WorkflowTemplateOrderByWithRelationInput
   assignedStaff?: Prisma.StaffOrderByWithRelationInput
   tasks?: Prisma.WorkflowTaskOrderByRelationAggregateInput
+  documents?: Prisma.FileWorkflowDocumentOrderByRelationAggregateInput
   payments?: Prisma.PaymentOrderByRelationAggregateInput
   installments?: Prisma.PaymentInstallmentOrderByRelationAggregateInput
 }
@@ -345,6 +347,7 @@ export type FileWorkflowWhereUniqueInput = Prisma.AtLeast<{
   workflowTemplate?: Prisma.XOR<Prisma.WorkflowTemplateScalarRelationFilter, Prisma.WorkflowTemplateWhereInput>
   assignedStaff?: Prisma.XOR<Prisma.StaffNullableScalarRelationFilter, Prisma.StaffWhereInput> | null
   tasks?: Prisma.WorkflowTaskListRelationFilter
+  documents?: Prisma.FileWorkflowDocumentListRelationFilter
   payments?: Prisma.PaymentListRelationFilter
   installments?: Prisma.PaymentInstallmentListRelationFilter
 }, "id">
@@ -400,6 +403,7 @@ export type FileWorkflowCreateInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
 }
@@ -418,6 +422,7 @@ export type FileWorkflowUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
@@ -435,6 +440,7 @@ export type FileWorkflowUpdateInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
 }
@@ -453,6 +459,7 @@ export type FileWorkflowUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
@@ -713,6 +720,20 @@ export type EnumWorkflowStatusFieldUpdateOperationsInput = {
   set?: $Enums.WorkflowStatus
 }
 
+export type FileWorkflowCreateNestedOneWithoutDocumentsInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowCreateWithoutDocumentsInput, Prisma.FileWorkflowUncheckedCreateWithoutDocumentsInput>
+  connectOrCreate?: Prisma.FileWorkflowCreateOrConnectWithoutDocumentsInput
+  connect?: Prisma.FileWorkflowWhereUniqueInput
+}
+
+export type FileWorkflowUpdateOneRequiredWithoutDocumentsNestedInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowCreateWithoutDocumentsInput, Prisma.FileWorkflowUncheckedCreateWithoutDocumentsInput>
+  connectOrCreate?: Prisma.FileWorkflowCreateOrConnectWithoutDocumentsInput
+  upsert?: Prisma.FileWorkflowUpsertWithoutDocumentsInput
+  connect?: Prisma.FileWorkflowWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FileWorkflowUpdateToOneWithWhereWithoutDocumentsInput, Prisma.FileWorkflowUpdateWithoutDocumentsInput>, Prisma.FileWorkflowUncheckedUpdateWithoutDocumentsInput>
+}
+
 export type FileWorkflowCreateNestedOneWithoutTasksInput = {
   create?: Prisma.XOR<Prisma.FileWorkflowCreateWithoutTasksInput, Prisma.FileWorkflowUncheckedCreateWithoutTasksInput>
   connectOrCreate?: Prisma.FileWorkflowCreateOrConnectWithoutTasksInput
@@ -771,6 +792,7 @@ export type FileWorkflowCreateWithoutAssignedStaffInput = {
   clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
 }
@@ -788,6 +810,7 @@ export type FileWorkflowUncheckedCreateWithoutAssignedStaffInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
@@ -848,6 +871,7 @@ export type FileWorkflowCreateWithoutClientFileInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
 }
@@ -865,6 +889,7 @@ export type FileWorkflowUncheckedCreateWithoutClientFileInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
@@ -907,6 +932,7 @@ export type FileWorkflowCreateWithoutWorkflowTemplateInput = {
   clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
 }
@@ -924,6 +950,7 @@ export type FileWorkflowUncheckedCreateWithoutWorkflowTemplateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
@@ -954,6 +981,92 @@ export type FileWorkflowUpdateManyWithWhereWithoutWorkflowTemplateInput = {
   data: Prisma.XOR<Prisma.FileWorkflowUpdateManyMutationInput, Prisma.FileWorkflowUncheckedUpdateManyWithoutWorkflowTemplateInput>
 }
 
+export type FileWorkflowCreateWithoutDocumentsInput = {
+  status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
+  workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
+  assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
+  tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
+}
+
+export type FileWorkflowUncheckedCreateWithoutDocumentsInput = {
+  id?: number
+  clientFileId: number
+  workflowTemplateId: number
+  assignedStaffId?: number | null
+  status?: $Enums.WorkflowStatus
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
+  installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
+}
+
+export type FileWorkflowCreateOrConnectWithoutDocumentsInput = {
+  where: Prisma.FileWorkflowWhereUniqueInput
+  create: Prisma.XOR<Prisma.FileWorkflowCreateWithoutDocumentsInput, Prisma.FileWorkflowUncheckedCreateWithoutDocumentsInput>
+}
+
+export type FileWorkflowUpsertWithoutDocumentsInput = {
+  update: Prisma.XOR<Prisma.FileWorkflowUpdateWithoutDocumentsInput, Prisma.FileWorkflowUncheckedUpdateWithoutDocumentsInput>
+  create: Prisma.XOR<Prisma.FileWorkflowCreateWithoutDocumentsInput, Prisma.FileWorkflowUncheckedCreateWithoutDocumentsInput>
+  where?: Prisma.FileWorkflowWhereInput
+}
+
+export type FileWorkflowUpdateToOneWithWhereWithoutDocumentsInput = {
+  where?: Prisma.FileWorkflowWhereInput
+  data: Prisma.XOR<Prisma.FileWorkflowUpdateWithoutDocumentsInput, Prisma.FileWorkflowUncheckedUpdateWithoutDocumentsInput>
+}
+
+export type FileWorkflowUpdateWithoutDocumentsInput = {
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
+  assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
+  tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
+}
+
+export type FileWorkflowUncheckedUpdateWithoutDocumentsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  clientFileId?: Prisma.IntFieldUpdateOperationsInput | number
+  workflowTemplateId?: Prisma.IntFieldUpdateOperationsInput | number
+  assignedStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
+}
+
 export type FileWorkflowCreateWithoutTasksInput = {
   status?: $Enums.WorkflowStatus
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -966,6 +1079,7 @@ export type FileWorkflowCreateWithoutTasksInput = {
   clientFile: Prisma.ClientFileCreateNestedOneWithoutFileWorkflowsInput
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
+  documents?: Prisma.FileWorkflowDocumentCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
 }
@@ -983,6 +1097,7 @@ export type FileWorkflowUncheckedCreateWithoutTasksInput = {
   completedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  documents?: Prisma.FileWorkflowDocumentUncheckedCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
@@ -1015,6 +1130,7 @@ export type FileWorkflowUpdateWithoutTasksInput = {
   clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
+  documents?: Prisma.FileWorkflowDocumentUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
 }
@@ -1032,6 +1148,7 @@ export type FileWorkflowUncheckedUpdateWithoutTasksInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documents?: Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
@@ -1049,6 +1166,7 @@ export type FileWorkflowCreateWithoutPaymentsInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentCreateNestedManyWithoutFileWorkflowInput
 }
 
@@ -1066,6 +1184,7 @@ export type FileWorkflowUncheckedCreateWithoutPaymentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedCreateNestedManyWithoutFileWorkflowInput
   installments?: Prisma.PaymentInstallmentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
 
@@ -1098,6 +1217,7 @@ export type FileWorkflowUpdateWithoutPaymentsInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
 }
 
@@ -1115,6 +1235,7 @@ export type FileWorkflowUncheckedUpdateWithoutPaymentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
 
@@ -1131,6 +1252,7 @@ export type FileWorkflowCreateWithoutInstallmentsInput = {
   workflowTemplate: Prisma.WorkflowTemplateCreateNestedOneWithoutFileWorkflowsInput
   assignedStaff?: Prisma.StaffCreateNestedOneWithoutFileWorkflowsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentCreateNestedManyWithoutFileWorkflowInput
 }
 
@@ -1148,6 +1270,7 @@ export type FileWorkflowUncheckedCreateWithoutInstallmentsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedCreateNestedManyWithoutFileWorkflowInput
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutFileWorkflowInput
 }
 
@@ -1180,6 +1303,7 @@ export type FileWorkflowUpdateWithoutInstallmentsInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
 }
 
@@ -1197,6 +1321,7 @@ export type FileWorkflowUncheckedUpdateWithoutInstallmentsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
 
@@ -1226,6 +1351,7 @@ export type FileWorkflowUpdateWithoutAssignedStaffInput = {
   clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
 }
@@ -1243,6 +1369,7 @@ export type FileWorkflowUncheckedUpdateWithoutAssignedStaffInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
@@ -1287,6 +1414,7 @@ export type FileWorkflowUpdateWithoutClientFileInput = {
   workflowTemplate?: Prisma.WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
 }
@@ -1304,6 +1432,7 @@ export type FileWorkflowUncheckedUpdateWithoutClientFileInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
@@ -1348,6 +1477,7 @@ export type FileWorkflowUpdateWithoutWorkflowTemplateInput = {
   clientFile?: Prisma.ClientFileUpdateOneRequiredWithoutFileWorkflowsNestedInput
   assignedStaff?: Prisma.StaffUpdateOneWithoutFileWorkflowsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUpdateManyWithoutFileWorkflowNestedInput
 }
@@ -1365,6 +1495,7 @@ export type FileWorkflowUncheckedUpdateWithoutWorkflowTemplateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowNestedInput
+  documents?: Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutFileWorkflowNestedInput
   installments?: Prisma.PaymentInstallmentUncheckedUpdateManyWithoutFileWorkflowNestedInput
 }
@@ -1390,12 +1521,14 @@ export type FileWorkflowUncheckedUpdateManyWithoutWorkflowTemplateInput = {
 
 export type FileWorkflowCountOutputType = {
   tasks: number
+  documents: number
   payments: number
   installments: number
 }
 
 export type FileWorkflowCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tasks?: boolean | FileWorkflowCountOutputTypeCountTasksArgs
+  documents?: boolean | FileWorkflowCountOutputTypeCountDocumentsArgs
   payments?: boolean | FileWorkflowCountOutputTypeCountPaymentsArgs
   installments?: boolean | FileWorkflowCountOutputTypeCountInstallmentsArgs
 }
@@ -1415,6 +1548,13 @@ export type FileWorkflowCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types
  */
 export type FileWorkflowCountOutputTypeCountTasksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.WorkflowTaskWhereInput
+}
+
+/**
+ * FileWorkflowCountOutputType without action
+ */
+export type FileWorkflowCountOutputTypeCountDocumentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FileWorkflowDocumentWhereInput
 }
 
 /**
@@ -1449,6 +1589,7 @@ export type FileWorkflowSelect<ExtArgs extends runtime.Types.Extensions.Internal
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
   assignedStaff?: boolean | Prisma.FileWorkflow$assignedStaffArgs<ExtArgs>
   tasks?: boolean | Prisma.FileWorkflow$tasksArgs<ExtArgs>
+  documents?: boolean | Prisma.FileWorkflow$documentsArgs<ExtArgs>
   payments?: boolean | Prisma.FileWorkflow$paymentsArgs<ExtArgs>
   installments?: boolean | Prisma.FileWorkflow$installmentsArgs<ExtArgs>
   _count?: boolean | Prisma.FileWorkflowCountOutputTypeDefaultArgs<ExtArgs>
@@ -1477,6 +1618,7 @@ export type FileWorkflowInclude<ExtArgs extends runtime.Types.Extensions.Interna
   workflowTemplate?: boolean | Prisma.WorkflowTemplateDefaultArgs<ExtArgs>
   assignedStaff?: boolean | Prisma.FileWorkflow$assignedStaffArgs<ExtArgs>
   tasks?: boolean | Prisma.FileWorkflow$tasksArgs<ExtArgs>
+  documents?: boolean | Prisma.FileWorkflow$documentsArgs<ExtArgs>
   payments?: boolean | Prisma.FileWorkflow$paymentsArgs<ExtArgs>
   installments?: boolean | Prisma.FileWorkflow$installmentsArgs<ExtArgs>
   _count?: boolean | Prisma.FileWorkflowCountOutputTypeDefaultArgs<ExtArgs>
@@ -1489,6 +1631,7 @@ export type $FileWorkflowPayload<ExtArgs extends runtime.Types.Extensions.Intern
     workflowTemplate: Prisma.$WorkflowTemplatePayload<ExtArgs>
     assignedStaff: Prisma.$StaffPayload<ExtArgs> | null
     tasks: Prisma.$WorkflowTaskPayload<ExtArgs>[]
+    documents: Prisma.$FileWorkflowDocumentPayload<ExtArgs>[]
     payments: Prisma.$PaymentPayload<ExtArgs>[]
     installments: Prisma.$PaymentInstallmentPayload<ExtArgs>[]
   }
@@ -1849,6 +1992,7 @@ export interface Prisma__FileWorkflowClient<T, Null = never, ExtArgs extends run
   workflowTemplate<T extends Prisma.WorkflowTemplateDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowTemplateDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkflowTemplateClient<runtime.Types.Result.GetResult<Prisma.$WorkflowTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   assignedStaff<T extends Prisma.FileWorkflow$assignedStaffArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflow$assignedStaffArgs<ExtArgs>>): Prisma.Prisma__StaffClient<runtime.Types.Result.GetResult<Prisma.$StaffPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   tasks<T extends Prisma.FileWorkflow$tasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflow$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  documents<T extends Prisma.FileWorkflow$documentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflow$documentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FileWorkflowDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   payments<T extends Prisma.FileWorkflow$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflow$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   installments<T extends Prisma.FileWorkflow$installmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflow$installmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentInstallmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -2280,6 +2424,30 @@ export type FileWorkflow$tasksArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.WorkflowTaskScalarFieldEnum | Prisma.WorkflowTaskScalarFieldEnum[]
+}
+
+/**
+ * FileWorkflow.documents
+ */
+export type FileWorkflow$documentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FileWorkflowDocument
+   */
+  select?: Prisma.FileWorkflowDocumentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FileWorkflowDocument
+   */
+  omit?: Prisma.FileWorkflowDocumentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FileWorkflowDocumentInclude<ExtArgs> | null
+  where?: Prisma.FileWorkflowDocumentWhereInput
+  orderBy?: Prisma.FileWorkflowDocumentOrderByWithRelationInput | Prisma.FileWorkflowDocumentOrderByWithRelationInput[]
+  cursor?: Prisma.FileWorkflowDocumentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FileWorkflowDocumentScalarFieldEnum | Prisma.FileWorkflowDocumentScalarFieldEnum[]
 }
 
 /**

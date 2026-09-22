@@ -59,6 +59,8 @@ export const ModelName = {
   WorkflowStep: 'WorkflowStep',
   WorkflowSubTask: 'WorkflowSubTask',
   FileWorkflow: 'FileWorkflow',
+  DocumentType: 'DocumentType',
+  FileWorkflowDocument: 'FileWorkflowDocument',
   PaymentAllocation: 'PaymentAllocation',
   WorkflowTask: 'WorkflowTask',
   FileWorkflowSubTask: 'FileWorkflowSubTask',
@@ -153,6 +155,7 @@ export const WorkflowTemplateScalarFieldEnum = {
   name: 'name',
   description: 'description',
   defaultStaffId: 'defaultStaffId',
+  trackingMode: 'trackingMode',
   baseAmount: 'baseAmount',
   status: 'status',
   createdAt: 'createdAt',
@@ -210,6 +213,38 @@ export const FileWorkflowScalarFieldEnum = {
 export type FileWorkflowScalarFieldEnum = (typeof FileWorkflowScalarFieldEnum)[keyof typeof FileWorkflowScalarFieldEnum]
 
 
+export const DocumentTypeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  defaultAmount: 'defaultAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentTypeScalarFieldEnum = (typeof DocumentTypeScalarFieldEnum)[keyof typeof DocumentTypeScalarFieldEnum]
+
+
+export const FileWorkflowDocumentScalarFieldEnum = {
+  id: 'id',
+  fileWorkflowId: 'fileWorkflowId',
+  documentTypeId: 'documentTypeId',
+  documentName: 'documentName',
+  baseAmount: 'baseAmount',
+  discountAmount: 'discountAmount',
+  finalAmount: 'finalAmount',
+  status: 'status',
+  sortOrder: 'sortOrder',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileWorkflowDocumentScalarFieldEnum = (typeof FileWorkflowDocumentScalarFieldEnum)[keyof typeof FileWorkflowDocumentScalarFieldEnum]
+
+
 export const PaymentAllocationScalarFieldEnum = {
   id: 'id',
   paymentId: 'paymentId',
@@ -225,6 +260,7 @@ export const WorkflowTaskScalarFieldEnum = {
   id: 'id',
   fileWorkflowId: 'fileWorkflowId',
   workflowStepId: 'workflowStepId',
+  fileWorkflowDocumentId: 'fileWorkflowDocumentId',
   assignedStaffId: 'assignedStaffId',
   status: 'status',
   remarks: 'remarks',
@@ -456,6 +492,21 @@ export const WorkflowSubTaskOrderByRelevanceFieldEnum = {
 } as const
 
 export type WorkflowSubTaskOrderByRelevanceFieldEnum = (typeof WorkflowSubTaskOrderByRelevanceFieldEnum)[keyof typeof WorkflowSubTaskOrderByRelevanceFieldEnum]
+
+
+export const DocumentTypeOrderByRelevanceFieldEnum = {
+  name: 'name',
+  description: 'description'
+} as const
+
+export type DocumentTypeOrderByRelevanceFieldEnum = (typeof DocumentTypeOrderByRelevanceFieldEnum)[keyof typeof DocumentTypeOrderByRelevanceFieldEnum]
+
+
+export const FileWorkflowDocumentOrderByRelevanceFieldEnum = {
+  documentName: 'documentName'
+} as const
+
+export type FileWorkflowDocumentOrderByRelevanceFieldEnum = (typeof FileWorkflowDocumentOrderByRelevanceFieldEnum)[keyof typeof FileWorkflowDocumentOrderByRelevanceFieldEnum]
 
 
 export const WorkflowTaskOrderByRelevanceFieldEnum = {

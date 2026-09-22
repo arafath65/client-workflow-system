@@ -405,6 +405,8 @@ export const ModelName = {
   WorkflowStep: 'WorkflowStep',
   WorkflowSubTask: 'WorkflowSubTask',
   FileWorkflow: 'FileWorkflow',
+  DocumentType: 'DocumentType',
+  FileWorkflowDocument: 'FileWorkflowDocument',
   PaymentAllocation: 'PaymentAllocation',
   WorkflowTask: 'WorkflowTask',
   FileWorkflowSubTask: 'FileWorkflowSubTask',
@@ -432,7 +434,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "paymentAllocation" | "workflowTask" | "fileWorkflowSubTask" | "taskHistory" | "fileCharge" | "expense" | "payment" | "paymentInstallment" | "calendarEvent" | "thirdParty" | "fileNumberSequence" | "auditLog"
+    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "documentType" | "fileWorkflowDocument" | "paymentAllocation" | "workflowTask" | "fileWorkflowSubTask" | "taskHistory" | "fileCharge" | "expense" | "payment" | "paymentInstallment" | "calendarEvent" | "thirdParty" | "fileNumberSequence" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -961,6 +963,138 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.FileWorkflowCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.FileWorkflowCountAggregateOutputType> | number
+        }
+      }
+    }
+    DocumentType: {
+      payload: Prisma.$DocumentTypePayload<ExtArgs>
+      fields: Prisma.DocumentTypeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentTypeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DocumentTypeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypePayload>
+        }
+        findFirst: {
+          args: Prisma.DocumentTypeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DocumentTypeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypePayload>
+        }
+        findMany: {
+          args: Prisma.DocumentTypeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypePayload>[]
+        }
+        create: {
+          args: Prisma.DocumentTypeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypePayload>
+        }
+        createMany: {
+          args: Prisma.DocumentTypeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.DocumentTypeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypePayload>
+        }
+        update: {
+          args: Prisma.DocumentTypeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypePayload>
+        }
+        deleteMany: {
+          args: Prisma.DocumentTypeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DocumentTypeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.DocumentTypeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypePayload>
+        }
+        aggregate: {
+          args: Prisma.DocumentTypeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentType>
+        }
+        groupBy: {
+          args: Prisma.DocumentTypeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentTypeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DocumentTypeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentTypeCountAggregateOutputType> | number
+        }
+      }
+    }
+    FileWorkflowDocument: {
+      payload: Prisma.$FileWorkflowDocumentPayload<ExtArgs>
+      fields: Prisma.FileWorkflowDocumentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FileWorkflowDocumentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowDocumentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FileWorkflowDocumentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowDocumentPayload>
+        }
+        findFirst: {
+          args: Prisma.FileWorkflowDocumentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowDocumentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FileWorkflowDocumentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowDocumentPayload>
+        }
+        findMany: {
+          args: Prisma.FileWorkflowDocumentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowDocumentPayload>[]
+        }
+        create: {
+          args: Prisma.FileWorkflowDocumentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowDocumentPayload>
+        }
+        createMany: {
+          args: Prisma.FileWorkflowDocumentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.FileWorkflowDocumentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowDocumentPayload>
+        }
+        update: {
+          args: Prisma.FileWorkflowDocumentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowDocumentPayload>
+        }
+        deleteMany: {
+          args: Prisma.FileWorkflowDocumentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FileWorkflowDocumentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.FileWorkflowDocumentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileWorkflowDocumentPayload>
+        }
+        aggregate: {
+          args: Prisma.FileWorkflowDocumentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileWorkflowDocument>
+        }
+        groupBy: {
+          args: Prisma.FileWorkflowDocumentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileWorkflowDocumentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FileWorkflowDocumentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileWorkflowDocumentCountAggregateOutputType> | number
         }
       }
     }
@@ -1859,6 +1993,7 @@ export const WorkflowTemplateScalarFieldEnum = {
   name: 'name',
   description: 'description',
   defaultStaffId: 'defaultStaffId',
+  trackingMode: 'trackingMode',
   baseAmount: 'baseAmount',
   status: 'status',
   createdAt: 'createdAt',
@@ -1916,6 +2051,38 @@ export const FileWorkflowScalarFieldEnum = {
 export type FileWorkflowScalarFieldEnum = (typeof FileWorkflowScalarFieldEnum)[keyof typeof FileWorkflowScalarFieldEnum]
 
 
+export const DocumentTypeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  defaultAmount: 'defaultAmount',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentTypeScalarFieldEnum = (typeof DocumentTypeScalarFieldEnum)[keyof typeof DocumentTypeScalarFieldEnum]
+
+
+export const FileWorkflowDocumentScalarFieldEnum = {
+  id: 'id',
+  fileWorkflowId: 'fileWorkflowId',
+  documentTypeId: 'documentTypeId',
+  documentName: 'documentName',
+  baseAmount: 'baseAmount',
+  discountAmount: 'discountAmount',
+  finalAmount: 'finalAmount',
+  status: 'status',
+  sortOrder: 'sortOrder',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FileWorkflowDocumentScalarFieldEnum = (typeof FileWorkflowDocumentScalarFieldEnum)[keyof typeof FileWorkflowDocumentScalarFieldEnum]
+
+
 export const PaymentAllocationScalarFieldEnum = {
   id: 'id',
   paymentId: 'paymentId',
@@ -1931,6 +2098,7 @@ export const WorkflowTaskScalarFieldEnum = {
   id: 'id',
   fileWorkflowId: 'fileWorkflowId',
   workflowStepId: 'workflowStepId',
+  fileWorkflowDocumentId: 'fileWorkflowDocumentId',
   assignedStaffId: 'assignedStaffId',
   status: 'status',
   remarks: 'remarks',
@@ -2164,6 +2332,21 @@ export const WorkflowSubTaskOrderByRelevanceFieldEnum = {
 export type WorkflowSubTaskOrderByRelevanceFieldEnum = (typeof WorkflowSubTaskOrderByRelevanceFieldEnum)[keyof typeof WorkflowSubTaskOrderByRelevanceFieldEnum]
 
 
+export const DocumentTypeOrderByRelevanceFieldEnum = {
+  name: 'name',
+  description: 'description'
+} as const
+
+export type DocumentTypeOrderByRelevanceFieldEnum = (typeof DocumentTypeOrderByRelevanceFieldEnum)[keyof typeof DocumentTypeOrderByRelevanceFieldEnum]
+
+
+export const FileWorkflowDocumentOrderByRelevanceFieldEnum = {
+  documentName: 'documentName'
+} as const
+
+export type FileWorkflowDocumentOrderByRelevanceFieldEnum = (typeof FileWorkflowDocumentOrderByRelevanceFieldEnum)[keyof typeof FileWorkflowDocumentOrderByRelevanceFieldEnum]
+
+
 export const WorkflowTaskOrderByRelevanceFieldEnum = {
   remarks: 'remarks'
 } as const
@@ -2303,6 +2486,13 @@ export type EnumFileCancellationSettlementFieldRefInput<$PrismaModel> = FieldRef
  * Reference to a field of type 'Decimal'
  */
 export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+/**
+ * Reference to a field of type 'WorkflowTrackingMode'
+ */
+export type EnumWorkflowTrackingModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WorkflowTrackingMode'>
     
 
 
@@ -2513,6 +2703,8 @@ export type GlobalOmitConfig = {
   workflowStep?: Prisma.WorkflowStepOmit
   workflowSubTask?: Prisma.WorkflowSubTaskOmit
   fileWorkflow?: Prisma.FileWorkflowOmit
+  documentType?: Prisma.DocumentTypeOmit
+  fileWorkflowDocument?: Prisma.FileWorkflowDocumentOmit
   paymentAllocation?: Prisma.PaymentAllocationOmit
   workflowTask?: Prisma.WorkflowTaskOmit
   fileWorkflowSubTask?: Prisma.FileWorkflowSubTaskOmit

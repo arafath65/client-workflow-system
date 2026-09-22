@@ -68,6 +68,37 @@ export async function POST(request: NextRequest) {
     const description = String(body.description ?? "").trim();
     const baseAmount = parseMoney(body.baseAmount);
 
+    let trackingMode: "STANDARD" | "DOCUMENT_BASED" =
+  "STANDARD";
+
+if (
+  body.trackingMode !== undefined &&
+  body.trackingMode !== null &&
+  body.trackingMode !== ""
+) {
+  const requestedTrackingMode = String(
+    body.trackingMode
+  );
+
+  if (
+    requestedTrackingMode !== "STANDARD" &&
+    requestedTrackingMode !== "DOCUMENT_BASED"
+  ) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Invalid workflow tracking mode.",
+      },
+      { status: 400 }
+    );
+  }
+
+  trackingMode =
+    requestedTrackingMode as
+      | "STANDARD"
+      | "DOCUMENT_BASED";
+}
+
     const rawDefaultStaffId = body.defaultStaffId;
 
     let defaultStaffId: number | null = null;
@@ -153,14 +184,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const workflow = await prisma.workflowTemplate.create({
-      data: {
-        name,
-        description: description || null,
-        defaultStaffId,
-        baseAmount,
-        status: true,
-      },
+    const workflow =
+  await prisma.workflowTemplate.create({
+    data: {
+      name,
+      description: description || null,
+      defaultStaffId,
+      baseAmount,
+      trackingMode,
+      status: true,
+    },
       include: {
         defaultStaff: {
           select: {
@@ -176,21 +209,19 @@ export async function POST(request: NextRequest) {
     // ==============================================
 
     await writeAuditLog({
-      module: "WORKFLOW",
-      action: "CREATE",
-      entity: "WORKFLOW_TEMPLATE",
-      entityId: workflow.id,
-      description: `Created workflow: ${workflow.name}`,
-      metadata: {
-        workflowId: workflow.id,
-        name: workflow.name,
-        description: workflow.description,
-        baseAmount: workflow.baseAmount,
-        defaultStaffId: workflow.defaultStaffId,
-        defaultStaffName: workflow.defaultStaff?.name ?? null,
-        status: workflow.status,
-      },
-    });
+  module: "WORKFLOWS",
+  action: "CREATE",
+  entity: "WORKFLOW_TEMPLATE",
+  entityId: workflow.id,
+  description: `Workflow "${workflow.name}" created.`,
+  metadata: {
+    workflowId: workflow.id,
+    workflowName: workflow.name,
+    trackingMode: workflow.trackingMode,
+    defaultStaffId,
+    baseAmount,
+  },
+});
 
     return NextResponse.json(
       {

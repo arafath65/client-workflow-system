@@ -43,6 +43,7 @@ export type WorkflowTemplateMinAggregateOutputType = {
   name: string | null
   description: string | null
   defaultStaffId: number | null
+  trackingMode: $Enums.WorkflowTrackingMode | null
   baseAmount: runtime.Decimal | null
   status: boolean | null
   createdAt: Date | null
@@ -54,6 +55,7 @@ export type WorkflowTemplateMaxAggregateOutputType = {
   name: string | null
   description: string | null
   defaultStaffId: number | null
+  trackingMode: $Enums.WorkflowTrackingMode | null
   baseAmount: runtime.Decimal | null
   status: boolean | null
   createdAt: Date | null
@@ -65,6 +67,7 @@ export type WorkflowTemplateCountAggregateOutputType = {
   name: number
   description: number
   defaultStaffId: number
+  trackingMode: number
   baseAmount: number
   status: number
   createdAt: number
@@ -90,6 +93,7 @@ export type WorkflowTemplateMinAggregateInputType = {
   name?: true
   description?: true
   defaultStaffId?: true
+  trackingMode?: true
   baseAmount?: true
   status?: true
   createdAt?: true
@@ -101,6 +105,7 @@ export type WorkflowTemplateMaxAggregateInputType = {
   name?: true
   description?: true
   defaultStaffId?: true
+  trackingMode?: true
   baseAmount?: true
   status?: true
   createdAt?: true
@@ -112,6 +117,7 @@ export type WorkflowTemplateCountAggregateInputType = {
   name?: true
   description?: true
   defaultStaffId?: true
+  trackingMode?: true
   baseAmount?: true
   status?: true
   createdAt?: true
@@ -210,6 +216,7 @@ export type WorkflowTemplateGroupByOutputType = {
   name: string
   description: string | null
   defaultStaffId: number | null
+  trackingMode: $Enums.WorkflowTrackingMode
   baseAmount: runtime.Decimal
   status: boolean
   createdAt: Date
@@ -244,6 +251,7 @@ export type WorkflowTemplateWhereInput = {
   name?: Prisma.StringFilter<"WorkflowTemplate"> | string
   description?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
   defaultStaffId?: Prisma.IntNullableFilter<"WorkflowTemplate"> | number | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFilter<"WorkflowTemplate"> | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFilter<"WorkflowTemplate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFilter<"WorkflowTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
@@ -258,6 +266,7 @@ export type WorkflowTemplateOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrderInput | Prisma.SortOrder
+  trackingMode?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -276,6 +285,7 @@ export type WorkflowTemplateWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"WorkflowTemplate"> | string
   description?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
   defaultStaffId?: Prisma.IntNullableFilter<"WorkflowTemplate"> | number | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFilter<"WorkflowTemplate"> | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFilter<"WorkflowTemplate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFilter<"WorkflowTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
@@ -290,6 +300,7 @@ export type WorkflowTemplateOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrderInput | Prisma.SortOrder
+  trackingMode?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -309,6 +320,7 @@ export type WorkflowTemplateScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"WorkflowTemplate"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"WorkflowTemplate"> | string | null
   defaultStaffId?: Prisma.IntNullableWithAggregatesFilter<"WorkflowTemplate"> | number | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeWithAggregatesFilter<"WorkflowTemplate"> | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalWithAggregatesFilter<"WorkflowTemplate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolWithAggregatesFilter<"WorkflowTemplate"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"WorkflowTemplate"> | Date | string
@@ -318,6 +330,7 @@ export type WorkflowTemplateScalarWhereWithAggregatesInput = {
 export type WorkflowTemplateCreateInput = {
   name: string
   description?: string | null
+  trackingMode?: $Enums.WorkflowTrackingMode
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -332,6 +345,7 @@ export type WorkflowTemplateUncheckedCreateInput = {
   name: string
   description?: string | null
   defaultStaffId?: number | null
+  trackingMode?: $Enums.WorkflowTrackingMode
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -343,6 +357,7 @@ export type WorkflowTemplateUncheckedCreateInput = {
 export type WorkflowTemplateUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -357,6 +372,7 @@ export type WorkflowTemplateUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -370,6 +386,7 @@ export type WorkflowTemplateCreateManyInput = {
   name: string
   description?: string | null
   defaultStaffId?: number | null
+  trackingMode?: $Enums.WorkflowTrackingMode
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -379,6 +396,7 @@ export type WorkflowTemplateCreateManyInput = {
 export type WorkflowTemplateUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -390,6 +408,7 @@ export type WorkflowTemplateUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -417,6 +436,7 @@ export type WorkflowTemplateCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrder
+  trackingMode?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -434,6 +454,7 @@ export type WorkflowTemplateMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrder
+  trackingMode?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -445,6 +466,7 @@ export type WorkflowTemplateMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   description?: Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrder
+  trackingMode?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -504,6 +526,10 @@ export type WorkflowTemplateUncheckedUpdateManyWithoutDefaultStaffNestedInput = 
   deleteMany?: Prisma.WorkflowTemplateScalarWhereInput | Prisma.WorkflowTemplateScalarWhereInput[]
 }
 
+export type EnumWorkflowTrackingModeFieldUpdateOperationsInput = {
+  set?: $Enums.WorkflowTrackingMode
+}
+
 export type DecimalFieldUpdateOperationsInput = {
   set?: runtime.Decimal | runtime.DecimalJsLike | number | string
   increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -543,6 +569,7 @@ export type WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput = {
 export type WorkflowTemplateCreateWithoutDefaultStaffInput = {
   name: string
   description?: string | null
+  trackingMode?: $Enums.WorkflowTrackingMode
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -555,6 +582,7 @@ export type WorkflowTemplateUncheckedCreateWithoutDefaultStaffInput = {
   id?: number
   name: string
   description?: string | null
+  trackingMode?: $Enums.WorkflowTrackingMode
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -597,6 +625,7 @@ export type WorkflowTemplateScalarWhereInput = {
   name?: Prisma.StringFilter<"WorkflowTemplate"> | string
   description?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
   defaultStaffId?: Prisma.IntNullableFilter<"WorkflowTemplate"> | number | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFilter<"WorkflowTemplate"> | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFilter<"WorkflowTemplate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFilter<"WorkflowTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
@@ -606,6 +635,7 @@ export type WorkflowTemplateScalarWhereInput = {
 export type WorkflowTemplateCreateWithoutStepsInput = {
   name: string
   description?: string | null
+  trackingMode?: $Enums.WorkflowTrackingMode
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -619,6 +649,7 @@ export type WorkflowTemplateUncheckedCreateWithoutStepsInput = {
   name: string
   description?: string | null
   defaultStaffId?: number | null
+  trackingMode?: $Enums.WorkflowTrackingMode
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -645,6 +676,7 @@ export type WorkflowTemplateUpdateToOneWithWhereWithoutStepsInput = {
 export type WorkflowTemplateUpdateWithoutStepsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -658,6 +690,7 @@ export type WorkflowTemplateUncheckedUpdateWithoutStepsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -668,6 +701,7 @@ export type WorkflowTemplateUncheckedUpdateWithoutStepsInput = {
 export type WorkflowTemplateCreateWithoutFileWorkflowsInput = {
   name: string
   description?: string | null
+  trackingMode?: $Enums.WorkflowTrackingMode
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -681,6 +715,7 @@ export type WorkflowTemplateUncheckedCreateWithoutFileWorkflowsInput = {
   name: string
   description?: string | null
   defaultStaffId?: number | null
+  trackingMode?: $Enums.WorkflowTrackingMode
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -707,6 +742,7 @@ export type WorkflowTemplateUpdateToOneWithWhereWithoutFileWorkflowsInput = {
 export type WorkflowTemplateUpdateWithoutFileWorkflowsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -720,6 +756,7 @@ export type WorkflowTemplateUncheckedUpdateWithoutFileWorkflowsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -731,6 +768,7 @@ export type WorkflowTemplateCreateManyDefaultStaffInput = {
   id?: number
   name: string
   description?: string | null
+  trackingMode?: $Enums.WorkflowTrackingMode
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -740,6 +778,7 @@ export type WorkflowTemplateCreateManyDefaultStaffInput = {
 export type WorkflowTemplateUpdateWithoutDefaultStaffInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -752,6 +791,7 @@ export type WorkflowTemplateUncheckedUpdateWithoutDefaultStaffInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -764,6 +804,7 @@ export type WorkflowTemplateUncheckedUpdateManyWithoutDefaultStaffInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -815,6 +856,7 @@ export type WorkflowTemplateSelect<ExtArgs extends runtime.Types.Extensions.Inte
   name?: boolean
   description?: boolean
   defaultStaffId?: boolean
+  trackingMode?: boolean
   baseAmount?: boolean
   status?: boolean
   createdAt?: boolean
@@ -832,13 +874,14 @@ export type WorkflowTemplateSelectScalar = {
   name?: boolean
   description?: boolean
   defaultStaffId?: boolean
+  trackingMode?: boolean
   baseAmount?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WorkflowTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "defaultStaffId" | "baseAmount" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowTemplate"]>
+export type WorkflowTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "defaultStaffId" | "trackingMode" | "baseAmount" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowTemplate"]>
 export type WorkflowTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   defaultStaff?: boolean | Prisma.WorkflowTemplate$defaultStaffArgs<ExtArgs>
   steps?: boolean | Prisma.WorkflowTemplate$stepsArgs<ExtArgs>
@@ -858,6 +901,7 @@ export type $WorkflowTemplatePayload<ExtArgs extends runtime.Types.Extensions.In
     name: string
     description: string | null
     defaultStaffId: number | null
+    trackingMode: $Enums.WorkflowTrackingMode
     baseAmount: runtime.Decimal
     status: boolean
     createdAt: Date
@@ -1238,6 +1282,7 @@ export interface WorkflowTemplateFieldRefs {
   readonly name: Prisma.FieldRef<"WorkflowTemplate", 'String'>
   readonly description: Prisma.FieldRef<"WorkflowTemplate", 'String'>
   readonly defaultStaffId: Prisma.FieldRef<"WorkflowTemplate", 'Int'>
+  readonly trackingMode: Prisma.FieldRef<"WorkflowTemplate", 'WorkflowTrackingMode'>
   readonly baseAmount: Prisma.FieldRef<"WorkflowTemplate", 'Decimal'>
   readonly status: Prisma.FieldRef<"WorkflowTemplate", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"WorkflowTemplate", 'DateTime'>

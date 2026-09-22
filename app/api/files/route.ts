@@ -1,14 +1,35 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
 import { TaskStatus } from "@/generated/prisma/client";
 
+// ==================================================
+// Types
+// ==================================================
+
+type DocumentInput = {
+  documentTypeId?: unknown;
+  baseAmount?: unknown;
+  discountAmount?: unknown;
+};
+
+type PreparedDocument = {
+  documentTypeId: number;
+  documentName: string;
+  baseAmount: string;
+  discountAmount: string;
+  finalAmount: string;
+  sortOrder: number;
+};
 
 // ==================================================
 // Money Parser
 // ==================================================
 
-function parseMoney(value: unknown): string | null {
+function parseMoney(
+  value: unknown
+): string | null {
   const raw = String(value ?? "").trim();
 
   if (!raw) {
@@ -32,76 +53,104 @@ function parseMoney(value: unknown): string | null {
 // GET - Load Files
 // ==================================================
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest
+) {
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams } =
+      new URL(request.url);
 
-    const search = searchParams.get("search")?.trim() || "";
+    const search =
+      searchParams.get("search")?.trim() ||
+      "";
 
-    const files = await prisma.clientFile.findMany({
-      where: search
-        ? {
-            OR: [
-              {
-                fileNumber: {
-                  contains: search,
-                },
-              },
-              {
-                title: {
-                  contains: search,
-                },
-              },
-              {
-                client: {
-                  name: {
+    const files =
+      await prisma.clientFile.findMany({
+        where: search
+          ? {
+              OR: [
+                {
+                  fileNumber: {
                     contains: search,
                   },
                 },
-              },
-            ],
-          }
-        : undefined,
-
-      include: {
-        client: true,
-        thirdParty: true,
-        fileWorkflows: {
-          include: {
-            workflowTemplate: true,
-            assignedStaff: true,
-            tasks: {
-              include: {
-                workflowStep: true,
-                assignedStaff: true,
-                subTasks: {
-                  include: {
-                    workflowSubTask: true,
-                    assignedStaff: true,
+                {
+                  title: {
+                    contains: search,
                   },
                 },
+                {
+                  client: {
+                    name: {
+                      contains: search,
+                    },
+                  },
+                },
+              ],
+            }
+          : undefined,
+
+        include: {
+          client: true,
+
+          thirdParty: true,
+
+          fileWorkflows: {
+            include: {
+              workflowTemplate: true,
+
+              assignedStaff: true,
+
+              documents: {
+                include: {
+                  documentType: true,
+                },
+                orderBy: {
+                  sortOrder: "asc",
+                },
               },
-              orderBy: {
-                workflowStep: {
-                  stepNumber: "asc",
+
+              tasks: {
+                include: {
+                  workflowStep: true,
+
+                  assignedStaff: true,
+
+                  fileWorkflowDocument: true,
+
+                  subTasks: {
+                    include: {
+                      workflowSubTask: true,
+
+                      assignedStaff: true,
+                    },
+                  },
+                },
+
+                orderBy: {
+                  workflowStep: {
+                    stepNumber: "asc",
+                  },
                 },
               },
             },
           },
         },
-      },
 
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
 
     return NextResponse.json({
       success: true,
       files,
     });
   } catch (error) {
-    console.error("Load files error:", error);
+    console.error(
+      "Load files error:",
+      error
+    );
 
     return NextResponse.json(
       {
@@ -117,128 +166,171 @@ export async function GET(request: NextRequest) {
 // POST - Create File
 // ==================================================
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest
+) {
   try {
-    const body = await request.json();
+    const body: Record<
+      string,
+      unknown
+    > = await request.json();
 
-    const clientId = Number(body.clientId);
-    const workflowTemplateId = Number(
-      body.workflowTemplateId
-    );
+    // --------------------------------------------------
+    // Basic Values
+    // --------------------------------------------------
+
+    const clientId =
+      Number(body.clientId);
+
+    const workflowTemplateId =
+      Number(
+        body.workflowTemplateId
+      );
 
     const assignedStaffId =
       body.assignedStaffId === null ||
-      body.assignedStaffId === undefined ||
+      body.assignedStaffId ===
+        undefined ||
       body.assignedStaffId === ""
         ? null
-        : Number(body.assignedStaffId);
+        : Number(
+            body.assignedStaffId
+          );
 
     const thirdPartyId =
       body.thirdPartyId === null ||
-      body.thirdPartyId === undefined ||
+      body.thirdPartyId ===
+        undefined ||
       body.thirdPartyId === ""
         ? null
-        : Number(body.thirdPartyId);
+        : Number(
+            body.thirdPartyId
+          );
 
     const fileNumberType =
       body.fileNumberType === "CUSTOM"
         ? "CUSTOM"
         : "SYSTEM";
 
-    const customFileNumber = String(
-      body.fileNumber ?? ""
-    ).trim();
+    const customFileNumber =
+      String(
+        body.fileNumber ?? ""
+      ).trim();
 
-    const description = String(
-      body.description ?? ""
-    ).trim();
+    const description =
+      String(
+        body.description ?? ""
+      ).trim();
 
-    // --------------------------------------------------
+    // ==================================================
     // Validate Client
-    // --------------------------------------------------
+    // ==================================================
 
-    if (!Number.isInteger(clientId) || clientId <= 0) {
+    if (
+      !Number.isInteger(clientId) ||
+      clientId <= 0
+    ) {
       return NextResponse.json(
         {
           success: false,
-          message: "Valid client is required.",
+          message:
+            "Valid client is required.",
         },
         { status: 400 }
       );
     }
 
-    const client = await prisma.client.findUnique({
-      where: {
-        id: clientId,
-      },
-    });
+    const client =
+      await prisma.client.findUnique({
+        where: {
+          id: clientId,
+        },
+      });
 
     if (!client) {
       return NextResponse.json(
         {
           success: false,
-          message: "Client not found.",
+          message:
+            "Client not found.",
         },
         { status: 404 }
       );
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // Validate Workflow
-    // --------------------------------------------------
+    // ==================================================
 
     if (
-      !Number.isInteger(workflowTemplateId) ||
+      !Number.isInteger(
+        workflowTemplateId
+      ) ||
       workflowTemplateId <= 0
     ) {
       return NextResponse.json(
         {
           success: false,
-          message: "Valid service type is required.",
+          message:
+            "Valid service type is required.",
         },
         { status: 400 }
       );
     }
 
+    // --------------------------------------------------
+    // Load Workflow + Steps
+    // --------------------------------------------------
+
     const workflow =
-      await prisma.workflowTemplate.findFirst({
-        where: {
-          id: workflowTemplateId,
-          status: true,
-        },
-        include: {
-          steps: {
-            where: {
-              status: true,
-            },
-            orderBy: {
-              stepNumber: "asc",
-            },
-            include: {
-              subTasks: {
-                where: {
-                  status: true,
-                },
-                orderBy: {
-                  subTaskNumber: "asc",
+      await prisma.workflowTemplate.findFirst(
+        {
+          where: {
+            id: workflowTemplateId,
+            status: true,
+          },
+
+          include: {
+            steps: {
+              where: {
+                status: true,
+              },
+
+              orderBy: {
+                stepNumber: "asc",
+              },
+
+              include: {
+                subTasks: {
+                  where: {
+                    status: true,
+                  },
+
+                  orderBy: {
+                    subTaskNumber:
+                      "asc",
+                  },
                 },
               },
             },
           },
-        },
-      });
+        }
+      );
 
     if (!workflow) {
       return NextResponse.json(
         {
           success: false,
-          message: "Service type not found or inactive.",
+          message:
+            "Service type not found or inactive.",
         },
         { status: 404 }
       );
     }
 
-    if (workflow.steps.length === 0) {
+    if (
+      workflow.steps.length === 0
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -249,51 +341,458 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // The Service Type owns the default price. Never trust a price
-    // submitted by the browser. Copy the current workflow price
-    // into the client-specific FileWorkflow as its initial base price.
-    const baseAmount = workflow.baseAmount.toFixed(2);
+    // ==================================================
+    // Determine Tracking Mode
+    // ==================================================
 
-    const discountAmount = parseMoney(body.discountAmount);
+    const isDocumentBased =
+      workflow.trackingMode ===
+      "DOCUMENT_BASED";
 
-    if (discountAmount === null) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Discount must be a valid non-negative amount with up to 2 decimal places.",
-        },
-        { status: 400 }
-      );
+    // ==================================================
+    // Document Based Preparation
+    // ==================================================
+
+    const rawDocuments: unknown[] =
+      Array.isArray(body.documents)
+        ? body.documents
+        : [];
+
+    let preparedDocuments: PreparedDocument[] =
+      [];
+
+    if (isDocumentBased) {
+      // ------------------------------------------------
+      // At least one document
+      // ------------------------------------------------
+
+      if (
+        rawDocuments.length === 0
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "At least one document is required for a document-based service.",
+          },
+          { status: 400 }
+        );
+      }
+
+      // ------------------------------------------------
+      // Extract Document Type IDs
+      // ------------------------------------------------
+
+      const documentTypeIds: number[] =
+        rawDocuments.map(
+          (item: unknown): number => {
+            if (
+              typeof item !==
+                "object" ||
+              item === null ||
+              Array.isArray(item)
+            ) {
+              return NaN;
+            }
+
+            const input =
+              item as DocumentInput;
+
+            return Number(
+              input.documentTypeId
+            );
+          }
+        );
+
+      // ------------------------------------------------
+      // Validate Document Type IDs
+      // ------------------------------------------------
+
+      const hasInvalidId =
+        documentTypeIds.some(
+          (id: number) =>
+            !Number.isInteger(id) ||
+            id <= 0
+        );
+
+      if (hasInvalidId) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Every document must have a valid Document Type.",
+          },
+          { status: 400 }
+        );
+      }
+
+      // ------------------------------------------------
+      // Duplicate Document Type Check
+      // ------------------------------------------------
+
+      const uniqueIds =
+        new Set<number>(
+          documentTypeIds
+        );
+
+      if (
+        uniqueIds.size !==
+        documentTypeIds.length
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "The same Document Type cannot be added more than once to the same client file.",
+          },
+          { status: 400 }
+        );
+      }
+
+      // ------------------------------------------------
+      // Load Active Document Types
+      // ------------------------------------------------
+
+      const documentTypes =
+        await prisma.documentType.findMany(
+          {
+            where: {
+              id: {
+                in: documentTypeIds,
+              },
+              status: true,
+            },
+
+            select: {
+              id: true,
+              name: true,
+              defaultAmount: true,
+            },
+          }
+        );
+
+      // ------------------------------------------------
+      // Check All Document Types Exist
+      // ------------------------------------------------
+
+      if (
+        documentTypes.length !==
+        uniqueIds.size
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "One or more selected Document Types are missing or inactive.",
+          },
+          { status: 400 }
+        );
+      }
+
+      // ------------------------------------------------
+      // Create Lookup Map
+      // ------------------------------------------------
+
+      const documentTypeMap =
+        new Map(
+          documentTypes.map(
+            (documentType) => [
+              documentType.id,
+              documentType,
+            ]
+          )
+        );
+
+      // ------------------------------------------------
+      // Prepare Document Instances
+      // ------------------------------------------------
+
+      preparedDocuments =
+        rawDocuments.map(
+          (
+            item: unknown,
+            index: number
+          ): PreparedDocument => {
+            if (
+              typeof item !==
+                "object" ||
+              item === null ||
+              Array.isArray(item)
+            ) {
+              throw new Error(
+                "DOCUMENT_TYPE_NOT_FOUND"
+              );
+            }
+
+            const input =
+              item as DocumentInput;
+
+            const documentTypeId =
+              Number(
+                input.documentTypeId
+              );
+
+            const documentType =
+              documentTypeMap.get(
+                documentTypeId
+              );
+
+            if (!documentType) {
+              throw new Error(
+                "DOCUMENT_TYPE_NOT_FOUND"
+              );
+            }
+
+            // --------------------------------------------
+            // Base Amount
+            // --------------------------------------------
+
+            let baseAmount: string;
+
+            const submittedBase =
+              input.baseAmount;
+
+            if (
+              submittedBase !==
+                undefined &&
+              submittedBase !==
+                null &&
+              String(
+                submittedBase
+              ).trim() !== ""
+            ) {
+              const parsed =
+                parseMoney(
+                  submittedBase
+                );
+
+              if (
+                parsed === null
+              ) {
+                throw new Error(
+                  "INVALID_DOCUMENT_BASE_AMOUNT"
+                );
+              }
+
+              baseAmount =
+                parsed;
+            } else {
+              baseAmount =
+                documentType.defaultAmount.toFixed(
+                  2
+                );
+            }
+
+            // --------------------------------------------
+            // Discount
+            // --------------------------------------------
+
+            const discountAmount =
+              parseMoney(
+                input.discountAmount
+              );
+
+            if (
+              discountAmount ===
+              null
+            ) {
+              throw new Error(
+                "INVALID_DOCUMENT_DISCOUNT"
+              );
+            }
+
+            // --------------------------------------------
+            // Final Amount
+            // --------------------------------------------
+
+            const baseCents =
+              Math.round(
+                Number(
+                  baseAmount
+                ) * 100
+              );
+
+            const discountCents =
+              Math.round(
+                Number(
+                  discountAmount
+                ) * 100
+              );
+
+            if (
+              discountCents >
+              baseCents
+            ) {
+              throw new Error(
+                "DOCUMENT_DISCOUNT_GREATER_THAN_BASE"
+              );
+            }
+
+            const finalAmount =
+              (
+                (baseCents -
+                  discountCents) /
+                100
+              ).toFixed(2);
+
+            return {
+              documentTypeId,
+
+              documentName:
+                documentType.name,
+
+              baseAmount,
+
+              discountAmount,
+
+              finalAmount,
+
+              sortOrder:
+                index,
+            };
+          }
+        );
     }
 
-    const baseCents = Math.round(Number(baseAmount) * 100);
-    const discountCents = Math.round(Number(discountAmount) * 100);
+    // ==================================================
+    // Pricing
+    // ==================================================
 
-    if (discountCents > baseCents) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Discount cannot be greater than the base price.",
-        },
-        { status: 400 }
-      );
+    let baseAmount: string;
+    let discountAmount: string;
+    let finalAmount: string;
+
+    if (isDocumentBased) {
+      // ------------------------------------------------
+      // Parent FileWorkflow totals
+      // ------------------------------------------------
+
+      const totals =
+        preparedDocuments.reduce(
+          (
+            sum,
+            document
+          ) => ({
+            base:
+              sum.base +
+              Number(
+                document.baseAmount
+              ),
+
+            discount:
+              sum.discount +
+              Number(
+                document.discountAmount
+              ),
+
+            final:
+              sum.final +
+              Number(
+                document.finalAmount
+              ),
+          }),
+          {
+            base: 0,
+            discount: 0,
+            final: 0,
+          }
+        );
+
+      baseAmount =
+        totals.base.toFixed(2);
+
+      discountAmount =
+        totals.discount.toFixed(2);
+
+      finalAmount =
+        totals.final.toFixed(2);
+    } else {
+      // ------------------------------------------------
+      // Standard Workflow
+      // ------------------------------------------------
+
+      baseAmount =
+        workflow.baseAmount.toFixed(
+          2
+        );
+
+      const parsedDiscount =
+        parseMoney(
+          body.discountAmount
+        );
+
+      if (
+        parsedDiscount ===
+        null
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Discount must be a valid non-negative amount with up to 2 decimal places.",
+          },
+          { status: 400 }
+        );
+      }
+
+      discountAmount =
+        parsedDiscount;
+
+      const baseCents =
+        Math.round(
+          Number(
+            baseAmount
+          ) * 100
+        );
+
+      const discountCents =
+        Math.round(
+          Number(
+            discountAmount
+          ) * 100
+        );
+
+      if (
+        discountCents >
+        baseCents
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Discount cannot be greater than the base price.",
+          },
+          { status: 400 }
+        );
+      }
+
+      finalAmount =
+        (
+          (baseCents -
+            discountCents) /
+          100
+        ).toFixed(2);
     }
 
-    const finalAmount = ((baseCents - discountCents) / 100).toFixed(2);
-
-    // --------------------------------------------------
-    // Resolve and Validate Main Responsible Staff
-    // Explicit file assignment takes priority; otherwise use
-    // the Service Type default responsible staff.
-    // --------------------------------------------------
+    // ==================================================
+    // Resolve Main Staff
+    // ==================================================
 
     const effectiveAssignedStaffId =
-      assignedStaffId ?? workflow.defaultStaffId ?? null;
+      assignedStaffId ??
+      workflow.defaultStaffId ??
+      null;
 
-    if (effectiveAssignedStaffId !== null) {
+    if (
+      effectiveAssignedStaffId !==
+      null
+    ) {
       if (
-        !Number.isInteger(effectiveAssignedStaffId) ||
-        effectiveAssignedStaffId <= 0
+        !Number.isInteger(
+          effectiveAssignedStaffId
+        ) ||
+        effectiveAssignedStaffId <=
+          0
       ) {
         return NextResponse.json(
           {
@@ -305,12 +804,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const staff = await prisma.staff.findFirst({
-        where: {
-          id: effectiveAssignedStaffId,
-          status: true,
-        },
-      });
+      const staff =
+        await prisma.staff.findFirst({
+          where: {
+            id:
+              effectiveAssignedStaffId,
+            status: true,
+          },
+        });
 
       if (!staff) {
         return NextResponse.json(
@@ -324,31 +825,38 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // Validate Third Party
-    // --------------------------------------------------
+    // ==================================================
 
-    if (thirdPartyId !== null) {
+    if (
+      thirdPartyId !== null
+    ) {
       if (
-        !Number.isInteger(thirdPartyId) ||
+        !Number.isInteger(
+          thirdPartyId
+        ) ||
         thirdPartyId <= 0
       ) {
         return NextResponse.json(
           {
             success: false,
-            message: "Invalid third party.",
+            message:
+              "Invalid third party.",
           },
           { status: 400 }
         );
       }
 
       const thirdParty =
-        await prisma.thirdParty.findFirst({
-          where: {
-            id: thirdPartyId,
-            status: true,
-          },
-        });
+        await prisma.thirdParty.findFirst(
+          {
+            where: {
+              id: thirdPartyId,
+              status: true,
+            },
+          }
+        );
 
       if (!thirdParty) {
         return NextResponse.json(
@@ -362,14 +870,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // --------------------------------------------------
-    // Generate / Validate File Number
-    // --------------------------------------------------
+    // ==================================================
+    // File Number
+    // ==================================================
 
     let fileNumber = "";
 
-    if (fileNumberType === "CUSTOM") {
-      if (!customFileNumber) {
+    if (
+      fileNumberType ===
+      "CUSTOM"
+    ) {
+      if (
+        !customFileNumber
+      ) {
         return NextResponse.json(
           {
             success: false,
@@ -380,213 +893,530 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      fileNumber = customFileNumber;
+      fileNumber =
+        customFileNumber;
     }
 
-    // --------------------------------------------------
-    // Create File + Workflow + Tasks + Subtasks
-    // --------------------------------------------------
+    // ==================================================
+    // Transaction
+    // ==================================================
 
-    const result = await prisma.$transaction(
-      async (tx) => {
-        // ----------------------------------------------
-        // System Generated Number
-        // ----------------------------------------------
+    const result =
+      await prisma.$transaction(
+        async (tx) => {
+          // ----------------------------------------------
+          // Generate System File Number
+          // ----------------------------------------------
 
-        if (fileNumberType === "SYSTEM") {
-          const sequence =
-            await tx.fileNumberSequence.findUnique({
-              where: {
-                id: 1,
-              },
-            });
+          if (
+            fileNumberType ===
+            "SYSTEM"
+          ) {
+            const sequence =
+              await tx.fileNumberSequence.findUnique(
+                {
+                  where: {
+                    id: 1,
+                  },
+                }
+              );
 
-          const nextNumber =
-            sequence?.nextNumber ?? 1;
+            const nextNumber =
+              sequence?.nextNumber ??
+              1;
 
-          fileNumber =
-            `AIG-${String(nextNumber).padStart(6, "0")}`;
+            fileNumber =
+              `AIG-${String(
+                nextNumber
+              ).padStart(
+                6,
+                "0"
+              )}`;
 
-          await tx.fileNumberSequence.upsert({
-            where: {
-              id: 1,
-            },
-            create: {
-              id: 1,
-              nextNumber: nextNumber + 1,
-            },
-            update: {
-              nextNumber: nextNumber + 1,
-            },
-          });
-        }
+            await tx.fileNumberSequence.upsert(
+              {
+                where: {
+                  id: 1,
+                },
 
-        // ----------------------------------------------
-        // Duplicate File Number Check
-        // ----------------------------------------------
+                create: {
+                  id: 1,
+                  nextNumber:
+                    nextNumber +
+                    1,
+                },
 
-        const existingFile =
-          await tx.clientFile.findUnique({
-            where: {
-              fileNumber,
-            },
-          });
+                update: {
+                  nextNumber:
+                    nextNumber +
+                    1,
+                },
+              }
+            );
+          }
 
-        if (existingFile) {
-          throw new Error(
-            "FILE_NUMBER_ALREADY_EXISTS"
-          );
-        }
+          // ----------------------------------------------
+          // Duplicate File Number
+          // ----------------------------------------------
 
-        // ----------------------------------------------
-        // Create Client File
-        // ----------------------------------------------
+          const existingFile =
+            await tx.clientFile.findUnique(
+              {
+                where: {
+                  fileNumber,
+                },
+              }
+            );
 
-        const clientFile =
-          await tx.clientFile.create({
-            data: {
-              clientId,
-              thirdPartyId,
-              fileNumber,
-              fileNumberType,
-              title: workflow.name,
-              description:
-                description || null,
-              status: "IN_PROGRESS",
-            },
-          });
+          if (existingFile) {
+            throw new Error(
+              "FILE_NUMBER_ALREADY_EXISTS"
+            );
+          }
 
-        // ----------------------------------------------
-        // Create File Workflow
-        // ----------------------------------------------
+          // ----------------------------------------------
+          // Create Client File
+          // ----------------------------------------------
 
-        const fileWorkflow =
-          await tx.fileWorkflow.create({
-            data: {
-              clientFileId: clientFile.id,
-              workflowTemplateId:
-                workflow.id,
-              assignedStaffId: effectiveAssignedStaffId,
-              status: "IN_PROGRESS",
-              baseAmount,
-              discountAmount,
-              finalAmount,
-              startedAt: new Date(),
-            },
-          });
+          const clientFile =
+            await tx.clientFile.create(
+              {
+                data: {
+                  clientId,
 
-        // ----------------------------------------------
-        // Create Workflow Tasks + Subtasks
-        // ----------------------------------------------
+                  thirdPartyId,
 
-        for (let index = 0; index < workflow.steps.length; index++) {
-          const step = workflow.steps[index];
+                  fileNumber,
 
-          const task =
-            await tx.workflowTask.create({
-              data: {
-                fileWorkflowId:
-                  fileWorkflow.id,
+                  fileNumberType,
 
-                workflowStepId:
-                  step.id,
+                  title:
+                    workflow.name,
 
-                // IMPORTANT:
-                // null means "inherit from FileWorkflow"
-                assignedStaffId: null,
-
-                status:
-                  index === 0
-                    ? TaskStatus.ACTIVE
-                    : TaskStatus.PENDING,
-
-                startedAt:
-                  index === 0
-                    ? new Date()
-                    : null,
-              },
-            });
-
-          // --------------------------------------------
-          // Create File Subtask Instances
-          // --------------------------------------------
-
-          if (step.subTasks.length > 0) {
-            await tx.fileWorkflowSubTask.createMany({
-              data: step.subTasks.map(
-                (subTask) => ({
-                  workflowTaskId: task.id,
-                  workflowSubTaskId:
-                    subTask.id,
-
-                  // null means inherit effective
-                  // staff from step/workflow
-                  assignedStaffId: null,
+                  description:
+                    description ||
+                    null,
 
                   status:
-                    index === 0
-                      ? TaskStatus.ACTIVE
-                      : TaskStatus.PENDING,
-                })
-              ),
-            });
-          }
-        }
+                    "IN_PROGRESS",
+                },
+              }
+            );
 
-        return clientFile;
-      }
-    );
+          // ----------------------------------------------
+          // Create File Workflow
+          // ----------------------------------------------
+
+          const fileWorkflow =
+            await tx.fileWorkflow.create(
+              {
+                data: {
+                  clientFileId:
+                    clientFile.id,
+
+                  workflowTemplateId:
+                    workflow.id,
+
+                  assignedStaffId:
+                    effectiveAssignedStaffId,
+
+                  status:
+                    "IN_PROGRESS",
+
+                  baseAmount,
+
+                  discountAmount,
+
+                  finalAmount,
+
+                  startedAt:
+                    new Date(),
+                },
+              }
+            );
+
+          // =================================================
+          // DOCUMENT BASED
+          // =================================================
+
+          if (isDocumentBased) {
+            for (
+              const document of
+                preparedDocuments
+            ) {
+              // ----------------------------------------------
+              // Create Document Instance
+              // ----------------------------------------------
+
+              const fileDocument =
+                await tx.fileWorkflowDocument.create(
+                  {
+                    data: {
+                      fileWorkflowId:
+                        fileWorkflow.id,
+
+                      documentTypeId:
+                        document.documentTypeId,
+
+                      documentName:
+                        document.documentName,
+
+                      baseAmount:
+                        document.baseAmount,
+
+                      discountAmount:
+                        document.discountAmount,
+
+                      finalAmount:
+                        document.finalAmount,
+
+                      status:
+                        "IN_PROGRESS",
+
+                      sortOrder:
+                        document.sortOrder,
+
+                      startedAt:
+                        new Date(),
+                    },
+                  }
+                );
+
+              // ----------------------------------------------
+              // Create Independent Workflow Chain
+              // ----------------------------------------------
+
+              for (
+                let index = 0;
+                index <
+                workflow.steps.length;
+                index++
+              ) {
+                const step =
+                  workflow.steps[
+                    index
+                  ];
+
+                const task =
+                  await tx.workflowTask.create(
+                    {
+                      data: {
+                        fileWorkflowId:
+                          fileWorkflow.id,
+
+                        fileWorkflowDocumentId:
+                          fileDocument.id,
+
+                        workflowStepId:
+                          step.id,
+
+                        // null = inherit from FileWorkflow
+                        assignedStaffId:
+                          null,
+
+                        status:
+                          index ===
+                          0
+                            ? TaskStatus.ACTIVE
+                            : TaskStatus.PENDING,
+
+                        startedAt:
+                          index ===
+                          0
+                            ? new Date()
+                            : null,
+                      },
+                    }
+                  );
+
+                // --------------------------------------------
+                // Create Subtasks
+                // --------------------------------------------
+
+                if (
+                  step.subTasks
+                    .length >
+                  0
+                ) {
+                  await tx.fileWorkflowSubTask.createMany(
+                    {
+                      data: step.subTasks.map(
+                        (
+                          subTask
+                        ) => ({
+                          workflowTaskId:
+                            task.id,
+
+                          workflowSubTaskId:
+                            subTask.id,
+
+                          // null = inherit staff
+                          assignedStaffId:
+                            null,
+
+                          status:
+                            index ===
+                            0
+                              ? TaskStatus.ACTIVE
+                              : TaskStatus.PENDING,
+                        })
+                      ),
+                    }
+                  );
+                }
+              }
+            }
+          } else {
+            // =================================================
+            // STANDARD WORKFLOW
+            // =================================================
+
+            for (
+              let index = 0;
+              index <
+              workflow.steps.length;
+              index++
+            ) {
+              const step =
+                workflow.steps[
+                  index
+                ];
+
+              const task =
+                await tx.workflowTask.create(
+                  {
+                    data: {
+                      fileWorkflowId:
+                        fileWorkflow.id,
+
+                      fileWorkflowDocumentId:
+                        null,
+
+                      workflowStepId:
+                        step.id,
+
+                      // null = inherit from FileWorkflow
+                      assignedStaffId:
+                        null,
+
+                      status:
+                        index ===
+                        0
+                          ? TaskStatus.ACTIVE
+                          : TaskStatus.PENDING,
+
+                      startedAt:
+                        index ===
+                        0
+                          ? new Date()
+                          : null,
+                    },
+                  }
+                );
+
+              // --------------------------------------------
+              // Create Subtasks
+              // --------------------------------------------
+
+              if (
+                step.subTasks
+                  .length >
+                0
+              ) {
+                await tx.fileWorkflowSubTask.createMany(
+                  {
+                    data: step.subTasks.map(
+                      (
+                        subTask
+                      ) => ({
+                        workflowTaskId:
+                          task.id,
+
+                        workflowSubTaskId:
+                          subTask.id,
+
+                        // null = inherit staff
+                        assignedStaffId:
+                          null,
+
+                        status:
+                          index ===
+                          0
+                            ? TaskStatus.ACTIVE
+                            : TaskStatus.PENDING,
+                      })
+                    ),
+                  }
+                );
+              }
+            }
+          }
+
+          return clientFile;
+        }
+      );
+
+    // ==================================================
+    // Audit Log
+    // ==================================================
 
     await writeAuditLog({
       module: "FILES",
+
       action: "CREATE",
+
       entity: "CLIENT_FILE",
+
       entityId: result.id,
-      description: `Client file ${fileNumber} created for ${client.name}.`,
+
+      description:
+        `Client file ${fileNumber} created for ${client.name}.`,
+
       metadata: {
         fileNumber,
+
         clientId,
-        workflowTemplateId: workflow.id,
-        workflowName: workflow.name,
-        assignedStaffId: effectiveAssignedStaffId,
+
+        workflowTemplateId:
+          workflow.id,
+
+        workflowName:
+          workflow.name,
+
+        trackingMode:
+          workflow.trackingMode,
+
+        assignedStaffId:
+          effectiveAssignedStaffId,
+
         thirdPartyId,
+
         baseAmount,
+
         discountAmount,
+
         finalAmount,
+
+        documents:
+          isDocumentBased
+            ? preparedDocuments.map(
+                (
+                  document
+                ) => ({
+                  documentTypeId:
+                    document.documentTypeId,
+
+                  documentName:
+                    document.documentName,
+
+                  baseAmount:
+                    document.baseAmount,
+
+                  discountAmount:
+                    document.discountAmount,
+
+                  finalAmount:
+                    document.finalAmount,
+                })
+              )
+            : [],
       },
     });
+
+    // ==================================================
+    // Response
+    // ==================================================
 
     return NextResponse.json(
       {
         success: true,
+
         message:
           "File created successfully.",
+
         file: result,
       },
       { status: 201 }
     );
   } catch (error) {
+    // ==================================================
+    // Known Errors
+    // ==================================================
+
     if (
-      error instanceof Error &&
-      error.message ===
-        "FILE_NUMBER_ALREADY_EXISTS"
+      error instanceof Error
     ) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "This file number already exists.",
-        },
-        { status: 409 }
-      );
+      switch (
+        error.message
+      ) {
+        case "FILE_NUMBER_ALREADY_EXISTS":
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "This file number already exists.",
+            },
+            { status: 409 }
+          );
+
+        case "DOCUMENT_TYPE_NOT_FOUND":
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "One of the selected Document Types was not found.",
+            },
+            { status: 400 }
+          );
+
+        case "INVALID_DOCUMENT_BASE_AMOUNT":
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "One of the document prices is invalid.",
+            },
+            { status: 400 }
+          );
+
+        case "INVALID_DOCUMENT_DISCOUNT":
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "One of the document discounts is invalid.",
+            },
+            { status: 400 }
+          );
+
+        case "DOCUMENT_DISCOUNT_GREATER_THAN_BASE":
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "A document discount cannot be greater than its base price.",
+            },
+            { status: 400 }
+          );
+      }
     }
 
-    console.error("Create file error:", error);
+    // ==================================================
+    // Unexpected Error
+    // ==================================================
+
+    console.error(
+      "Create file error:",
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: "Unable to create file.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to create file.",
       },
       { status: 500 }
     );

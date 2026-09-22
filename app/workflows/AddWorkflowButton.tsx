@@ -24,6 +24,9 @@ export default function AddWorkflowButton() {
 
   const [defaultStaffId, setDefaultStaffId] = useState("");
   const [baseAmount, setBaseAmount] = useState("");
+  const [trackingMode, setTrackingMode] = useState<
+  "STANDARD" | "DOCUMENT_BASED"
+>("STANDARD");
 
   const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
@@ -101,6 +104,7 @@ export default function AddWorkflowButton() {
 
     setDefaultStaffId("");
     setBaseAmount("");
+    setTrackingMode("STANDARD");
     setStaffError("");
   };
 
@@ -152,13 +156,14 @@ export default function AddWorkflowButton() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name,
-          description,
-          defaultStaffId: defaultStaffId
-            ? Number(defaultStaffId)
-            : null,
-          baseAmount: cleanBaseAmount,
-        }),
+  name,
+  description,
+  defaultStaffId: defaultStaffId
+    ? Number(defaultStaffId)
+    : null,
+  baseAmount: cleanBaseAmount,
+  trackingMode,
+}),
       });
 
       const data = await response.json();
@@ -200,7 +205,7 @@ export default function AddWorkflowButton() {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
+          <div className="flex max-h-[calc(100vh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
             {/* Modal Header */}
 
             <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
@@ -227,9 +232,9 @@ export default function AddWorkflowButton() {
             {/* Form */}
 
             <form
-              onSubmit={handleSubmit}
-              className="space-y-4 px-6 py-6"
-            >
+  onSubmit={handleSubmit}
+  className="max-h-[calc(100vh-9rem)] space-y-4 overflow-y-auto px-6 py-6"
+>
               {/* Workflow Name */}
 
               <div>
@@ -274,6 +279,65 @@ export default function AddWorkflowButton() {
                   className="w-full resize-none rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-black/25 focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
                 />
               </div>
+
+              {/* Tracking Mode */}
+
+<div>
+  <label className="mb-1.5 block text-xs font-medium text-black/60">
+    Tracking Mode
+  </label>
+
+  <div className="space-y-2">
+    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-black/10 p-3 transition hover:bg-[#fafaf9]">
+      <input
+        type="radio"
+        name="trackingMode"
+        value="STANDARD"
+        checked={trackingMode === "STANDARD"}
+        onChange={() => setTrackingMode("STANDARD")}
+        disabled={loading}
+        className="mt-0.5"
+      />
+
+      <div>
+        <p className="text-xs font-medium">
+          Standard
+        </p>
+
+        <p className="mt-1 text-[11px] leading-4 text-black/40">
+          One workflow task chain for the entire client file.
+          Use this for services such as Saudi Visa.
+        </p>
+      </div>
+    </label>
+
+    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-black/10 p-3 transition hover:bg-[#fafaf9]">
+      <input
+        type="radio"
+        name="trackingMode"
+        value="DOCUMENT_BASED"
+        checked={trackingMode === "DOCUMENT_BASED"}
+        onChange={() =>
+          setTrackingMode("DOCUMENT_BASED")
+        }
+        disabled={loading}
+        className="mt-0.5"
+      />
+
+      <div>
+        <p className="text-xs font-medium">
+          Document Based
+        </p>
+
+        <p className="mt-1 text-[11px] leading-4 text-black/40">
+          Each document gets its own independent workflow
+          progress. Use this for services such as English
+          Translation.
+        </p>
+      </div>
+    </label>
+  </div>
+</div>
 
               {/* Default Service Price */}
 

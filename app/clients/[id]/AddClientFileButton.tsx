@@ -8,7 +8,23 @@ type WorkflowTemplate = {
   id: number;
   name: string;
   baseAmount?: string | number | null;
+  trackingMode?: "STANDARD" | "DOCUMENT_BASED";
   status?: boolean;
+};
+
+type DocumentType = {
+  id: number;
+  name: string;
+  description: string | null;
+  defaultAmount: number | string;
+  status?: boolean;
+};
+
+type DocumentRow = {
+  rowId: string;
+  documentTypeId: string;
+  baseAmount: string;
+  discountAmount: string;
 };
 
 type ThirdParty = {
@@ -33,11 +49,22 @@ export default function AddClientFileButton({
 
   const [fileNumber, setFileNumber] = useState("");
   const [serviceTypeId, setServiceTypeId] = useState("");
+  const [trackingMode, setTrackingMode] = useState<
+    "STANDARD" | "DOCUMENT_BASED"
+  >("STANDARD");
   const [thirdPartyId, setThirdPartyId] = useState("");
   const [description, setDescription] = useState("");
 
   const [baseAmount, setBaseAmount] = useState("");
   const [discountAmount, setDiscountAmount] = useState("");
+
+  const [documentTypes, setDocumentTypes] = useState<
+    DocumentType[]
+  >([]);
+
+  const [documents, setDocuments] = useState<
+    DocumentRow[]
+  >([]);
 
   const [serviceTypes, setServiceTypes] = useState<
     WorkflowTemplate[]
@@ -134,6 +161,53 @@ export default function AddClientFileButton({
             ? error.message
             : "Unable to load Service Types."
         );
+      }
+
+      // ---------------------------------------------
+      // Load Document Types
+      // ---------------------------------------------
+
+      try {
+        const documentTypeResponse = await fetch(
+          "/api/document-types",
+          {
+            method: "GET",
+            cache: "no-store",
+          }
+        );
+
+        const documentTypeData = await readResponse(
+          documentTypeResponse
+        );
+
+        if (!documentTypeResponse.ok) {
+          console.error(
+            "Document Type API error:",
+            documentTypeData
+          );
+
+          setDocumentTypes([]);
+        } else {
+          const types = Array.isArray(
+            documentTypeData?.documentTypes
+          )
+            ? documentTypeData.documentTypes
+            : [];
+
+          const activeDocumentTypes = types.filter(
+            (documentType: DocumentType) =>
+              documentType.status !== false
+          );
+
+          setDocumentTypes(activeDocumentTypes);
+        }
+      } catch (error) {
+        console.error(
+          "Document Type loading error:",
+          error
+        );
+
+        setDocumentTypes([]);
       }
 
       // ---------------------------------------------
@@ -240,10 +314,12 @@ export default function AddClientFileButton({
     setFileNumberType("SYSTEM");
     setFileNumber("");
     setServiceTypeId("");
+    setTrackingMode("STANDARD");
     setThirdPartyId("");
     setDescription("");
     setBaseAmount("");
     setDiscountAmount("");
+    setDocuments([]);
     setError("");
 
     setOpen(true);
@@ -299,13 +375,22 @@ export default function AddClientFileButton({
   // Change Service Type
   // --------------------------------------------------
 
+  const createEmptyDocumentRow = (): DocumentRow => ({
+    rowId: crypto.randomUUID(),
+    documentTypeId: "",
+    baseAmount: "",
+    discountAmount: "",
+  });
+
   const handleServiceTypeChange = (value: string) => {
     setServiceTypeId(value);
     setDiscountAmount("");
     setError("");
 
     if (!value) {
+      setTrackingMode("STANDARD");
       setBaseAmount("");
+      setDocuments([]);
       return;
     }
 
@@ -313,11 +398,107 @@ export default function AddClientFileButton({
       (workflow) => String(workflow.id) === value
     );
 
+    const nextTrackingMode =
+      selectedWorkflow?.trackingMode === "DOCUMENT_BASED"
+        ? "DOCUMENT_BASED"
+        : "STANDARD";
+
+    setTrackingMode(nextTrackingMode);
+
+    if (nextTrackingMode === "DOCUMENT_BASED") {
+      setBaseAmount("");
+      setDiscountAmount("");
+      setDocuments((current) =>
+        current.length > 0
+          ? current
+          : [createEmptyDocumentRow()]
+      );
+      return;
+    }
+
+    setDocuments([]);
+
     setBaseAmount(
       selectedWorkflow?.baseAmount !== undefined &&
         selectedWorkflow?.baseAmount !== null
         ? String(selectedWorkflow.baseAmount)
         : "0"
+    );
+  };
+
+  const handleAddDocument = () => {
+    setError("");
+    setDocuments((current) => [
+      ...current,
+      createEmptyDocumentRow(),
+    ]);
+  };
+
+  const handleRemoveDocument = (rowId: string) => {
+    setError("");
+
+    setDocuments((current) => {
+      if (current.length <= 1) {
+        return current;
+      }
+
+      return current.filter(
+        (document) => document.rowId !== rowId
+      );
+    });
+  };
+
+  const handleDocumentTypeChange = (
+    rowId: string,
+    documentTypeId: string
+  ) => {
+    setError("");
+
+    const alreadySelected = documents.some(
+      (document) =>
+        document.rowId !== rowId &&
+        document.documentTypeId === documentTypeId
+    );
+
+    if (documentTypeId && alreadySelected) {
+      setError("This Document Type has already been added.");
+      return;
+    }
+
+    const selectedType = documentTypes.find(
+      (documentType) =>
+        String(documentType.id) === documentTypeId
+    );
+
+    setDocuments((current) =>
+      current.map((document) =>
+        document.rowId === rowId
+          ? {
+              ...document,
+              documentTypeId,
+              baseAmount: selectedType
+                ? Number(selectedType.defaultAmount).toFixed(2)
+                : "",
+              discountAmount: "",
+            }
+          : document
+      )
+    );
+  };
+
+  const handleDocumentAmountChange = (
+    rowId: string,
+    field: "baseAmount" | "discountAmount",
+    value: string
+  ) => {
+    setError("");
+
+    setDocuments((current) =>
+      current.map((document) =>
+        document.rowId === rowId
+          ? { ...document, [field]: value }
+          : document
+      )
     );
   };
 
@@ -338,6 +519,50 @@ export default function AddClientFileButton({
     if (!fileNumber.trim()) {
       setError("File Number is required.");
       return;
+    }
+
+    if (trackingMode === "DOCUMENT_BASED") {
+      if (documents.length === 0) {
+        setError("At least one document is required.");
+        return;
+      }
+
+      const selectedIds = documents.map(
+        (document) => document.documentTypeId
+      );
+
+      if (selectedIds.some((id) => !id)) {
+        setError("Please select a Document Type for every document.");
+        return;
+      }
+
+      if (new Set(selectedIds).size !== selectedIds.length) {
+        setError("The same Document Type cannot be added more than once.");
+        return;
+      }
+
+      for (const document of documents) {
+        if (!/^\d+(?:\.\d{1,2})?$/.test(document.baseAmount.trim())) {
+          setError("Every document must have a valid base price.");
+          return;
+        }
+
+        if (
+          document.discountAmount.trim() &&
+          !/^\d+(?:\.\d{1,2})?$/.test(document.discountAmount.trim())
+        ) {
+          setError("Every document must have a valid discount.");
+          return;
+        }
+
+        const documentBase = Number(document.baseAmount);
+        const documentDiscount = Number(document.discountAmount || "0");
+
+        if (documentDiscount > documentBase) {
+          setError("A document discount cannot be greater than its base price.");
+          return;
+        }
+      }
     }
 
     try {
@@ -373,6 +598,18 @@ export default function AddClientFileButton({
 
             discountAmount:
               discountAmount || "0",
+
+            documents:
+              trackingMode === "DOCUMENT_BASED"
+                ? documents.map((document) => ({
+                    documentTypeId: Number(
+                      document.documentTypeId
+                    ),
+                    baseAmount: document.baseAmount.trim(),
+                    discountAmount:
+                      document.discountAmount.trim() || "0",
+                  }))
+                : [],
           }),
         }
       );
@@ -392,10 +629,12 @@ export default function AddClientFileButton({
       setFileNumberType("SYSTEM");
       setFileNumber("");
       setServiceTypeId("");
+      setTrackingMode("STANDARD");
       setThirdPartyId("");
       setDescription("");
       setBaseAmount("");
       setDiscountAmount("");
+      setDocuments([]);
       setError("");
 
       router.refresh();
@@ -636,75 +875,323 @@ export default function AddClientFileButton({
 
                 {/* Pricing */}
 
-                <div>
-                  <label className="mb-2 block text-xs font-medium">
-                    Service Pricing
-                  </label>
+                {trackingMode === "DOCUMENT_BASED" ? (
+                  <div>
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <label className="block text-xs font-medium">
+                          Documents
+                        </label>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <label className="mb-1.5 block text-[11px] font-medium text-black/60">
-                        Base Price (LKR)
-                      </label>
+                        <p className="mt-1 text-[10px] text-black/35">
+                          Each document gets its own independent workflow progress and its own client-specific price.
+                        </p>
+                      </div>
 
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={baseAmount}
-                        readOnly
-                        placeholder="0.00"
-                        disabled={saving || !serviceTypeId}
-                        className="w-full rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-2.5 text-sm outline-none focus:border-[#f9a800] disabled:opacity-60"
-                      />
-                      <p className="mt-1.5 text-[10px] text-black/35">
-                        Loaded automatically from the selected Service Type.
-                      </p>
+                      <button
+                        type="button"
+                        onClick={handleAddDocument}
+                        disabled={saving || documentTypes.length === 0}
+                        className="shrink-0 rounded-lg border border-black/10 bg-white px-3 py-2 text-[11px] font-semibold transition hover:border-[#f9a800] hover:bg-[#f9a800]/10 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        + Add Document
+                      </button>
                     </div>
 
-                    <div>
-                      <label className="mb-1.5 block text-[11px] font-medium text-black/60">
-                        Discount (LKR)
-                      </label>
+                    {documentTypes.length === 0 ? (
+                      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-xs text-amber-700">
+                        No active Document Types are available. Create one from Settings → Document Types.
+                      </div>
+                    ) : (
+                      <div className="mt-3 space-y-3">
+                        {documents.map((document, index) => {
+                          const selectedType = documentTypes.find(
+                            (documentType) =>
+                              String(documentType.id) ===
+                              document.documentTypeId
+                          );
 
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={discountAmount}
-                        onChange={(e) =>
-                          setDiscountAmount(e.target.value)
-                        }
-                        placeholder="0.00"
-                        disabled={saving}
-                        className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
-                      />
+                          const documentFinal = Math.max(
+                            0,
+                            (Number(document.baseAmount) || 0) -
+                              (Number(document.discountAmount) || 0)
+                          );
+
+                          return (
+                            <div
+                              key={document.rowId}
+                              className="rounded-xl border border-black/10 bg-[#fafaf9] p-4"
+                            >
+                              <div className="mb-3 flex items-center justify-between gap-3">
+                                <p className="text-xs font-semibold">
+                                  Document {index + 1}
+                                </p>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleRemoveDocument(document.rowId)
+                                  }
+                                  disabled={saving || documents.length <= 1}
+                                  className="text-[11px] font-medium text-red-500 transition hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-30"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+
+                              <div className="grid gap-3 md:grid-cols-3">
+                                <div className="md:col-span-1">
+                                  <label className="mb-1.5 block text-[11px] font-medium text-black/60">
+                                    Document Type *
+                                  </label>
+
+                                  <select
+                                    value={document.documentTypeId}
+                                    onChange={(e) =>
+                                      handleDocumentTypeChange(
+                                        document.rowId,
+                                        e.target.value
+                                      )
+                                    }
+                                    disabled={saving}
+                                    className="w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
+                                  >
+                                    <option value="">
+                                      Select Document Type
+                                    </option>
+
+                                    {documentTypes.map(
+                                      (documentType) => {
+                                        const usedElsewhere = documents.some(
+                                          (item) =>
+                                            item.rowId !== document.rowId &&
+                                            item.documentTypeId ===
+                                              String(documentType.id)
+                                        );
+
+                                        return (
+                                          <option
+                                            key={documentType.id}
+                                            value={documentType.id}
+                                            disabled={usedElsewhere}
+                                          >
+                                            {documentType.name}
+                                            {usedElsewhere ? " (Added)" : ""}
+                                          </option>
+                                        );
+                                      }
+                                    )}
+                                  </select>
+
+                                  {selectedType?.description && (
+                                    <p className="mt-1.5 text-[10px] text-black/35">
+                                      {selectedType.description}
+                                    </p>
+                                  )}
+                                </div>
+
+                                <div>
+                                  <label className="mb-1.5 block text-[11px] font-medium text-black/60">
+                                    Base Price (LKR) *
+                                  </label>
+
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={document.baseAmount}
+                                    onChange={(e) =>
+                                      handleDocumentAmountChange(
+                                        document.rowId,
+                                        "baseAmount",
+                                        e.target.value
+                                      )
+                                    }
+                                    disabled={saving || !document.documentTypeId}
+                                    className="w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#f9a800] disabled:bg-black/[0.03]"
+                                  />
+
+                                  <p className="mt-1.5 text-[10px] text-black/35">
+                                    Auto-filled from the global default price; editing changes this client file only.
+                                  </p>
+                                </div>
+
+                                <div>
+                                  <label className="mb-1.5 block text-[11px] font-medium text-black/60">
+                                    Discount (LKR)
+                                  </label>
+
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={document.discountAmount}
+                                    onChange={(e) =>
+                                      handleDocumentAmountChange(
+                                        document.rowId,
+                                        "discountAmount",
+                                        e.target.value
+                                      )
+                                    }
+                                    disabled={saving}
+                                    placeholder="0.00"
+                                    className="w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="mt-3 flex items-center justify-between rounded-lg border border-black/10 bg-white px-3 py-3">
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-wider text-black/35">
+                                    Document Final Amount
+                                  </p>
+
+                                  <p className="mt-1 text-sm font-semibold">
+                                    LKR {documentFinal.toLocaleString("en-LK", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <div className="mt-3 rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-3">
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-black/35">
+                            Total Base Price
+                          </p>
+                          <p className="mt-1 text-sm font-semibold">
+                            LKR {documents
+                              .reduce(
+                                (sum, document) =>
+                                  sum + (Number(document.baseAmount) || 0),
+                                0
+                              )
+                              .toLocaleString("en-LK", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-black/35">
+                            Total Discount
+                          </p>
+                          <p className="mt-1 text-sm font-semibold">
+                            LKR {documents
+                              .reduce(
+                                (sum, document) =>
+                                  sum + (Number(document.discountAmount) || 0),
+                                0
+                              )
+                              .toLocaleString("en-LK", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                          </p>
+                        </div>
+
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-black/35">
+                            Total Final Amount
+                          </p>
+                          <p className="mt-1 text-base font-semibold">
+                            LKR {documents
+                              .reduce(
+                                (sum, document) =>
+                                  sum +
+                                  Math.max(
+                                    0,
+                                    (Number(document.baseAmount) || 0) -
+                                      (Number(document.discountAmount) || 0)
+                                  ),
+                                0
+                              )
+                              .toLocaleString("en-LK", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
+                ) : (
+                  <div>
+                    <label className="mb-2 block text-xs font-medium">
+                      Service Pricing
+                    </label>
 
-                  <div className="mt-3 rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-3">
-                    <p className="text-[10px] uppercase tracking-wider text-black/35">
-                      Final Amount
-                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1.5 block text-[11px] font-medium text-black/60">
+                          Base Price (LKR)
+                        </label>
 
-                    <p className="mt-1 text-base font-semibold">
-                      LKR {
-                        Math.max(
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={baseAmount}
+                          readOnly
+                          placeholder="0.00"
+                          disabled={saving || !serviceTypeId}
+                          className="w-full rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-2.5 text-sm outline-none focus:border-[#f9a800] disabled:opacity-60"
+                        />
+                        <p className="mt-1.5 text-[10px] text-black/35">
+                          Loaded automatically from the selected Service Type.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="mb-1.5 block text-[11px] font-medium text-black/60">
+                          Discount (LKR)
+                        </label>
+
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={discountAmount}
+                          onChange={(e) =>
+                            setDiscountAmount(e.target.value)
+                          }
+                          placeholder="0.00"
+                          disabled={saving}
+                          className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-3 rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-3">
+                      <p className="text-[10px] uppercase tracking-wider text-black/35">
+                        Final Amount
+                      </p>
+
+                      <p className="mt-1 text-base font-semibold">
+                        LKR {Math.max(
                           0,
                           (Number(baseAmount) || 0) -
                             (Number(discountAmount) || 0)
                         ).toLocaleString("en-LK", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
-                        })
-                      }
-                    </p>
+                        })}
+                      </p>
 
-                    <p className="mt-1 text-[10px] text-black/35">
-                      This price is saved for this workflow instance.
-                    </p>
+                      <p className="mt-1 text-[10px] text-black/35">
+                        This price is saved for this workflow instance.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Description */}
 
@@ -754,7 +1241,14 @@ export default function AddClientFileButton({
                       saving ||
                       loadingData ||
                       !serviceTypeId ||
-                      !fileNumber
+                      !fileNumber ||
+                      (trackingMode === "DOCUMENT_BASED" &&
+                        (documents.length === 0 ||
+                          documents.some(
+                            (document) =>
+                              !document.documentTypeId ||
+                              !document.baseAmount
+                          )))
                     }
                     className="rounded-lg bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
                   >

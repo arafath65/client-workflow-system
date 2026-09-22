@@ -82,6 +82,16 @@ export type WorkflowSubTask = Prisma.WorkflowSubTaskModel
  */
 export type FileWorkflow = Prisma.FileWorkflowModel
 /**
+ * Model DocumentType
+ * 
+ */
+export type DocumentType = Prisma.DocumentTypeModel
+/**
+ * Model FileWorkflowDocument
+ * 
+ */
+export type FileWorkflowDocument = Prisma.FileWorkflowDocumentModel
+/**
  * Model PaymentAllocation
  * 
  */

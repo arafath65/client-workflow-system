@@ -69,7 +69,11 @@ export default function WorkflowSteps({
    * server-rendered data after router.refresh().
    */
   useEffect(() => {
-    setSteps(initialSteps);
+    const timer = window.setTimeout(() => {
+      setSteps(initialSteps);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [initialSteps]);
 
   /* =========================================================

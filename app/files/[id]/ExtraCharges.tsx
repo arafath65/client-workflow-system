@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 
 type Charge = {
   id: number;
@@ -32,7 +32,7 @@ export default function ExtraCharges({
   const [quantity, setQuantity] = useState("1");
   const [unitAmount, setUnitAmount] = useState("");
 
-  const loadCharges = async () => {
+  const loadCharges = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -67,11 +67,15 @@ export default function ExtraCharges({
     } finally {
       setLoading(false);
     }
-  };
+  }, [fileId]);
 
   useEffect(() => {
-    loadCharges();
-  }, [fileId]);
+    const timer = window.setTimeout(() => {
+      void loadCharges();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [loadCharges]);
 
   const resetForm = () => {
     setDescription("");

@@ -8,6 +8,19 @@ type RouteContext = {
   }>;
 };
 
+function isDocumentBasedTask(task: {
+  fileWorkflow: {
+    workflowTemplate: {
+      trackingMode: "STANDARD" | "DOCUMENT_BASED";
+    };
+  };
+}) {
+  return (
+    task.fileWorkflow.workflowTemplate.trackingMode ===
+    "DOCUMENT_BASED"
+  );
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: RouteContext
@@ -27,9 +40,25 @@ export async function PATCH(
       );
     }
 
-    const body = await request.json();
+    let body: unknown;
 
-    const completed = body.completed === true;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid request body.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const completed =
+      typeof body === "object" &&
+      body !== null &&
+      "completed" in body &&
+      (body as { completed?: unknown }).completed === true;
 
     const task = await prisma.workflowTask.findUnique({
       where: {
@@ -37,14 +66,24 @@ export async function PATCH(
       },
       include: {
         workflowStep: true,
+
+        fileWorkflowDocument: true,
+
         fileWorkflow: {
           include: {
-            clientFile: {
+            workflowTemplate: {
               select: {
-                id: true,
-                fileNumber: true,
+                trackingMode: true,
               },
             },
+
+            documents: {
+              select: {
+                id: true,
+                status: true,
+              },
+            },
+
             tasks: {
               include: {
                 workflowStep: true,
@@ -65,6 +104,43 @@ export async function PATCH(
       );
     }
 
+    const documentBased = isDocumentBasedTask(task);
+    const documentId =
+      task.fileWorkflowDocumentId ?? null;
+
+    // --------------------------------------------------
+    // Helper: only tasks belonging to the same chain
+    // --------------------------------------------------
+
+    const isSameTaskChain = (candidate: {
+      id: number;
+      fileWorkflowDocumentId: number | null;
+      status: string;
+      workflowStep: {
+        stepNumber: number;
+      };
+    }) => {
+      if (candidate.id === task.id) {
+        return false;
+      }
+
+      if (candidate.status === "CANCELLED") {
+        return false;
+      }
+
+      if (documentBased) {
+        return (
+          candidate.fileWorkflowDocumentId ===
+          documentId
+        );
+      }
+
+      return (
+        candidate.fileWorkflowDocumentId ===
+        null
+      );
+    };
+
     const now = new Date();
 
     // --------------------------------------------------
@@ -72,7 +148,6 @@ export async function PATCH(
     // --------------------------------------------------
 
     if (completed) {
-      // Only ACTIVE task can normally be completed.
       if (task.status !== "ACTIVE") {
         return NextResponse.json(
           {
@@ -84,27 +159,32 @@ export async function PATCH(
         );
       }
 
-      const nextTask = task.fileWorkflow.tasks
-        .filter(
-          (item) =>
-            item.status !== "CANCELLED" &&
-            item.id !== task.id
-        )
-        .sort(
-          (a, b) =>
-            a.workflowStep.stepNumber -
-            b.workflowStep.stepNumber
-        )
-        .find(
-          (item) =>
-            item.workflowStep.stepNumber >
-            task.workflowStep.stepNumber
-        );
+      let completedDocument = false;
+      let completedWorkflow = false;
+      let completedClientFile = false;
 
       await prisma.$transaction(async (tx) => {
+        // ----------------------------------------------
+        // Complete current task
+        // ----------------------------------------------
+
         await tx.workflowTask.update({
           where: {
             id: task.id,
+          },
+          data: {
+            status: "COMPLETED",
+            completedAt: now,
+          },
+        });
+
+        // ----------------------------------------------
+        // Complete all subtasks under this task
+        // ----------------------------------------------
+
+        await tx.fileWorkflowSubTask.updateMany({
+          where: {
+            workflowTaskId: task.id,
           },
           data: {
             status: "COMPLETED",
@@ -117,14 +197,30 @@ export async function PATCH(
             workflowTaskId: task.id,
             oldStatus: task.status,
             newStatus: "COMPLETED",
-            remarks: "Workflow step completed.",
+            remarks:
+              documentBased && documentId !== null
+                ? "Document workflow step completed."
+                : "Workflow step completed.",
             changedAt: now,
           },
         });
 
-        // ------------------------------------------
-        // Activate next step
-        // ------------------------------------------
+        // ----------------------------------------------
+        // Find next task ONLY in the same chain
+        // ----------------------------------------------
+
+        const nextTask = task.fileWorkflow.tasks
+          .filter(isSameTaskChain)
+          .filter(
+            (item) =>
+              item.workflowStep.stepNumber >
+              task.workflowStep.stepNumber
+          )
+          .sort(
+            (a, b) =>
+              a.workflowStep.stepNumber -
+              b.workflowStep.stepNumber
+          )[0];
 
         if (nextTask) {
           await tx.workflowTask.update({
@@ -138,24 +234,15 @@ export async function PATCH(
             },
           });
 
-          // Complete all subtasks when main step is completed.
-          await tx.fileWorkflowSubTask.updateMany({
-            where: {
-              workflowTaskId: task.id,
-            },
-            data: {
-              status: "COMPLETED",
-              completedAt: now,
-            },
-          });
-
           await tx.taskHistory.create({
             data: {
               workflowTaskId: nextTask.id,
               oldStatus: nextTask.status,
               newStatus: "ACTIVE",
               remarks:
-                "Automatically activated after previous step was completed.",
+                documentBased && documentId !== null
+                  ? "Automatically activated after the previous document step was completed."
+                  : "Automatically activated after previous step was completed.",
               changedAt: now,
             },
           });
@@ -166,6 +253,7 @@ export async function PATCH(
             },
             data: {
               status: "IN_PROGRESS",
+              completedAt: null,
             },
           });
 
@@ -175,70 +263,177 @@ export async function PATCH(
             },
             data: {
               status: "IN_PROGRESS",
-            },
-          });
-        } else {
-          // ----------------------------------------
-          // Last step completed
-          // ----------------------------------------
-
-          await tx.fileWorkflow.update({
-            where: {
-              id: task.fileWorkflow.id,
-            },
-            data: {
-              status: "COMPLETED",
-              completedAt: now,
+              completedAt: null,
             },
           });
 
-          await tx.clientFile.update({
-            where: {
-              id: task.fileWorkflow.clientFileId,
-            },
-            data: {
-              status: "COMPLETED",
-              completedAt: now,
-            },
-          });
+          if (documentBased && documentId !== null) {
+            await tx.fileWorkflowDocument.update({
+              where: {
+                id: documentId,
+              },
+              data: {
+                status: "IN_PROGRESS",
+                completedAt: null,
+              },
+            });
+          }
+
+          return;
         }
+
+        // ----------------------------------------------
+        // Current chain has no next task
+        // ----------------------------------------------
+
+        if (documentBased && documentId !== null) {
+          // --------------------------------------------
+          // Complete this document
+          // --------------------------------------------
+
+          await tx.fileWorkflowDocument.update({
+            where: {
+              id: documentId,
+            },
+            data: {
+              status: "COMPLETED",
+              completedAt: now,
+            },
+          });
+
+          completedDocument = true;
+
+          // --------------------------------------------
+          // Check whether every document is complete
+          // --------------------------------------------
+
+          const refreshedDocuments =
+            await tx.fileWorkflowDocument.findMany({
+              where: {
+                fileWorkflowId:
+                  task.fileWorkflow.id,
+              },
+              select: {
+                id: true,
+                status: true,
+              },
+            });
+
+          const allDocumentsCompleted =
+            refreshedDocuments.length > 0 &&
+            refreshedDocuments.every(
+              (document) =>
+                document.status === "COMPLETED"
+            );
+
+          if (allDocumentsCompleted) {
+            await tx.fileWorkflow.update({
+              where: {
+                id: task.fileWorkflow.id,
+              },
+              data: {
+                status: "COMPLETED",
+                completedAt: now,
+              },
+            });
+
+            completedWorkflow = true;
+
+            await tx.clientFile.update({
+              where: {
+                id: task.fileWorkflow.clientFileId,
+              },
+              data: {
+                status: "COMPLETED",
+                completedAt: now,
+              },
+            });
+
+            completedClientFile = true;
+          } else {
+            await tx.fileWorkflow.update({
+              where: {
+                id: task.fileWorkflow.id,
+              },
+              data: {
+                status: "IN_PROGRESS",
+                completedAt: null,
+              },
+            });
+
+            await tx.clientFile.update({
+              where: {
+                id: task.fileWorkflow.clientFileId,
+              },
+              data: {
+                status: "IN_PROGRESS",
+                completedAt: null,
+              },
+            });
+          }
+
+          return;
+        }
+
+        // ----------------------------------------------
+        // Standard workflow: no next task means the
+        // whole workflow/file is complete.
+        // ----------------------------------------------
+
+        await tx.fileWorkflow.update({
+          where: {
+            id: task.fileWorkflow.id,
+          },
+          data: {
+            status: "COMPLETED",
+            completedAt: now,
+          },
+        });
+
+        completedWorkflow = true;
+
+        await tx.clientFile.update({
+          where: {
+            id: task.fileWorkflow.clientFileId,
+          },
+          data: {
+            status: "COMPLETED",
+            completedAt: now,
+          },
+        });
+
+        completedClientFile = true;
       });
 
-      // --------------------------------------------------
-      // Audit Log: Complete workflow task
-      // --------------------------------------------------
-
       await writeAuditLog({
-        module: "WORKFLOW",
+        module: "FILES",
         action: "COMPLETE_TASK",
         entity: "WORKFLOW_TASK",
         entityId: task.id,
-        description: nextTask
-          ? `Completed workflow step "${task.workflowStep.title}" and activated the next step.`
-          : `Completed final workflow step "${task.workflowStep.title}". The workflow is now completed.`,
+        description:
+          documentBased && documentId !== null
+            ? `Document workflow step ${task.workflowStep.stepNumber} completed for document #${documentId}.`
+            : `Workflow step ${task.workflowStep.stepNumber} completed.`,
         metadata: {
           taskId: task.id,
-          taskTitle: task.workflowStep.title,
-          stepNumber: task.workflowStep.stepNumber,
           fileWorkflowId: task.fileWorkflow.id,
-          clientFileId: task.fileWorkflow.clientFileId,
-          fileNumber: task.fileWorkflow.clientFile.fileNumber,
-          previousStatus: task.status,
-          newStatus: "COMPLETED",
-          nextTaskId: nextTask?.id ?? null,
-          nextTaskTitle:
-            nextTask?.workflowStep.title ?? null,
-          nextTaskStatus: nextTask ? "ACTIVE" : null,
-          workflowStatus: nextTask
-            ? "IN_PROGRESS"
-            : "COMPLETED",
-          completedAt: now.toISOString(),
+          fileWorkflowDocumentId: documentId,
+          trackingMode:
+            task.fileWorkflow.workflowTemplate
+              .trackingMode,
+          completedDocument,
+          completedWorkflow,
+          completedClientFile,
         },
       });
 
       return NextResponse.json({
         success: true,
-        message: "Workflow step completed.",
+        message:
+          "Workflow step completed.",
+        completedDocument,
+        completedWorkflow,
+        completedClientFile,
       });
     }
 
@@ -257,17 +452,9 @@ export async function PATCH(
       );
     }
 
-    const laterTasks = task.fileWorkflow.tasks.filter(
-      (item) =>
-        item.id !== task.id &&
-        item.workflowStep.stepNumber >
-          task.workflowStep.stepNumber &&
-        item.status !== "CANCELLED"
-    );
-
     await prisma.$transaction(async (tx) => {
       // ----------------------------------------------
-      // Current completed task becomes ACTIVE
+      // Current task becomes ACTIVE
       // ----------------------------------------------
 
       await tx.workflowTask.update({
@@ -278,11 +465,15 @@ export async function PATCH(
           status: "ACTIVE",
           completedAt: null,
           startedAt:
-            task.fileWorkflow.startedAt || now,
+            task.fileWorkflow.startedAt ||
+            now,
         },
       });
 
-      // Reset all subtasks when main step is reopened.
+      // ----------------------------------------------
+      // Reset this task's subtasks
+      // ----------------------------------------------
+
       await tx.fileWorkflowSubTask.updateMany({
         where: {
           workflowTaskId: task.id,
@@ -298,14 +489,25 @@ export async function PATCH(
           workflowTaskId: task.id,
           oldStatus: "COMPLETED",
           newStatus: "ACTIVE",
-          remarks: "Workflow step reopened.",
+          remarks:
+            documentBased && documentId !== null
+              ? "Document workflow step reopened."
+              : "Workflow step reopened.",
           changedAt: now,
         },
       });
 
       // ----------------------------------------------
-      // Reset later tasks to PENDING
+      // Reset later tasks ONLY in the same chain
       // ----------------------------------------------
+
+      const laterTasks = task.fileWorkflow.tasks
+        .filter(isSameTaskChain)
+        .filter(
+          (item) =>
+            item.workflowStep.stepNumber >
+            task.workflowStep.stepNumber
+        );
 
       for (const laterTask of laterTasks) {
         if (laterTask.status !== "PENDING") {
@@ -320,17 +522,48 @@ export async function PATCH(
             },
           });
 
+          await tx.fileWorkflowSubTask.updateMany({
+            where: {
+              workflowTaskId:
+                laterTask.id,
+            },
+            data: {
+              status: "PENDING",
+              completedAt: null,
+            },
+          });
+
           await tx.taskHistory.create({
             data: {
-              workflowTaskId: laterTask.id,
-              oldStatus: laterTask.status,
+              workflowTaskId:
+                laterTask.id,
+              oldStatus:
+                laterTask.status,
               newStatus: "PENDING",
               remarks:
-                "Reset because a previous workflow step was reopened.",
+                documentBased && documentId !== null
+                  ? "Reset because a later document step was reopened."
+                  : "Reset because a later workflow step was reopened.",
               changedAt: now,
             },
           });
         }
+      }
+
+      // ----------------------------------------------
+      // Reopen document/workflow/file states
+      // ----------------------------------------------
+
+      if (documentBased && documentId !== null) {
+        await tx.fileWorkflowDocument.update({
+          where: {
+            id: documentId,
+          },
+          data: {
+            status: "IN_PROGRESS",
+            completedAt: null,
+          },
+        });
       }
 
       await tx.fileWorkflow.update({
@@ -354,38 +587,22 @@ export async function PATCH(
       });
     });
 
-    // --------------------------------------------------
-    // Audit Log: Reopen workflow task
-    // --------------------------------------------------
-
     await writeAuditLog({
-      module: "WORKFLOW",
+      module: "FILES",
       action: "REOPEN_TASK",
       entity: "WORKFLOW_TASK",
       entityId: task.id,
-      description: `Reopened workflow step "${task.workflowStep.title}" and reset later workflow steps to pending.`,
+      description:
+        documentBased && documentId !== null
+          ? `Document workflow step ${task.workflowStep.stepNumber} reopened for document #${documentId}.`
+          : `Workflow step ${task.workflowStep.stepNumber} reopened.`,
       metadata: {
         taskId: task.id,
-        taskTitle: task.workflowStep.title,
-        stepNumber: task.workflowStep.stepNumber,
         fileWorkflowId: task.fileWorkflow.id,
-        clientFileId: task.fileWorkflow.clientFileId,
-        fileNumber: task.fileWorkflow.clientFile.fileNumber,
-        previousStatus: "COMPLETED",
-        newStatus: "ACTIVE",
-        resetTasks: laterTasks.map((laterTask) => ({
-          taskId: laterTask.id,
-          taskTitle: laterTask.workflowStep.title,
-          stepNumber: laterTask.workflowStep.stepNumber,
-          previousStatus: laterTask.status,
-          newStatus: "PENDING",
-        })),
-        resetTaskCount: laterTasks.filter(
-          (laterTask) =>
-            laterTask.status !== "PENDING"
-        ).length,
-        workflowStatus: "IN_PROGRESS",
-        reopenedAt: now.toISOString(),
+        fileWorkflowDocumentId: documentId,
+        trackingMode:
+          task.fileWorkflow.workflowTemplate
+            .trackingMode,
       },
     });
 
@@ -403,7 +620,9 @@ export async function PATCH(
       {
         success: false,
         message:
-          "Unable to update workflow task.",
+          error instanceof Error
+            ? error.message
+            : "Unable to update workflow task.",
       },
       { status: 500 }
     );

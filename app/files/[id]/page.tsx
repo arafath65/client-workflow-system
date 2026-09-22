@@ -107,9 +107,24 @@ export default async function FileDetailsPage({
                 id: true,
                 name: true,
                 description: true,
+                trackingMode: true,
                 defaultStaffId: true,
                 defaultStaff: {
                   select: { id: true, name: true },
+                },
+              },
+            },
+
+            documents: {
+              orderBy: {
+                sortOrder: "asc",
+              },
+              include: {
+                documentType: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
                 },
               },
             },
@@ -122,6 +137,13 @@ export default async function FileDetailsPage({
               },
 
               include: {
+                fileWorkflowDocument: {
+                  select: {
+                    id: true,
+                    documentName: true,
+                  },
+                },
+
                 workflowStep: {
                   select: {
                     id: true,
@@ -424,7 +446,156 @@ export default async function FileDetailsPage({
             )}
           </div>
 
-          {workflowTasks.length === 0 ? (
+          {fileWorkflow?.workflowTemplate.trackingMode ===
+          "DOCUMENT_BASED" ? (
+            fileWorkflow.documents.length === 0 ? (
+              <div className="mt-6 flex min-h-32 items-center justify-center rounded-lg border border-dashed border-black/10 bg-[#fafaf9]">
+                <p className="text-sm text-black/40">
+                  No documents found for this document-based workflow.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 space-y-5">
+                {fileWorkflow.documents.map((document, index) => {
+                  const documentTasks = workflowTasks.filter(
+                    (task) =>
+                      task.fileWorkflowDocumentId === document.id
+                  );
+
+                  const completedTaskCount = documentTasks.filter(
+                    (task) => task.status === "COMPLETED"
+                  ).length;
+
+                  const progress =
+                    documentTasks.length > 0
+                      ? Math.round(
+                          (completedTaskCount /
+                            documentTasks.length) *
+                            100
+                        )
+                      : 0;
+
+                  return (
+                    <div
+                      key={document.id}
+                      className="overflow-hidden rounded-xl border border-black/10 bg-[#fcfcfa]"
+                    >
+                      {/* Document Header */}
+                      <div className="border-b border-black/10 bg-white px-5 py-4">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-3">
+                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f9a800] text-[10px] font-bold text-black">
+                                {index + 1}
+                              </span>
+
+                              <div className="min-w-0">
+                                <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-black/30">
+                                  Document {index + 1}
+                                </p>
+
+                                <h3 className="mt-0.5 truncate text-base font-semibold">
+                                  {document.documentName}
+                                </h3>
+
+                                <p className="mt-0.5 text-[10px] text-black/35">
+                                  {document.documentType.name}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                            <span className="rounded-full bg-black/[0.04] px-2.5 py-1 text-[9px] font-medium text-black/50">
+                              LKR {formatMoney(document.finalAmount)}
+                            </span>
+
+                            <DocumentStatusBadge
+                              status={document.status}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Document Progress */}
+                        <div className="mt-4 rounded-lg bg-[#fafaf9] p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="text-[10px] font-semibold uppercase tracking-wider text-black/30">
+                              Progress
+                            </p>
+
+                            <p className="text-[10px] font-medium text-black/45">
+                              {completedTaskCount} of {documentTasks.length} steps completed
+                            </p>
+                          </div>
+
+                          <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/[0.06]">
+                            <div
+                              className="h-full rounded-full bg-[#f9a800] transition-all"
+                              style={{
+                                width: `${progress}%`,
+                              }}
+                            />
+                          </div>
+
+                          <p className="mt-1.5 text-right text-[10px] font-semibold text-black/45">
+                            {progress}%
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Document Workflow Steps */}
+                      <div className="p-4 sm:p-5">
+                        {documentTasks.length === 0 ? (
+                          <div className="rounded-lg border border-dashed border-black/10 bg-white p-5 text-center">
+                            <p className="text-xs text-black/40">
+                              No workflow steps found for this document.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {documentTasks.map((task) => {
+                              const effectiveStepStaff =
+                                task.assignedStaff?.name ||
+                                task.workflowStep.defaultStaff?.name ||
+                                mainResponsibleStaff ||
+                                "Unassigned";
+
+                              return (
+                                <WorkflowTaskRow
+                                  key={task.id}
+                                  taskId={task.id}
+                                  stepNumber={
+                                    task.workflowStep.stepNumber
+                                  }
+                                  title={task.workflowStep.title}
+                                  description={
+                                    task.workflowStep.description
+                                  }
+                                  status={task.status}
+                                  assignedStaffId={
+                                    task.assignedStaff?.id || null
+                                  }
+                                  inheritedStaffName={
+                                    task.workflowStep.defaultStaff?.name ||
+                                    mainResponsibleStaff ||
+                                    "Unassigned"
+                                  }
+                                  subTasks={task.subTasks}
+                                  effectiveStepStaff={
+                                    effectiveStepStaff
+                                  }
+                                />
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          ) : workflowTasks.length === 0 ? (
             <div className="mt-6 flex min-h-32 items-center justify-center rounded-lg border border-dashed border-black/10 bg-[#fafaf9]">
               <p className="text-sm text-black/40">
                 No workflow tasks found.
@@ -443,41 +614,25 @@ export default async function FileDetailsPage({
                   <WorkflowTaskRow
                     key={task.id}
                     taskId={task.id}
-                    stepNumber={
-                      task.workflowStep.stepNumber
-                    }
-                    title={
-                      task.workflowStep.title
-                    }
-                    description={
-                      task.workflowStep.description
-                    }
+                    stepNumber={task.workflowStep.stepNumber}
+                    title={task.workflowStep.title}
+                    description={task.workflowStep.description}
                     status={task.status}
                     assignedStaffId={
-                      task.assignedStaff?.id ||
-                      null
-                    }
-                    assignedStaffName={
-                      task.assignedStaff?.name ||
-                      null
+                      task.assignedStaff?.id || null
                     }
                     inheritedStaffName={
                       task.workflowStep.defaultStaff?.name ||
                       mainResponsibleStaff ||
                       "Unassigned"
                     }
-                    subTasks={
-                      task.subTasks
-                    }
-                    effectiveStepStaff={
-                      effectiveStepStaff
-                    }
+                    subTasks={task.subTasks}
+                    effectiveStepStaff={effectiveStepStaff}
                   />
                 );
               })}
             </div>
-          )}
-        </div>
+          )}        </div>
 
          {/* Service Pricing */}
 <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
@@ -610,12 +765,7 @@ export default async function FileDetailsPage({
 </div>
 
         {/* Payments Placeholder */}
-        <PaymentSummary
-  fileId={clientFile.id}
-  clientName={clientFile.client.name}
-  whatsapp={clientFile.client.whatsapp}
-  fileNumber={clientFile.fileNumber}
-/>
+        <PaymentSummary fileId={clientFile.id} />
       </section>
     </main>
   );
@@ -656,7 +806,6 @@ function WorkflowTaskRow({
   description,
   status,
   assignedStaffId,
-  assignedStaffName,
   inheritedStaffName,
   subTasks,
   effectiveStepStaff,
@@ -672,28 +821,27 @@ function WorkflowTaskRow({
     | "COMPLETED"
     | "CANCELLED";
   assignedStaffId: number | null;
-  assignedStaffName: string | null;
   inheritedStaffName: string;
   subTasks: {
-  id: number;
-  status: string; // Add this
-  assignedStaffId: number | null;
-  assignedStaff: {
     id: number;
-    name: string;
-  } | null;
-  workflowSubTask: {
-    id: number;
-    subTaskNumber: number;
-    title: string;
-    description: string | null;
-    defaultStaffId: number | null;
-    defaultStaff: {
+    status: string;
+    assignedStaffId: number | null;
+    assignedStaff: {
       id: number;
       name: string;
     } | null;
-  };
-}[];
+    workflowSubTask: {
+      id: number;
+      subTaskNumber: number;
+      title: string;
+      description: string | null;
+      defaultStaffId: number | null;
+      defaultStaff: {
+        id: number;
+        name: string;
+      } | null;
+    };
+  }[];
   effectiveStepStaff: string;
 }) {
   const isActive = status === "ACTIVE";
@@ -701,95 +849,60 @@ function WorkflowTaskRow({
 
   return (
     <div
-      className={`rounded-lg border p-4 transition ${
+      className={`rounded-lg border p-3 transition ${
         isActive
           ? "border-[#f9a800]/50 bg-[#fffaf0]"
           : "border-black/10 bg-white"
       }`}
     >
-      <div className="flex items-start gap-4">
-        {/* Checkbox */}
-        <WorkflowTaskCheckbox
-          taskId={taskId}
-          status={status}
-        />
-
-        {/* Step Number */}
-        <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-            isCompleted
-              ? "bg-black text-[#f9a800]"
-              : isActive
-              ? "bg-[#f9a800] text-black"
-              : "bg-black/[0.05] text-black/45"
-          }`}
-        >
-          {isCompleted ? "✓" : stepNumber}
-        </div>
-
-        {/* Content */}
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="text-sm font-semibold">
-                {title}
-              </h3>
-
-              {description && (
-                <p className="mt-1 text-xs leading-5 text-black/40">
-                  {description}
-                </p>
-              )}
-            </div>
-
-            <TaskStatusBadge status={status} />
-          </div>
-
-          {/* Step Staff Assignment */}
-          <StepStaffAssignment
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] sm:items-start sm:gap-5">
+        {/* Step information */}
+        <div className="flex min-w-0 items-start gap-3">
+          <WorkflowTaskCheckbox
             taskId={taskId}
-            assignedStaffId={
-              assignedStaffId
-            }
-            inheritedStaffName={
-              inheritedStaffName
-            }
+            status={status}
           />
 
-          {/* Current Step Assignment */}
-          <div className="mt-2">
-            {assignedStaffName ? (
-              <p className="text-[9px] text-black/30">
-                This step is specifically
-                assigned to{" "}
-                <span className="font-medium text-black/45">
-                  {assignedStaffName}
-                </span>
-                .
-              </p>
-            ) : (
-              <p className="text-[9px] text-black/30">
-                This step inherits{" "}
-                <span className="font-medium text-black/45">
-                  {effectiveStepStaff}
-                </span>
-                .
-              </p>
-            )}
+          <div
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+              isCompleted
+                ? "bg-black text-[#f9a800]"
+                : isActive
+                  ? "bg-[#f9a800] text-black"
+                  : "bg-black/[0.05] text-black/45"
+            }`}
+          >
+            {isCompleted ? "✓" : stepNumber}
           </div>
 
-          {/* Subtasks */}
-          {subTasks.length > 0 && (
-            <div className="mt-4 border-l-2 border-black/5 pl-4">
-              <div className="mb-2">
-                <p className="text-[9px] font-semibold uppercase tracking-wider text-black/25">
-                  Sub Tasks
-                </p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold leading-5">
+                  {title}
+                </h3>
+
+                {description && (
+                  <p className="mt-0.5 text-[10px] leading-4 text-black/40">
+                    {description}
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-2">
-                {subTasks.map(
-                  (subTask) => {
+              <div className="shrink-0">
+                <TaskStatusBadge status={status} />
+              </div>
+            </div>
+
+            {/* Subtasks */}
+            {subTasks.length > 0 && (
+              <div className="mt-3 border-l-2 border-black/5 pl-3">
+                <p className="mb-1.5 text-[8px] font-semibold uppercase tracking-wider text-black/25">
+                  Sub Tasks
+                </p>
+
+                <div className="space-y-1.5">
+                  {subTasks.map((subTask) => {
                     const effectiveSubTaskStaff =
                       subTask.assignedStaff?.name ||
                       subTask.workflowSubTask.defaultStaff?.name ||
@@ -798,71 +911,80 @@ function WorkflowTaskRow({
                     return (
                       <div
                         key={subTask.id}
-                        className="rounded-lg bg-[#fafaf9] px-3 py-3"
+                        className="rounded-md bg-[#fafaf9] px-2.5 py-2"
                       >
-                        <div className="flex items-start gap-3">
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-black/[0.04] text-[9px] font-medium text-black/40">
-                            {
-                              subTask
-                                .workflowSubTask
-                                .subTaskNumber
-                            }
+                        <div className="flex items-start gap-2.5">
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-black/[0.04] text-[8px] font-medium text-black/40">
+                            {subTask.workflowSubTask.subTaskNumber}
                           </span>
 
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-medium text-black/65">
-                              {
-                                subTask
-                                  .workflowSubTask
-                                  .title
-                              }
+                            <p className="text-[10px] font-medium text-black/65">
+                              {subTask.workflowSubTask.title}
                             </p>
 
-                            {subTask
-                              .workflowSubTask
-                              .description && (
-                              <p className="mt-1 text-[9px] leading-4 text-black/35">
-                                {
-                                  subTask
-                                    .workflowSubTask
-                                    .description
-                                }
+                            {subTask.workflowSubTask.description && (
+                              <p className="mt-0.5 text-[8px] leading-3.5 text-black/35">
+                                {subTask.workflowSubTask.description}
                               </p>
                             )}
 
                             <WorkflowSubTaskStaffAssignment
-  subTaskId={subTask.id}
-  assignedStaffId={subTask.assignedStaffId}
-  inheritedStaffName={effectiveSubTaskStaff}
-  status={subTask.status}
-/>
-
-                            <div className="mt-1">
-                              {subTask.assignedStaff ? (
-                                <p className="text-[8px] text-black/25">
-                                  This subtask has
-                                  its own staff
-                                  override.
-                                </p>
-                              ) : (
-                                <p className="text-[8px] text-black/25">
-                                  Inherits from its
-                                  subtask default or step.
-                                </p>
-                              )}
-                            </div>
+                              subTaskId={subTask.id}
+                              assignedStaffId={subTask.assignedStaffId}
+                              inheritedStaffName={effectiveSubTaskStaff}
+                              status={subTask.status}
+                            />
                           </div>
                         </div>
                       </div>
                     );
-                  }
-                )}
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        </div>
+
+        {/* Step staff assignment - use the otherwise empty right side */}
+        <div className="sm:border-l sm:border-black/10 sm:pl-4">
+          <StepStaffAssignment
+            taskId={taskId}
+            assignedStaffId={assignedStaffId}
+            inheritedStaffName={inheritedStaffName}
+            compact
+          />
         </div>
       </div>
     </div>
+  );
+}
+
+
+/* --------------------------------------------------
+   Document Status Badge
+-------------------------------------------------- */
+
+function DocumentStatusBadge({
+  status,
+}: {
+  status: string;
+}) {
+  const statusClass =
+    status === "IN_PROGRESS"
+      ? "bg-[#f9a800]/15 text-black"
+      : status === "COMPLETED"
+      ? "bg-black text-white"
+      : status === "CANCELLED"
+      ? "bg-black/[0.08] text-black/45"
+      : "bg-black/[0.04] text-black/50";
+
+  return (
+    <span
+      className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[9px] font-semibold ${statusClass}`}
+    >
+      {formatStatus(status)}
+    </span>
   );
 }
 
