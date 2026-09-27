@@ -271,9 +271,21 @@ export default async function ClientDetailsPage({
               </div>
             </div>
 
-            <AddClientFileButton
-              clientId={client.id}
-            />
+            {client.status ? (
+  <AddClientFileButton
+    clientId={client.id}
+  />
+) : (
+  <div className="rounded-lg border border-black/10 bg-black/[0.03] px-4 py-3 text-right">
+    <p className="text-xs font-semibold text-black/50">
+      Client Inactive
+    </p>
+
+    <p className="mt-1 text-[10px] text-black/35">
+      Activate this client to create a new file.
+    </p>
+  </div>
+)}
           </div>
         </div>
 

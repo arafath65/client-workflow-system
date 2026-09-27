@@ -5,25 +5,77 @@ type NavigationProps = {
 };
 
 const navigation = [
-  { label: "Dashboard", href: "/dashboard", key: "dashboard" },
-  { label: "Clients", href: "/clients", key: "clients" },
-  { label: "Files", href: "/files", key: "files" },
-  { label: "Workflows", href: "/workflows", key: "workflows" },
-  { label: "Staff", href: "/staff", key: "staff" },
-  { label: "Staff Work", href: "/staff-work", key: "staff-work" },
-  { label: "Third Parties", href: "/third-parties", key: "third-parties" },
-  { label: "Calendar", href: "/calendar", key: "calendar" },
-  { label: "Finance", href: "/payments", key: "finance" },
-  { label: "Audit Logs", href: "/audit-logs", key: "audit-logs" },
-  { label: "Settings", href: "/settings", key: "settings" },
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    key: "dashboard",
+  },
+  {
+    label: "Clients",
+    href: "/clients",
+    key: "clients",
+  },
+  {
+    label: "Files",
+    href: "/files",
+    key: "files",
+  },
+  {
+    label: "Workflows",
+    href: "/workflows",
+    key: "workflows",
+  },
+  {
+    label: "Staff",
+    href: "/staff",
+    key: "staff",
+  },
+  {
+    label: "Staff Work",
+    href: "/staff-work",
+    key: "staff-work",
+  },
+  {
+    label: "Third Parties",
+    href: "/third-parties",
+    key: "third-parties",
+  },
+  {
+    label: "Calendar",
+    href: "/calendar",
+    key: "calendar",
+  },
+  {
+    label: "Finance",
+    href: "/payments",
+    key: "finance",
+  },
+  {
+    label: "Audit Logs",
+    href: "/audit-logs",
+    key: "audit-logs",
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    key: "settings",
+  },
+  {
+    label: "Document Types",
+    href: "/settings/document-types",
+    key: "document-types",
+  },
 ];
 
-export default function Navigation({ currentPage }: NavigationProps) {
+export default function Navigation({
+  currentPage,
+}: NavigationProps) {
   return (
     <nav className="border-b border-black/10 bg-white">
       <div className="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-6">
         {navigation.map((item) => {
-          const active = currentPage === item.key;
+          const active =
+            currentPage === item.key;
 
           return (
             <Link

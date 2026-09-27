@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type PaymentDashboardFiltersProps = {
@@ -16,6 +16,8 @@ type PaymentDashboardFiltersProps = {
   lastTwelveMonthsEnd: string;
   selectedRangeLabel: string;
 };
+
+type PresetName = "thisMonth" | "lastMonth" | "lastTwelveMonths";
 
 export default function PaymentDashboardFilters({
   from,
@@ -33,8 +35,15 @@ export default function PaymentDashboardFilters({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchTimer = useRef<number | null>(null);
 
-  const [searchValue, setSearchValue] = useState(search);
+  useEffect(() => {
+    return () => {
+      if (searchTimer.current !== null) {
+        window.clearTimeout(searchTimer.current);
+      }
+    };
+  }, []);
 
   const replaceQuery = (changes: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -52,28 +61,11 @@ export default function PaymentDashboardFilters({
 
     if (nextQuery === currentQuery) return;
 
-    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname);
+    router.replace(
+      nextQuery ? `${pathname}?${nextQuery}` : pathname,
+      { scroll: false }
+    );
   };
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setSearchValue(search);
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, [search]);
-
-  useEffect(() => {
-    const currentUrlSearch = searchParams.get("search") ?? "";
-
-    if (searchValue === currentUrlSearch) return;
-
-    const timer = window.setTimeout(() => {
-      replaceQuery({ search: searchValue.trim() || null });
-    }, 350);
-
-    return () => window.clearTimeout(timer);
-  }, [searchValue, searchParams]);
 
   const isThisMonth =
     from === currentMonthStart && to === currentMonthEnd;
@@ -84,17 +76,32 @@ export default function PaymentDashboardFilters({
   const isLastTwelveMonths =
     from === lastTwelveMonthsStart && to === lastTwelveMonthsEnd;
 
-  const presetClass = (active: boolean) =>
-    `rounded-full border px-3 py-1.5 text-[10px] font-medium transition ${
+  const activePreset: PresetName | null =
+    isThisMonth
+      ? "thisMonth"
+      : isLastMonth
+        ? "lastMonth"
+        : isLastTwelveMonths
+          ? "lastTwelveMonths"
+          : null;
+
+  const presetClass = (preset: PresetName) => {
+    const active = activePreset === preset;
+
+    return `rounded-full border px-3 py-1.5 text-[10px] font-medium transition ${
       active
-        ? "border-[#f9a800] bg-[#fff4d9] text-black"
+        ? "border-[#f9a800] bg-[#f9a800] text-black shadow-sm"
         : "border-black/10 bg-white text-black/55 hover:border-[#f9a800]/40 hover:bg-[#fffaf0] hover:text-black"
     }`;
+  };
 
   const selectClass =
     "h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10";
 
-  const applyPreset = (presetFrom: string, presetTo: string) => {
+  const applyPreset = (
+    presetFrom: string,
+    presetTo: string
+  ) => {
     replaceQuery({
       from: presetFrom,
       to: presetTo,
@@ -102,18 +109,57 @@ export default function PaymentDashboardFilters({
     });
   };
 
+  const handleManualDateChange = (key: "from" | "to", value: string) => {
+    replaceQuery({ [key]: value });
+  };
+
+  const handleStatusChange = (value: string) => {
+    replaceQuery({
+      status:
+        value === "CLEARED"
+          ? "CLEARED"
+          : value === "REFUNDED"
+            ? "REFUNDED"
+            : value === "CANCELLED"
+              ? "CANCELLED"
+              : "ALL",
+    });
+  };
+
+  const handleSearchChange = (value: string) => {
+    if (searchTimer.current !== null) {
+      window.clearTimeout(searchTimer.current);
+    }
+
+    searchTimer.current = window.setTimeout(() => {
+      replaceQuery({ search: value.trim() || null });
+    }, 350);
+  };
+
   const handleReset = () => {
+    if (searchTimer.current !== null) {
+      window.clearTimeout(searchTimer.current);
+      searchTimer.current = null;
+    }
+
     replaceQuery({
       from: currentMonthStart,
       to: currentMonthEnd,
       status: "ALL",
       search: null,
     });
-    setSearchValue("");
+
+    const input = document.getElementById(
+      "payments-search"
+    ) as HTMLInputElement | null;
+
+    if (input) {
+      input.value = "";
+    }
   };
 
   return (
-    <div className="mt-8 rounded-xl border border-black/10 bg-white p-5 shadow-sm">
+    <div className="mt-8 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-end gap-4">
         <div>
           <label
@@ -126,7 +172,7 @@ export default function PaymentDashboardFilters({
             id="payments-from"
             type="date"
             value={from}
-            onChange={(e) => replaceQuery({ from: e.target.value })}
+            onChange={(e) => handleManualDateChange("from", e.target.value)}
             className={selectClass}
           />
         </div>
@@ -142,7 +188,7 @@ export default function PaymentDashboardFilters({
             id="payments-to"
             type="date"
             value={to}
-            onChange={(e) => replaceQuery({ to: e.target.value })}
+            onChange={(e) => handleManualDateChange("to", e.target.value)}
             className={selectClass}
           />
         </div>
@@ -157,18 +203,7 @@ export default function PaymentDashboardFilters({
           <select
             id="payments-status"
             value={status}
-            onChange={(e) =>
-              replaceQuery({
-                status:
-                  e.target.value === "CLEARED"
-                    ? "CLEARED"
-                    : e.target.value === "REFUNDED"
-                      ? "REFUNDED"
-                      : e.target.value === "CANCELLED"
-                        ? "CANCELLED"
-                        : "ALL",
-              })
-            }
+            onChange={(e) => handleStatusChange(e.target.value)}
             className={selectClass}
           >
             <option value="ALL">All</option>
@@ -188,8 +223,8 @@ export default function PaymentDashboardFilters({
           <input
             id="payments-search"
             type="text"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            defaultValue={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Client, file number, service or reference..."
             className={selectClass}
           />
@@ -204,7 +239,7 @@ export default function PaymentDashboardFilters({
         <button
           type="button"
           onClick={() => applyPreset(currentMonthStart, currentMonthEnd)}
-          className={presetClass(isThisMonth)}
+          className={presetClass("thisMonth")}
         >
           This Month
         </button>
@@ -212,7 +247,7 @@ export default function PaymentDashboardFilters({
         <button
           type="button"
           onClick={() => applyPreset(lastMonthStart, lastMonthEnd)}
-          className={presetClass(isLastMonth)}
+          className={presetClass("lastMonth")}
         >
           Last Month
         </button>
@@ -222,7 +257,7 @@ export default function PaymentDashboardFilters({
           onClick={() =>
             applyPreset(lastTwelveMonthsStart, lastTwelveMonthsEnd)
           }
-          className={presetClass(isLastTwelveMonths)}
+          className={presetClass("lastTwelveMonths")}
         >
           Last 12 Months
         </button>

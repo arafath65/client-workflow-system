@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
 import Navigation from "../components/Navigation";
 import LogoutButton from "../dashboard/LogoutButton";
 import { prisma } from "@/lib/prisma";
 import ExpenseManager from "./ExpenseManager";
+import FinanceQuickRange from "./FinanceQuickRange";
 
 type SearchParams = Record<
   string,
@@ -18,20 +20,16 @@ type MonthlyPoint = {
   amount: number;
 };
 
-type SourcePoint = {
-  label: string;
-  clientCount: number;
-  sourceId: number | null;
-};
-
-type ClientSummaryRow = {
+type ReceivableRow = {
+  fileId: number;
   clientId: number;
+  fileNumber: string;
+  title: string;
   clientName: string;
-  fileCount: number;
   billed: number;
-  received: number;
-  refunded: number;
+  paid: number;
   due: number;
+  lastPaymentAt: string | null;
 };
 
 export default async function PaymentsPage({
@@ -78,6 +76,19 @@ export default async function PaymentsPage({
     Number(nowColombo.year),
     Number(nowColombo.month)
   );
+
+  const lastMonth = getPreviousMonth(
+    Number(nowColombo.year),
+    Number(nowColombo.month)
+  );
+  const lastMonthStart = `${lastMonth.year}-${pad2(lastMonth.month)}-01`;
+  const lastMonthEnd = getLastDayOfMonth(
+    lastMonth.year,
+    lastMonth.month
+  );
+
+  const lastTwelveMonthsStart = getMonthStartYearsAgo(1);
+  const lastTwelveMonthsEnd = nowColombo.date;
 
   const rawFrom = getParam(rawParams.from);
   const rawTo = getParam(rawParams.to);
@@ -149,6 +160,7 @@ export default async function PaymentsPage({
         select: {
           amount: true,
           status: true,
+          paidAt: true,
         },
       },
     },
@@ -322,71 +334,10 @@ export default async function PaymentsPage({
   });
 
   // --------------------------------------------------
-  // All-time source data
-  // Direct is always first. Then third parties in the
-  // order they were created.
-  // A client is counted once per source. If a client has
-  // different files tied to different sources, that client
-  // can therefore appear in more than one source.
-  // --------------------------------------------------
-  const [thirdParties, allSourceFiles] = await Promise.all([
-    prisma.thirdParty.findMany({
-      select: {
-        id: true,
-        name: true,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    }),
-
-    prisma.clientFile.findMany({
-      select: {
-        clientId: true,
-        thirdPartyId: true,
-      },
-    }),
-  ]);
-
-  const directClients = new Set<number>();
-  const thirdPartyClients = new Map<number, Set<number>>();
-
-  for (const file of allSourceFiles) {
-    if (file.thirdPartyId == null) {
-      directClients.add(file.clientId);
-      continue;
-    }
-
-    let set = thirdPartyClients.get(file.thirdPartyId);
-
-    if (!set) {
-      set = new Set<number>();
-      thirdPartyClients.set(file.thirdPartyId, set);
-    }
-
-    set.add(file.clientId);
-  }
-
-  const sourcePoints: SourcePoint[] = [
-    {
-      label: "Direct",
-      clientCount: directClients.size,
-      sourceId: null,
-    },
-    ...thirdParties.map((thirdParty) => ({
-      label: thirdParty.name,
-      clientCount: thirdPartyClients.get(thirdParty.id)?.size ?? 0,
-      sourceId: thirdParty.id,
-    })),
-  ];
-
-  // --------------------------------------------------
   // Financial totals
   // --------------------------------------------------
   let totalBilled = 0;
   let totalDue = 0;
-
-  const clientSummaryMap = new Map<number, ClientSummaryRow>();
 
   for (const file of selectedFiles) {
     const workflowTotal = file.fileWorkflows.reduce(
@@ -405,11 +356,7 @@ export default async function PaymentsPage({
         .filter((payment) => payment.status === "CLEARED")
         .reduce((sum, payment) => sum + Number(payment.amount), 0)
     );
-    const refunded = roundMoney(
-      file.payments
-        .filter((payment) => payment.status === "REFUNDED")
-        .reduce((sum, payment) => sum + Number(payment.amount), 0)
-    );
+
     const due =
       file.status === "CANCELLED"
         ? 0
@@ -417,42 +364,16 @@ export default async function PaymentsPage({
 
     totalBilled += billed;
     totalDue += due;
-    const existing = clientSummaryMap.get(file.clientId);
-
-    if (!existing) {
-      clientSummaryMap.set(file.clientId, {
-        clientId: file.client.id,
-        clientName: file.client.name,
-        fileCount: 1,
-        billed,
-        received,
-        refunded,
-        due,
-      });
-    } else {
-      existing.fileCount += 1;
-      existing.billed = roundMoney(existing.billed + billed);
-      existing.received = roundMoney(existing.received + received);
-      existing.refunded = roundMoney(existing.refunded + refunded);
-      existing.due = roundMoney(existing.due + due);
-    }
   }
 
   totalBilled = roundMoney(totalBilled);
   totalDue = roundMoney(totalDue);
 
-  // Gross income = all payments that were actually received.
-  // A refunded payment was received first, so it remains part of
-  // gross income and is deducted separately below.
   const totalIncome = roundMoney(
     periodClearedPayments.reduce(
       (sum, payment) => sum + Number(payment.amount),
       0
-    ) +
-      periodRefundedPayments.reduce(
-        (sum, payment) => sum + Number(payment.amount),
-        0
-      )
+    )
   );
 
   const totalRefunded = roundMoney(
@@ -469,20 +390,70 @@ export default async function PaymentsPage({
     )
   );
 
-  const netIncome = roundMoney(
-    totalIncome - totalRefunded
-  );
+  const netIncome = roundMoney(totalIncome - totalRefunded);
+  const totalProfit = roundMoney(netIncome - totalExpenses);
 
-  const totalProfit = roundMoney(
-    netIncome - totalExpenses
-  );
+  const receivables: ReceivableRow[] = selectedFiles
+    .flatMap((file) => {
+      const workflowTotal = file.fileWorkflows.reduce(
+        (sum, workflow) => sum + Number(workflow.finalAmount),
+        0
+      );
 
-  const clientSummary = Array.from(clientSummaryMap.values()).sort(
-    (a, b) => b.due - a.due || a.clientName.localeCompare(b.clientName)
-  );
+      const extraChargeTotal = file.charges.reduce(
+        (sum, charge) => sum + Number(charge.totalAmount),
+        0
+      );
+
+      const billed = roundMoney(workflowTotal + extraChargeTotal);
+      const paid = roundMoney(
+        file.payments
+          .filter((payment) => payment.status === "CLEARED")
+          .reduce((sum, payment) => sum + Number(payment.amount), 0)
+      );
+
+      const due =
+        file.status === "CANCELLED"
+          ? 0
+          : roundMoney(Math.max(billed - paid, 0));
+
+      const clearedPayments = file.payments.filter(
+        (payment) => payment.status === "CLEARED"
+      );
+
+      const lastPaymentAt =
+        clearedPayments.length > 0
+          ? clearedPayments.reduce(
+              (latest, payment) =>
+                payment.paidAt > latest ? payment.paidAt : latest,
+              clearedPayments[0].paidAt
+            )
+          : null;
+
+      if (due <= 0) {
+        return [];
+      }
+
+      return [
+        {
+          fileId: file.id,
+          clientId: file.client.id,
+          fileNumber: file.fileNumber,
+          title: file.title,
+          clientName: file.client.name,
+          billed,
+          paid,
+          due,
+          lastPaymentAt: lastPaymentAt?.toISOString() ?? null,
+        },
+      ];
+    })
+    .sort(
+      (a, b) => b.due - a.due || a.clientName.localeCompare(b.clientName)
+    );
 
   const monthlyGrowth = buildMonthlySeries(
-    [...periodClearedPayments, ...periodRefundedPayments],
+    periodClearedPayments,
     normalizedRange.from,
     normalizedRange.to
   );
@@ -492,59 +463,36 @@ export default async function PaymentsPage({
     normalizedRange.to
   );
 
-  // --------------------------------------------------
-  // Preset links
-  // --------------------------------------------------
-  const thisMonthQuery = buildQuery({
-    from: currentMonthStart,
-    to: currentMonthEnd,
-    status,
-    search,
-  });
-
-  const lastMonth = getPreviousMonth(Number(nowColombo.year), Number(nowColombo.month));
-  const lastMonthStart = `${lastMonth.year}-${pad2(lastMonth.month)}-01`;
-  const lastMonthEnd = getLastDayOfMonth(lastMonth.year, lastMonth.month);
-
-  const lastMonthQuery = buildQuery({
-    from: lastMonthStart,
-    to: lastMonthEnd,
-    status,
-    search,
-  });
-
-  const lastTwelveMonthsStart = getMonthStartYearsAgo(1);
-  const lastTwelveMonthsQuery = buildQuery({
-    from: lastTwelveMonthsStart,
-    to: nowColombo.date,
-    status,
-    search,
-  });
+  const outstandingCount = receivables.length;
+  const selectedFileCount = selectedFiles.length;
+  const transactionCount = historyPayments.length;
+  const expenseCount = periodExpenses.length;
 
   return (
-    <main className="min-h-screen bg-[#f6f6f4] text-[#171717]">
-      {/* Header */}
+    <main className="min-h-screen bg-[#f4f4f1] text-[#171717]">
       <header className="border-b border-black/10 bg-white">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <div className="mx-auto flex h-16 max-w-[1480px] items-center justify-between px-5 sm:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black">
-              <span className="text-xs font-bold text-[#f9a800]">A&I</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black">
+              <span className="text-[11px] font-extrabold tracking-tight text-[#f9a800]">
+                A&I
+              </span>
             </div>
-
             <div>
-              <p className="text-sm font-semibold">A&I Global</p>
-              <p className="text-[10px] text-black/40">
+              <p className="text-sm font-semibold leading-none">A&I Global</p>
+              <p className="mt-1 text-[10px] text-black/40">
                 Client Workflow System
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden text-right sm:block">
-              <p className="text-xs text-black/40">Logged in as</p>
-              <p className="text-sm font-medium">{user.username}</p>
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right md:block">
+              <p className="text-[10px] uppercase tracking-wider text-black/35">
+                Signed in as
+              </p>
+              <p className="text-xs font-semibold">{user.username}</p>
             </div>
-
             <LogoutButton />
           </div>
         </div>
@@ -552,288 +500,305 @@ export default async function PaymentsPage({
 
       <Navigation currentPage="finance" />
 
-      <section className="mx-auto max-w-7xl px-6 py-8">
-        {/* Heading */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f9a800]">
-            Finance
-          </p>
+      <section className="mx-auto max-w-[1480px] px-5 py-6 sm:px-8 sm:py-8">
+        {/* Hero */}
+        <div className="overflow-hidden rounded-2xl bg-black shadow-[0_18px_55px_rgba(0,0,0,0.09)]">
+          <div className="relative px-6 py-7 sm:px-8 sm:py-8">
+            <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-[#f9a800]/10 blur-3xl" />
+            <div className="absolute bottom-0 left-1/3 h-24 w-24 rounded-full bg-white/[0.04] blur-2xl" />
 
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-            Finance
-          </h1>
+            <div className="relative flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#f9a800]" />
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#f9a800]">
+                    Finance dashboard
+                  </p>
+                </div>
+                <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                  Financial Overview
+                </h1>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-white/55">
+                  Monitor revenue, collections, outstanding balances, refunds,
+                  expenses and profit for the selected period.
+                </p>
+              </div>
 
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-black/50">
-            Track income, refunds, expenses, outstanding balances and profit
-            from one financial workspace.
-          </p>
+              <div className="shrink-0 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-left lg:text-right">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-white/35">
+                  Selected period
+                </p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  {selectedRangeLabel}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
         <form
           method="get"
-          className="mt-8 rounded-xl border border-black/10 bg-white p-5 shadow-sm"
+          className="relative z-10 -mt-5 rounded-2xl border border-black/10 bg-white p-4 shadow-[0_14px_40px_rgba(0,0,0,0.06)] sm:p-5"
         >
-          <div className="flex flex-wrap items-end gap-4">
-            <div>
-              <label
-                htmlFor="from"
-                className="mb-1.5 block text-xs font-medium text-black/50"
-              >
-                From
-              </label>
+          <div className="grid gap-3 md:grid-cols-[1fr_1fr_1.2fr_2fr_auto]">
+            <FilterField label="From">
               <input
-                id="from"
                 name="from"
                 type="date"
                 defaultValue={normalizedRange.from}
-                className="h-10 rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
+                className="h-10 w-full rounded-xl border border-black/10 bg-[#fafaf8] px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/15"
               />
-            </div>
+            </FilterField>
 
-            <div>
-              <label
-                htmlFor="to"
-                className="mb-1.5 block text-xs font-medium text-black/50"
-              >
-                To
-              </label>
+            <FilterField label="To">
               <input
-                id="to"
                 name="to"
                 type="date"
                 defaultValue={normalizedRange.to}
-                className="h-10 rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
+                className="h-10 w-full rounded-xl border border-black/10 bg-[#fafaf8] px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/15"
               />
-            </div>
+            </FilterField>
 
-            <div className="min-w-44">
-              <label
-                htmlFor="status"
-                className="mb-1.5 block text-xs font-medium text-black/50"
-              >
-                Payment History
-              </label>
+            <FilterField label="Payment status">
               <select
-                id="status"
                 name="status"
                 defaultValue={status}
-                className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
+                className="h-10 w-full rounded-xl border border-black/10 bg-[#fafaf8] px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/15"
               >
-                <option value="ALL">All</option>
+                <option value="ALL">All transactions</option>
                 <option value="CLEARED">Cleared</option>
                 <option value="REFUNDED">Refunded</option>
                 <option value="CANCELLED">Cancelled</option>
               </select>
-            </div>
+            </FilterField>
 
-            <div className="min-w-56 flex-1">
-              <label
-                htmlFor="search"
-                className="mb-1.5 block text-xs font-medium text-black/50"
-              >
-                Search
-              </label>
+            <FilterField label="Search">
               <input
-                id="search"
                 name="search"
                 type="text"
                 defaultValue={search}
                 placeholder="Client, file number, service or reference..."
-                className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
+                className="h-10 w-full rounded-xl border border-black/10 bg-[#fafaf8] px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/15"
               />
-            </div>
+            </FilterField>
 
             <button
               type="submit"
-              className="h-10 rounded-lg bg-black px-5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black"
+              className="h-10 self-end rounded-xl bg-[#f9a800] px-5 text-xs font-bold text-black transition hover:bg-black hover:text-white"
             >
               Apply
             </button>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="mr-1 text-[10px] font-semibold uppercase tracking-wider text-black/30">
-              Presets
-            </span>
-
-            <Link
-              href={`?${thisMonthQuery}`}
-              className="rounded-full border border-black/10 px-3 py-1.5 text-[10px] font-medium text-black/55 transition hover:border-[#f9a800]/40 hover:bg-[#fffaf0] hover:text-black"
-            >
-              This Month
-            </Link>
-
-            <Link
-              href={`?${lastMonthQuery}`}
-              className="rounded-full border border-black/10 px-3 py-1.5 text-[10px] font-medium text-black/55 transition hover:border-[#f9a800]/40 hover:bg-[#fffaf0] hover:text-black"
-            >
-              Last Month
-            </Link>
-
-            <Link
-              href={`?${lastTwelveMonthsQuery}`}
-              className="rounded-full border border-black/10 px-3 py-1.5 text-[10px] font-medium text-black/55 transition hover:border-[#f9a800]/40 hover:bg-[#fffaf0] hover:text-black"
-            >
-              Last 12 Months
-            </Link>
-
-            <span className="ml-auto text-[10px] text-black/35">
-              Showing {selectedRangeLabel}
-            </span>
-          </div>
+          <FinanceQuickRange
+            currentMonthStart={currentMonthStart}
+            currentMonthEnd={currentMonthEnd}
+            lastMonthStart={lastMonthStart}
+            lastMonthEnd={lastMonthEnd}
+            lastTwelveMonthsStart={lastTwelveMonthsStart}
+            lastTwelveMonthsEnd={lastTwelveMonthsEnd}
+          />
         </form>
 
-        {/* KPI Cards */}
+        {/* KPI row */}
         <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          <FinanceCard
-            title="Total Income"
+          <MetricCard
+            eyebrow="Billed"
+            title="Total billed"
+            value={formatLkr(totalBilled)}
+            subtitle={`${selectedFileCount} file${selectedFileCount === 1 ? "" : "s"} opened in range`}
+            tone="neutral"
+          />
+          <MetricCard
+            eyebrow="Received"
+            title="Money received"
             value={formatLkr(totalIncome)}
-            description="Cleared payments received in range"
+            subtitle={`${periodClearedPayments.length} cleared transaction${periodClearedPayments.length === 1 ? "" : "s"}`}
+            tone="positive"
           />
-
-          <FinanceCard
-            title="Total Refunded"
-            value={formatLkr(totalRefunded)}
-            description="Payments returned to clients"
-          />
-
-          <FinanceCard
-            title="Total Expenses"
-            value={formatLkr(totalExpenses)}
-            description="Business expenses in selected range"
-          />
-
-          <FinanceCard
-            title="Net Profit"
-            value={formatLkr(totalProfit)}
-            description="Income − refunds − expenses"
-          />
-
-          <FinanceCard
-            title="Total Due"
+          <MetricCard
+            eyebrow="Outstanding"
+            title="Amount due"
             value={formatLkr(totalDue)}
-            description="Current outstanding on selected files"
+            subtitle={`${outstandingCount} open balance${outstandingCount === 1 ? "" : "s"}`}
+            tone="warning"
+          />
+          <MetricCard
+            eyebrow="Expenses"
+            title="Business expenses"
+            value={formatLkr(totalExpenses)}
+            subtitle={`${expenseCount} expense entr${expenseCount === 1 ? "y" : "ies"}`}
+            tone="expense"
+          />
+          <MetricCard
+            eyebrow="Profit"
+            title="Net profit"
+            value={formatLkr(totalProfit)}
+            subtitle="Received − refunds − expenses"
+            tone="accent"
           />
         </div>
 
-        {/* Charts */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-5">
-          <div className="rounded-xl border border-black/10 bg-white p-5 lg:col-span-3">
-            <div className="flex flex-wrap items-start justify-between gap-3">
+        {/* Main analysis */}
+        <div className="mt-6 grid gap-6 xl:grid-cols-[1.75fr_1fr]">
+          <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h2 className="text-sm font-semibold">
-                  Monthly Income
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#b77900]">
+                  Cash movement
+                </p>
+                <h2 className="mt-1 text-lg font-semibold tracking-tight">
+                  Income trend
                 </h2>
-                <p className="mt-1 text-xs text-black/40">
-                  Monthly gross payments received in the selected period.
-                  Refunded payments are included in gross income and deducted separately.
+                <p className="mt-1 text-xs leading-5 text-black/40">
+                  Cleared payments received during the selected period.
                 </p>
               </div>
-
-              <span className="rounded-full bg-[#fff7e6] px-3 py-1 text-[10px] font-semibold text-[#a56e00]">
-                Income
+              <span className="rounded-full border border-black/10 bg-[#fafaf8] px-3 py-1.5 text-[10px] font-semibold text-black/45">
+                {monthlyGrowth.length} month{monthlyGrowth.length === 1 ? "" : "s"}
               </span>
             </div>
-
             <MonthlyPaymentChart points={monthlyGrowth} />
-          </div>
+          </section>
 
-          <div className="rounded-xl border border-black/10 bg-white p-5 lg:col-span-2">
-            <div>
-              <h2 className="text-sm font-semibold">
-                Clients by Source
-              </h2>
-              <p className="mt-1 text-xs text-black/40">
-                All-time client count by acquisition source. Direct is always
-                first.
-              </p>
-            </div>
-
-            <SourceChart points={sourcePoints} />
-
-            <p className="mt-4 text-[10px] leading-5 text-black/30">
-              Source is stored on each client file. A client can appear under
-              more than one source when different files use different sources.
+          <section className="rounded-2xl border border-black/10 bg-black p-5 text-white shadow-sm sm:p-6">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f9a800]">
+              Financial snapshot
             </p>
-          </div>
+            <h2 className="mt-1 text-lg font-semibold tracking-tight">
+              Where the money went
+            </h2>
+
+            <div className="mt-6 space-y-5">
+              <SnapshotLine label="Total billed" value={totalBilled} />
+              <SnapshotLine label="Received" value={totalIncome} strong />
+              <SnapshotLine label="Refunded" value={totalRefunded} />
+              <SnapshotLine label="Expenses" value={totalExpenses} />
+              <div className="border-t border-white/10 pt-5">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-white/35">
+                      Net profit
+                    </p>
+                    <p className="mt-1 text-2xl font-semibold tracking-tight text-[#f9a800]">
+                      {formatLkr(totalProfit)}
+                    </p>
+                  </div>
+                  <p className="max-w-[130px] text-right text-[10px] leading-4 text-white/35">
+                    Income after refunds and business expenses.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
-        {/* Client financial summary */}
-        <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
-          <div className="flex items-center justify-between gap-4">
+        {/* Snapshot tiles */}
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <MiniStat label="Files in period" value={selectedFileCount.toString()} />
+          <MiniStat label="Transactions" value={transactionCount.toString()} />
+          <MiniStat label="Outstanding files" value={outstandingCount.toString()} />
+          <MiniStat label="Expense entries" value={expenseCount.toString()} />
+        </div>
+
+        {/* Outstanding */}
+        <section className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black/10 px-5 py-5 sm:px-6">
             <div>
-              <h2 className="text-sm font-semibold">
-                Client Financial Summary
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#b77900]">
+                Receivables
+              </p>
+              <h2 className="mt-1 text-lg font-semibold tracking-tight">
+                Outstanding balances
               </h2>
               <p className="mt-1 text-xs text-black/40">
-                Current financial position for clients whose files were opened
-                in the selected range.
+                Files with money still to be collected.
               </p>
             </div>
-
-            <span className="text-[10px] font-medium text-black/30">
-              {clientSummary.length} client
-              {clientSummary.length === 1 ? "" : "s"}
-            </span>
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-[#fff8e8] px-3 py-2 text-right">
+                <p className="text-[9px] uppercase tracking-wider text-[#a56e00]">
+                  Outstanding
+                </p>
+                <p className="mt-0.5 text-sm font-bold text-[#8d6000]">
+                  {formatLkr(totalDue)}
+                </p>
+              </div>
+              <div className="rounded-xl bg-[#f6f6f4] px-3 py-2 text-right">
+                <p className="text-[9px] uppercase tracking-wider text-black/35">
+                  Files
+                </p>
+                <p className="mt-0.5 text-sm font-bold">{outstandingCount}</p>
+              </div>
+            </div>
           </div>
 
-          {clientSummary.length === 0 ? (
-            <EmptyState message="No client financial data for this date range." />
+          {receivables.length === 0 ? (
+            <EmptyState message="No outstanding balances for the selected range." />
           ) : (
-            <div className="mt-5 overflow-x-auto rounded-lg border border-black/10">
-              <table className="w-full min-w-[760px]">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px]">
                 <thead>
-                  <tr className="border-b border-black/10 bg-[#fafaf9]">
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                  <tr className="bg-[#fafaf8] text-left">
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
                       Client
                     </th>
-                    <th className="px-4 py-3 text-center text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                      Files
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
+                      File
                     </th>
-                    <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
                       Billed
                     </th>
-                    <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                      Received
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
+                      Paid
                     </th>
-                    <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                      Refunded
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
+                      Outstanding
                     </th>
-                    <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                      Due
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
+                      Last payment
                     </th>
                   </tr>
                 </thead>
-
                 <tbody>
-                  {clientSummary.map((row) => (
+                  {receivables.map((row) => (
                     <tr
-                      key={row.clientId}
-                      className="border-b border-black/5 last:border-b-0 hover:bg-[#fafaf9]"
+                      key={row.fileId}
+                      className="border-t border-black/5 transition hover:bg-[#fcfcfa]"
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-4">
                         <Link
                           href={`/clients/${row.clientId}`}
-                          className="text-xs font-medium hover:text-[#b77900]"
+                          className="text-xs font-semibold hover:text-[#b77900]"
                         >
                           {row.clientName}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-center text-xs text-black/55">
-                        {row.fileCount}
+                      <td className="px-5 py-4">
+                        <Link
+                          href={`/files/${row.fileId}`}
+                          className="text-xs font-semibold hover:text-[#b77900]"
+                        >
+                          {row.fileNumber}
+                        </Link>
+                        <p className="mt-0.5 max-w-[260px] truncate text-[10px] text-black/35">
+                          {row.title}
+                        </p>
                       </td>
-                      <td className="px-4 py-3 text-right text-xs font-medium">
+                      <td className="px-5 py-4 text-xs font-medium">
                         {formatLkr(row.billed)}
                       </td>
-                      <td className="px-4 py-3 text-right text-xs text-black/60">
-                        {formatLkr(row.received)}
+                      <td className="px-5 py-4 text-xs text-black/55">
+                        {formatLkr(row.paid)}
                       </td>
-                      <td className="px-4 py-3 text-right text-xs text-black/60">
-                        {formatLkr(row.refunded)}
+                      <td className="px-5 py-4">
+                        <span className="rounded-full bg-[#fff4de] px-2.5 py-1 text-[10px] font-bold text-[#986600]">
+                          {formatLkr(row.due)}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-right text-xs font-semibold">
-                        {formatLkr(row.due)}
+                      <td className="px-5 py-4 text-xs text-black/45">
+                        {row.lastPaymentAt ? formatDateTime(new Date(row.lastPaymentAt)) : "No payment yet"}
                       </td>
                     </tr>
                   ))}
@@ -841,56 +806,47 @@ export default async function PaymentsPage({
               </table>
             </div>
           )}
+        </section>
 
-          <p className="mt-3 text-[10px] text-black/30">
-            Received is the all-time CLEARED amount retained against the
-            selected files. Refunded is the amount returned to clients.
-            Cancelled files have no current amount due.
-          </p>
-        </div>
+        {/* Expense manager */}
+        <section className="mt-6 rounded-2xl border border-black/10 bg-white shadow-sm">
+          <div className="border-b border-black/10 px-5 py-5 sm:px-6">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#b77900]">
+              Operating costs
+            </p>
+            <h2 className="mt-1 text-lg font-semibold tracking-tight">Expenses</h2>
+            <p className="mt-1 text-xs text-black/40">
+              Record and manage business expenses for the selected period.
+            </p>
+          </div>
+          <div className="p-0">
+            <ExpenseManager
+              initialExpenses={periodExpenses.map((expense) => ({
+                id: expense.id,
+                expenseDate: expense.expenseDate.toISOString(),
+                category: expense.category,
+                description: expense.description,
+                amount: Number(expense.amount),
+                paymentMethod: expense.paymentMethod,
+                referenceNo: expense.referenceNo,
+                remarks: expense.remarks,
+                createdByName: expense.createdBy.username,
+              }))}
+              totalExpenses={totalExpenses}
+            />
+          </div>
+        </section>
 
-        {/* Expenses */}
-        <ExpenseManager
-          initialExpenses={periodExpenses.map((expense) => ({
-            id: expense.id,
-            expenseDate: expense.expenseDate.toISOString(),
-            category: expense.category,
-            description: expense.description,
-            amount: Number(expense.amount),
-            paymentMethod: expense.paymentMethod,
-            referenceNo: expense.referenceNo,
-            remarks: expense.remarks,
-            createdByName: expense.createdBy.username,
-          }))}
-          totalExpenses={totalExpenses}
-        />
-
-        {/* Profit reconciliation */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          <FinanceCard
-            title="Net Income"
-            value={formatLkr(netIncome)}
-            description="Income after refunds"
-          />
-
-          <FinanceCard
-            title="Total Profit"
-            value={formatLkr(totalProfit)}
-            description="Net income after expenses"
-          />
-
-          <FinanceCard
-            title="Total Billed"
-            value={formatLkr(totalBilled)}
-            description="Original billed value in selected range"
-          />
-        </div>
-
-        {/* Payment history */}
-        <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Transactions */}
+        <section className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black/10 px-5 py-5 sm:px-6">
             <div>
-              <h2 className="text-sm font-semibold">Payment History</h2>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#b77900]">
+                Transactions
+              </p>
+              <h2 className="mt-1 text-lg font-semibold tracking-tight">
+                Payment history
+              </h2>
               <p className="mt-1 text-xs text-black/40">
                 {status === "ALL"
                   ? "All"
@@ -898,106 +854,83 @@ export default async function PaymentsPage({
                     ? "Cleared"
                     : status === "REFUNDED"
                       ? "Refunded"
-                      : "Cancelled"} payment activity in the selected date range.
-                {historyPayments.length >= 250 ? " Showing the latest 250." : ""}
+                      : "Cancelled"} payment activity in the selected period.
               </p>
             </div>
-
-            <span className="text-[10px] font-medium text-black/30">
-              {historyPayments.length} payment
-              {historyPayments.length === 1 ? "" : "s"}
-            </span>
+            <div className="rounded-xl bg-[#f6f6f4] px-3 py-2 text-right">
+              <p className="text-[9px] uppercase tracking-wider text-black/35">
+                Showing
+              </p>
+              <p className="mt-0.5 text-sm font-bold">
+                {historyPayments.length} transaction{historyPayments.length === 1 ? "" : "s"}
+              </p>
+            </div>
           </div>
 
           {historyPayments.length === 0 ? (
-            <EmptyState
-              message={
-                status === "ALL"
-                  ? "No payment activity found for the selected filters."
-                  : status === "CLEARED"
-                    ? "No cleared payments found for the selected filters."
-                    : status === "REFUNDED"
-                      ? "No refunded payments found for the selected filters."
-                      : "No cancelled payments found for the selected filters."
-              }
-            />
+            <EmptyState message="No payment activity found for the selected filters." />
           ) : (
-            <div className="mt-5 overflow-x-auto rounded-lg border border-black/10">
+            <div className="overflow-x-auto">
               <table className="w-full min-w-[980px]">
                 <thead>
-                  <tr className="border-b border-black/10 bg-[#fafaf9]">
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                  <tr className="bg-[#fafaf8] text-left">
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
                       Date
                     </th>
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
                       Client
                     </th>
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
                       File
                     </th>
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
                       Method
                     </th>
-                    <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                    <th className="px-5 py-3 text-right text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
                       Amount
                     </th>
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
                       Reference
                     </th>
-                    <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
                       Status
                     </th>
                   </tr>
                 </thead>
-
                 <tbody>
                   {historyPayments.map((payment) => (
                     <tr
                       key={payment.id}
-                      className="border-b border-black/5 last:border-b-0 hover:bg-[#fafaf9]"
+                      className="border-t border-black/5 transition hover:bg-[#fcfcfa]"
                     >
-                      <td className="px-4 py-3 text-xs text-black/60">
+                      <td className="px-5 py-4 text-xs text-black/55">
                         {formatDateTime(payment.paidAt)}
                       </td>
-                      <td className="px-4 py-3 text-xs font-medium">
+                      <td className="px-5 py-4 text-xs font-semibold">
                         {payment.clientFile.client.name}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-4">
                         <Link
                           href={`/files/${payment.clientFile.id}`}
-                          className="text-xs font-medium hover:text-[#b77900]"
+                          className="text-xs font-semibold hover:text-[#b77900]"
                         >
                           {payment.clientFile.fileNumber}
                         </Link>
-                        <p className="mt-0.5 max-w-64 truncate text-[10px] text-black/35">
+                        <p className="mt-0.5 max-w-[240px] truncate text-[10px] text-black/35">
                           {payment.clientFile.title}
                         </p>
                       </td>
-                      <td className="px-4 py-3 text-xs text-black/60">
+                      <td className="px-5 py-4 text-xs text-black/55">
                         {formatPaymentMethod(payment.paymentMethod)}
                       </td>
-                      <td className="px-4 py-3 text-right text-xs font-semibold">
+                      <td className="px-5 py-4 text-right text-xs font-bold">
                         {formatLkr(Number(payment.amount))}
                       </td>
-                      <td className="px-4 py-3 text-xs text-black/50">
+                      <td className="px-5 py-4 text-xs text-black/45">
                         {payment.referenceNo || "—"}
                       </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${
-                            payment.status === "CLEARED"
-                              ? "bg-[#f1f8ea] text-[#4f702d]"
-                              : payment.status === "REFUNDED"
-                                ? "bg-[#fff7e6] text-[#a56e00]"
-                                : "bg-[#fff0f0] text-[#9b4141]"
-                          }`}
-                        >
-                          {payment.status === "CLEARED"
-                            ? "Cleared"
-                            : payment.status === "REFUNDED"
-                              ? "Refunded"
-                              : "Cancelled"}
-                        </span>
+                      <td className="px-5 py-4">
+                        <PaymentBadge status={payment.status} />
                       </td>
                     </tr>
                   ))}
@@ -1005,46 +938,127 @@ export default async function PaymentsPage({
               </table>
             </div>
           )}
-        </div>
 
-        {/* Small reconciliation note */}
-        <div className="mt-4 rounded-lg border border-black/5 bg-white/60 px-4 py-3">
-          <p className="text-[10px] leading-5 text-black/35">
-            Financial totals use CLEARED payments as Received. Refunded payments
-            are excluded from Received and remain visible in payment history.
-          </p>
-        </div>
+          <div className="border-t border-black/5 px-5 py-3 sm:px-6">
+            <p className="text-[10px] leading-5 text-black/35">
+              Cleared payments are included in Received. Refunded payments are
+              excluded from Received and remain visible here for reconciliation.
+            </p>
+          </div>
+        </section>
       </section>
     </main>
   );
 }
 
-/* --------------------------------------------------
-   Finance Card
--------------------------------------------------- */
-
-function FinanceCard({
-  title,
-  value,
-  description,
+function FilterField({
+  label,
+  children,
 }: {
-  title: string;
-  value: string;
-  description: string;
+  label: string;
+  children: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-black/10 bg-white p-5 shadow-sm transition hover:border-black/15 hover:shadow">
-      <div className="flex items-start justify-between">
-        <p className="text-xs font-medium text-black/45">{title}</p>
-        <div className="h-2 w-2 rounded-full bg-[#f9a800]" />
-      </div>
+    <div>
+      <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wider text-black/35">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
 
-      <p className="mt-4 break-words text-2xl font-semibold tracking-tight">
+function MetricCard({
+  eyebrow,
+  title,
+  value,
+  subtitle,
+  tone,
+}: {
+  eyebrow: string;
+  title: string;
+  value: string;
+  subtitle: string;
+  tone: "neutral" | "positive" | "warning" | "expense" | "accent";
+}) {
+  const accentClass = {
+    neutral: "bg-[#f9a800] text-black",
+    positive: "bg-[#edf7e7] text-[#456a29]",
+    warning: "bg-[#fff5df] text-[#996600]",
+    expense: "bg-[#f6f0eb] text-[#755945]",
+    accent: "bg-black text-[#f9a800]",
+  }[tone];
+
+  return (
+    <div className="group rounded-2xl border border-black/10 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[9px] font-semibold uppercase tracking-[0.17em] text-black/30">
+            {eyebrow}
+          </p>
+          <p className="mt-1 text-xs font-semibold text-black/70">{title}</p>
+        </div>
+        <span className={`h-8 min-w-8 rounded-lg px-2 py-2 text-center text-[9px] font-bold ${accentClass}`}>
+          {tone === "positive" ? "IN" : tone === "warning" ? "DUE" : tone === "expense" ? "OUT" : tone === "accent" ? "NET" : "LKR"}
+        </span>
+      </div>
+      <p className="mt-5 break-words text-[22px] font-semibold tracking-tight sm:text-2xl">
         {value}
       </p>
-
-      <p className="mt-1 text-xs text-black/35">{description}</p>
+      <p className="mt-1.5 text-[10px] leading-4 text-black/35">{subtitle}</p>
     </div>
+  );
+}
+
+function SnapshotLine({
+  label,
+  value,
+  strong = false,
+}: {
+  label: string;
+  value: number;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-xs text-white/45">{label}</span>
+      <span className={`text-sm ${strong ? "font-semibold text-white" : "font-medium text-white/75"}`}>
+        {formatLkr(value)}
+      </span>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-black/10 bg-white px-4 py-4 shadow-sm">
+      <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-black/30">
+        {label}
+      </p>
+      <p className="mt-2 text-lg font-semibold tracking-tight">{value}</p>
+    </div>
+  );
+}
+
+function PaymentBadge({ status }: { status: string }) {
+  const className =
+    status === "CLEARED"
+      ? "bg-[#edf7e7] text-[#456a29]"
+      : status === "REFUNDED"
+        ? "bg-[#fff5df] text-[#986600]"
+        : "bg-[#f8eaea] text-[#974848]";
+
+  const label =
+    status === "CLEARED"
+      ? "Cleared"
+      : status === "REFUNDED"
+        ? "Refunded"
+        : "Cancelled";
+
+  return (
+    <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${className}`}>
+      {label}
+    </span>
   );
 }
 
@@ -1059,83 +1073,60 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
     );
   }
 
-  const width = Math.max(760, points.length * 82);
-  const height = 320;
-  const paddingLeft = 76;
-  const paddingRight = 76;
-  const plotInsetLeft = 58;
-  const plotInsetRight = 28;
-  const paddingTop = 36;
-  const paddingBottom = 52;
-  const plotLeft = paddingLeft + plotInsetLeft;
-  const plotRight = width - paddingRight - plotInsetRight;
-  const plotWidth = plotRight - plotLeft;
+  const width = Math.max(760, points.length * 88);
+  const height = 300;
+  const paddingLeft = 58;
+  const paddingRight = 28;
+  const paddingTop = 28;
+  const paddingBottom = 46;
+  const plotWidth = width - paddingLeft - paddingRight;
   const plotHeight = height - paddingTop - paddingBottom;
-
-  // Leave some headroom so the highest point and its label never touch the top.
-  const highestAmount = Math.max(
-    ...points.map((point) => point.amount),
-    1
-  );
-  const maxValue = Math.max(highestAmount * 1.2, 1);
+  const maxValue = Math.max(...points.map((point) => point.amount), 1);
   const gridSteps = [0, 0.25, 0.5, 0.75, 1];
 
   const coords = points.map((point, index) => {
     const x =
-      points.length === 1
-        ? plotLeft + plotWidth / 2
-        : plotLeft +
-          (index / (points.length - 1)) * plotWidth;
-
-    const y =
-      paddingTop +
-      plotHeight -
-      (point.amount / maxValue) * plotHeight;
-
+      paddingLeft +
+      (points.length === 1
+        ? plotWidth / 2
+        : (index / (points.length - 1)) * plotWidth);
+    const y = paddingTop + plotHeight - (point.amount / maxValue) * plotHeight;
     return { ...point, x, y };
   });
 
-  const polyline = coords
-    .map((point) => `${point.x},${point.y}`)
-    .join(" ");
+  const polyline = coords.map((point) => `${point.x},${point.y}`).join(" ");
 
   return (
-    <div className="mt-5 overflow-x-auto rounded-lg border border-black/5 bg-[#fcfcfb]">
+    <div className="mt-5 overflow-x-auto rounded-2xl border border-black/5 bg-[#fbfbf8]">
       <svg
         width={width}
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label="Monthly gross income chart"
+        aria-label="Monthly income chart"
         className="block min-w-full"
       >
         {gridSteps.map((fraction) => {
-          const y =
-            paddingTop +
-            plotHeight -
-            fraction * plotHeight;
+          const y = paddingTop + plotHeight - fraction * plotHeight;
           const label = formatCompactLkr(maxValue * fraction);
 
           return (
             <g key={fraction}>
               <line
-                x1={plotLeft}
-                x2={plotRight}
+                x1={paddingLeft}
+                x2={width - paddingRight}
                 y1={y}
                 y2={y}
                 stroke="rgba(0,0,0,0.08)"
                 strokeWidth="1"
-                strokeDasharray={
-                  fraction === 0 ? undefined : "4 4"
-                }
+                strokeDasharray={fraction === 0 ? undefined : "4 4"}
               />
-
               <text
-                x={paddingLeft - 12}
+                x={paddingLeft - 10}
                 y={y + 4}
                 textAnchor="end"
                 fontSize="10"
-                fill="rgba(0,0,0,0.38)"
+                fill="rgba(0,0,0,0.35)"
               >
                 {label}
               </text>
@@ -1148,7 +1139,7 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
             points={polyline}
             fill="none"
             stroke="#f9a800"
-            strokeWidth="3.5"
+            strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -1159,15 +1150,14 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
             <circle
               cx={point.x}
               cy={point.y}
-              r="5"
+              r="4.5"
               fill="#171717"
               stroke="#f9a800"
-              strokeWidth="2.5"
+              strokeWidth="2"
             />
-
             <text
               x={point.x}
-              y={Math.max(point.y - 16, 18)}
+              y={point.y - 12}
               textAnchor="middle"
               fontSize="10"
               fontWeight="600"
@@ -1175,13 +1165,11 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
             >
               {formatCompactLkr(point.amount)}
             </text>
-
             <text
               x={point.x}
-              y={height - 20}
+              y={height - 16}
               textAnchor="middle"
               fontSize="10"
-              fontWeight="500"
               fill="rgba(0,0,0,0.45)"
             >
               {point.label}
@@ -1194,62 +1182,13 @@ function MonthlyPaymentChart({ points }: { points: MonthlyPoint[] }) {
 }
 
 /* --------------------------------------------------
-   Source horizontal chart
--------------------------------------------------- */
-
-function SourceChart({ points }: { points: SourcePoint[] }) {
-  if (points.length === 0) {
-    return <EmptyState message="No source data available yet." />;
-  }
-
-  const maxCount = Math.max(...points.map((point) => point.clientCount), 1);
-
-  return (
-    <div className="mt-6 max-h-[390px] space-y-4 overflow-y-auto pr-1">
-      {points.map((point, index) => {
-        const width =
-          point.clientCount === 0
-            ? 0
-            : Math.max((point.clientCount / maxCount) * 100, 2.5);
-
-        return (
-          <div key={point.sourceId ?? "direct"}>
-            <div className="mb-1.5 flex items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-black text-[9px] font-bold text-white">
-                  {index + 1}
-                </span>
-                <span className="truncate text-xs font-medium">
-                  {point.label}
-                </span>
-              </div>
-
-              <span className="shrink-0 text-xs font-semibold">
-                {point.clientCount}
-              </span>
-            </div>
-
-            <div className="h-2.5 overflow-hidden rounded-full bg-black/[0.06]">
-              <div
-                className="h-full rounded-full bg-[#f9a800]"
-                style={{ width: `${width}%` }}
-              />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* --------------------------------------------------
    Empty state
 -------------------------------------------------- */
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="mt-5 flex min-h-36 items-center justify-center rounded-lg border border-dashed border-black/10 bg-[#fafaf9] px-5 text-center">
-      <p className="text-sm text-black/40">{message}</p>
+    <div className="flex min-h-32 items-center justify-center rounded-2xl border border-dashed border-black/10 bg-[#fafaf8] px-5 text-center">
+      <p className="text-xs text-black/35">{message}</p>
     </div>
   );
 }
@@ -1357,29 +1296,6 @@ function buildMonthlySeries(
     label: formatMonthKey(key),
     amount,
   }));
-}
-
-function buildQuery({
-  from,
-  to,
-  status,
-  search,
-}: {
-  from: string;
-  to: string;
-  status: string;
-  search: string;
-}) {
-  const params = new URLSearchParams();
-  params.set("from", from);
-  params.set("to", to);
-  params.set("status", status);
-
-  if (search) {
-    params.set("search", search);
-  }
-
-  return params.toString();
 }
 
 function formatMonthKey(key: string) {

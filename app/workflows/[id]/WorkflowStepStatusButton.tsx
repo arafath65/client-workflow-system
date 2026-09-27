@@ -14,8 +14,6 @@ export default function WorkflowStepStatusButton({
   const [loading, setLoading] = useState(false);
 
   const handleStatusChange = async () => {
-    const action = active ? "deactivate" : "activate";
-
     const confirmed = window.confirm(
       active
         ? "Are you sure you want to deactivate this workflow step?"

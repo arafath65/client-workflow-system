@@ -2,12 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
 
-type RouteContext = {
-  params: Promise<{ id: string }>;
-};
-
-const STATUSES = ["SCHEDULED", "COMPLETED", "CANCELLED"] as const;
-
 function parseSriLankaDate(value: unknown): Date | null {
   if (typeof value !== "string" || !value.trim()) return null;
 
@@ -21,15 +15,6 @@ function parseSriLankaDate(value: unknown): Date | null {
 
   const date = new Date(raw);
   return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function isStatus(
-  value: unknown
-): value is (typeof STATUSES)[number] {
-  return (
-    typeof value === "string" &&
-    STATUSES.includes(value as (typeof STATUSES)[number])
-  );
 }
 
 async function validateRelations(

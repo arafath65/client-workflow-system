@@ -60,6 +60,7 @@ model Client {
   id        Int      @id @default(autoincrement())
   name      String
   whatsapp  String?
+  status    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -67,6 +68,7 @@ model Client {
 
   @@index([name])
   @@index([whatsapp])
+  @@index([status])
   @@map("clients")
 }
 

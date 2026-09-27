@@ -240,23 +240,32 @@ export async function POST(
       );
     }
 
-    const client =
-      await prisma.client.findUnique({
-        where: {
-          id: clientId,
-        },
-      });
+    const client = await prisma.client.findUnique({
+  where: {
+    id: clientId,
+  },
+});
 
-    if (!client) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Client not found.",
-        },
-        { status: 404 }
-      );
-    }
+if (!client) {
+  return NextResponse.json(
+    {
+      success: false,
+      message: "Client not found.",
+    },
+    { status: 404 }
+  );
+}
+
+if (!client.status) {
+  return NextResponse.json(
+    {
+      success: false,
+      message:
+        "This client is inactive. Activate the client before creating a new file.",
+    },
+    { status: 400 }
+  );
+}
 
     // ==================================================
     // Validate Workflow

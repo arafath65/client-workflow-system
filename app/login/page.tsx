@@ -1,8 +1,11 @@
 "use client";
 
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
@@ -33,7 +36,7 @@ export default function LoginPage() {
       return;
     }
 
-    window.location.href = "/dashboard";
+    router.push("/dashboard");
   } catch (error) {
     console.error(error);
     alert("Unable to connect to the server.");
@@ -70,11 +73,13 @@ export default function LoginPage() {
             <div className="max-w-lg">
 
               {/* Logo */}
-              <img
-                src="/ai-global-logo.png"
-                alt="A&I Global"
-                className="mb-5 h-20 w-20 object-contain"
-              />
+              <Image
+  src="/ai-global-logo.png"
+  alt="A&I Global"
+  width={80}
+  height={80}
+  className="mb-5 h-20 w-20 object-contain"
+/>
 
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f9a800]">
                 Client Workflow System
@@ -112,11 +117,13 @@ export default function LoginPage() {
               {/* Mobile logo */}
               <div className="mb-5 flex items-center gap-3 lg:hidden">
 
-                <img
-                  src="/ai-global-logo.png"
-                  alt="A&I Global"
-                  className="h-14 w-14 object-contain"
-                />
+                <Image
+  src="/ai-global-logo.png"
+  alt="A&I Global"
+  width={56}
+  height={56}
+  className="h-14 w-14 object-contain"
+/>
 
                 <div>
                   <p className="text-sm font-semibold">

@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
 type DocumentType = {
   id: number;
@@ -11,6 +10,8 @@ type DocumentType = {
   status: boolean;
 };
 
+type StatusFilter = "ACTIVE" | "INACTIVE" | "ALL";
+
 type Props = {
   initialDocumentTypes: DocumentType[];
 };
@@ -18,35 +19,42 @@ type Props = {
 export default function DocumentTypesClient({
   initialDocumentTypes,
 }: Props) {
-  const searchParams = useSearchParams();
-
-  const currentFilter =
-    searchParams.get("status") === "inactive" ||
-    searchParams.get("status") === "all"
-      ? searchParams.get("status")
-      : "active";
-
   const [documentTypes, setDocumentTypes] =
-    useState<DocumentType[]>(
-      initialDocumentTypes
-    );
+    useState<DocumentType[]>(initialDocumentTypes);
 
   const [open, setOpen] = useState(false);
-  const [editingId, setEditingId] =
-    useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   const [name, setName] = useState("");
-  const [description, setDescription] =
-    useState("");
-  const [defaultAmount, setDefaultAmount] =
-    useState("");
+  const [description, setDescription] = useState("");
+  const [defaultAmount, setDefaultAmount] = useState("");
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // --------------------------------------------------
-  // Reset Form
-  // --------------------------------------------------
+  const [statusFilter, setStatusFilter] =
+    useState<StatusFilter>("ACTIVE");
+
+  const totalCount = documentTypes.length;
+
+  const activeCount = documentTypes.filter(
+    (item) => item.status
+  ).length;
+
+  const inactiveCount =
+    totalCount - activeCount;
+
+  const filteredDocumentTypes =
+    documentTypes.filter((documentType) => {
+      if (statusFilter === "ACTIVE") {
+        return documentType.status;
+      }
+
+      if (statusFilter === "INACTIVE") {
+        return !documentType.status;
+      }
+
+      return true;
+    });
 
   const resetForm = () => {
     setName("");
@@ -55,18 +63,10 @@ export default function DocumentTypesClient({
     setEditingId(null);
   };
 
-  // --------------------------------------------------
-  // Open Add
-  // --------------------------------------------------
-
   const handleOpenAdd = () => {
     resetForm();
     setOpen(true);
   };
-
-  // --------------------------------------------------
-  // Open Edit
-  // --------------------------------------------------
 
   const handleOpenEdit = (
     documentType: DocumentType
@@ -82,20 +82,12 @@ export default function DocumentTypesClient({
     setOpen(true);
   };
 
-  // --------------------------------------------------
-  // Close Modal
-  // --------------------------------------------------
-
   const handleClose = () => {
     if (loading) return;
 
     setOpen(false);
     resetForm();
   };
-
-  // --------------------------------------------------
-  // Save Document Type
-  // --------------------------------------------------
 
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement>
@@ -105,15 +97,11 @@ export default function DocumentTypesClient({
     if (loading) return;
 
     const cleanName = name.trim();
-    const cleanDescription =
-      description.trim();
-    const cleanAmount =
-      defaultAmount.trim();
+    const cleanDescription = description.trim();
+    const cleanAmount = defaultAmount.trim();
 
     if (!cleanName) {
-      alert(
-        "Document type name is required."
-      );
+      alert("Document type name is required.");
       return;
     }
 
@@ -122,9 +110,7 @@ export default function DocumentTypesClient({
         cleanAmount
       )
     ) {
-      alert(
-        "Valid default price is required."
-      );
+      alert("Valid default price is required.");
       return;
     }
 
@@ -211,11 +197,13 @@ export default function DocumentTypesClient({
             );
         }
 
-        return [...current, saved].sort(
-          (a, b) =>
-            a.name.localeCompare(
-              b.name
-            )
+        return [
+          ...current,
+          saved,
+        ].sort((a, b) =>
+          a.name.localeCompare(
+            b.name
+          )
         );
       });
 
@@ -237,19 +225,11 @@ export default function DocumentTypesClient({
     }
   };
 
-  // --------------------------------------------------
-  // Activate / Deactivate
-  // --------------------------------------------------
-
   const handleToggleStatus = async (
     documentType: DocumentType
   ) => {
     const nextStatus =
       !documentType.status;
-
-    // ------------------------------------------------
-    // Confirmation before Deactivate
-    // ------------------------------------------------
 
     if (!nextStatus) {
       const confirmed =
@@ -310,63 +290,18 @@ export default function DocumentTypesClient({
         return;
       }
 
-      if (!data.documentType) {
-        alert(
-          "Server did not return the updated document type."
-        );
-        return;
-      }
-
-      const updated =
-        data.documentType;
-
-      // ------------------------------------------------
-      // Immediately update the local list.
-      //
-      // Active filter:
-      // Deactivated item disappears immediately.
-      //
-      // Inactive filter:
-      // Activated item disappears immediately.
-      //
-      // All filter:
-      // Item remains and status is updated.
-      // ------------------------------------------------
-
-      setDocumentTypes((current) => {
-        if (
-          currentFilter === "active" &&
-          !updated.status
-        ) {
-          return current.filter(
-            (item) =>
-              item.id !== updated.id
-          );
-        }
-
-        if (
-          currentFilter ===
-            "inactive" &&
-          updated.status
-        ) {
-          return current.filter(
-            (item) =>
-              item.id !== updated.id
-          );
-        }
-
-        return current
-          .map((item) =>
-            item.id === updated.id
-              ? updated
-              : item
-          )
-          .sort((a, b) =>
-            a.name.localeCompare(
-              b.name
+      if (data.documentType) {
+        setDocumentTypes(
+          (current) =>
+            current.map(
+              (item) =>
+                item.id ===
+                data.documentType!.id
+                  ? data.documentType!
+                  : item
             )
-          );
-      });
+        );
+      }
     } catch (error) {
       console.error(
         "Toggle document type status error:",
@@ -383,17 +318,44 @@ export default function DocumentTypesClient({
     }
   };
 
-  // --------------------------------------------------
-  // Render
-  // --------------------------------------------------
-
   return (
     <>
-      {/* Document Type List */}
+      {/* Summary */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-black/10 bg-white p-5">
+          <p className="text-xs text-black/40">
+            Total Document Types
+          </p>
 
-      <div className="overflow-hidden rounded-xl border border-black/10 bg-white">
+          <p className="mt-2 text-2xl font-semibold">
+            {totalCount}
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-black/10 bg-white p-5">
+          <p className="text-xs text-black/40">
+            Active
+          </p>
+
+          <p className="mt-2 text-2xl font-semibold">
+            {activeCount}
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-black/10 bg-white p-5">
+          <p className="text-xs text-black/40">
+            Inactive
+          </p>
+
+          <p className="mt-2 text-2xl font-semibold">
+            {inactiveCount}
+          </p>
+        </div>
+      </div>
+
+      {/* List */}
+      <div className="mt-8 overflow-hidden rounded-xl border border-black/10 bg-white">
         {/* Section Header */}
-
         <div className="flex flex-col gap-4 border-b border-black/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-sm font-semibold">
@@ -401,25 +363,48 @@ export default function DocumentTypesClient({
             </h2>
 
             <p className="mt-1 text-xs text-black/40">
-              Reusable document types and their
-              default service prices.
+              Reusable document types and their default
+              service prices.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={
-              handleOpenAdd
-            }
-            className="rounded-lg bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black"
-          >
-            + Add Document Type
-          </button>
+          {/* Filter + Add Button */}
+          <div className="flex items-center gap-2">
+            <select
+              value={statusFilter}
+              onChange={(event) =>
+                setStatusFilter(
+                  event.target
+                    .value as StatusFilter
+                )
+              }
+              className="h-10 rounded-lg border border-black/10 bg-white px-3 text-xs font-medium text-black outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
+            >
+              <option value="ACTIVE">
+                Active
+              </option>
+
+              <option value="INACTIVE">
+                Inactive
+              </option>
+
+              <option value="ALL">
+                All
+              </option>
+            </select>
+
+            <button
+              type="button"
+              onClick={handleOpenAdd}
+              className="h-10 rounded-lg bg-black px-4 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black"
+            >
+              + Add Document Type
+            </button>
+          </div>
         </div>
 
-        {/* Empty State */}
-
-        {documentTypes.length === 0 ? (
+        {/* Table / Empty State */}
+        {filteredDocumentTypes.length === 0 ? (
           <div className="flex min-h-64 items-center justify-center px-6">
             <div className="text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-black/[0.04]">
@@ -429,20 +414,21 @@ export default function DocumentTypesClient({
               </div>
 
               <p className="mt-4 text-sm font-medium text-black/50">
-                No document types found
+                {documentTypes.length === 0
+                  ? "No document types yet"
+                  : `No ${statusFilter.toLowerCase()} document types`}
               </p>
 
               <p className="mt-1 text-xs text-black/30">
-                There are no document types in
-                the current filter.
+                {documentTypes.length === 0
+                  ? "Add your first document type to get started."
+                  : "Try another status filter."}
               </p>
             </div>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px]">
-              {/* Table Header */}
-
               <thead>
                 <tr className="border-b border-black/10 bg-[#fafaf9]">
                   <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -467,21 +453,16 @@ export default function DocumentTypesClient({
                 </tr>
               </thead>
 
-              {/* Table Body */}
-
               <tbody>
-                {documentTypes.map(
+                {filteredDocumentTypes.map(
                   (documentType) => (
                     <tr
-                      key={
-                        documentType.id
-                      }
+                      key={documentType.id}
                       className="border-b border-black/5 last:border-b-0"
                     >
                       {/* Document Type */}
-
                       <td className="px-5 py-4">
-                        <p className="text-sm font-medium text-black">
+                        <p className="text-sm font-medium">
                           {
                             documentType.name
                           }
@@ -489,19 +470,16 @@ export default function DocumentTypesClient({
                       </td>
 
                       {/* Description */}
-
                       <td className="px-5 py-4">
-                        <p className="max-w-md truncate text-xs text-black/45">
-                          {documentType.description?.trim()
-                            ? documentType.description
-                            : "—"}
+                        <p className="max-w-md text-xs text-black/45">
+                          {documentType.description ||
+                            "—"}
                         </p>
                       </td>
 
                       {/* Default Price */}
-
                       <td className="px-5 py-4 text-right">
-                        <p className="whitespace-nowrap text-sm font-medium text-black">
+                        <span className="text-sm font-medium">
                           LKR{" "}
                           {documentType.defaultAmount.toLocaleString(
                             "en-LK",
@@ -510,14 +488,13 @@ export default function DocumentTypesClient({
                               maximumFractionDigits: 2,
                             }
                           )}
-                        </p>
+                        </span>
                       </td>
 
                       {/* Status */}
-
                       <td className="px-5 py-4 text-center">
                         <span
-                          className={`inline-flex rounded-full px-3 py-1 text-[10px] font-semibold ${
+                          className={`rounded-full px-3 py-1 text-[10px] font-semibold ${
                             documentType.status
                               ? "bg-green-100 text-green-700"
                               : "bg-black/5 text-black/40"
@@ -530,11 +507,8 @@ export default function DocumentTypesClient({
                       </td>
 
                       {/* Action */}
-
                       <td className="px-5 py-4 text-right">
                         <div className="flex items-center justify-end gap-3">
-                          {/* Edit */}
-
                           <button
                             type="button"
                             onClick={() =>
@@ -542,15 +516,11 @@ export default function DocumentTypesClient({
                                 documentType
                               )
                             }
-                            disabled={
-                              loading
-                            }
+                            disabled={loading}
                             className="text-xs font-medium text-black/45 transition hover:text-black disabled:opacity-50"
                           >
                             Edit
                           </button>
-
-                          {/* Activate / Deactivate */}
 
                           <button
                             type="button"
@@ -559,9 +529,7 @@ export default function DocumentTypesClient({
                                 documentType
                               )
                             }
-                            disabled={
-                              loading
-                            }
+                            disabled={loading}
                             className={
                               documentType.status
                                 ? "text-xs font-medium text-red-500 transition hover:text-red-700 disabled:opacity-50"
@@ -584,35 +552,28 @@ export default function DocumentTypesClient({
       </div>
 
       {/* Modal */}
-
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="flex max-h-[calc(100vh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-            {/* Modal Header */}
-
+            {/* Header */}
             <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
               <div>
                 <h2 className="text-base font-semibold">
-                  {editingId !==
-                  null
+                  {editingId !== null
                     ? "Edit Document Type"
                     : "Add Document Type"}
                 </h2>
 
                 <p className="mt-1 text-xs text-black/40">
-                  Set the reusable document name
-                  and default price.
+                  Set the reusable document name and
+                  default price.
                 </p>
               </div>
 
               <button
                 type="button"
-                onClick={
-                  handleClose
-                }
-                disabled={
-                  loading
-                }
+                onClick={handleClose}
+                disabled={loading}
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-lg text-black/40 transition hover:bg-black/5 hover:text-black disabled:opacity-50"
               >
                 ×
@@ -620,15 +581,11 @@ export default function DocumentTypesClient({
             </div>
 
             {/* Form */}
-
             <form
-              onSubmit={
-                handleSubmit
-              }
+              onSubmit={handleSubmit}
               className="max-h-[calc(100vh-9rem)] space-y-4 overflow-y-auto px-6 py-6"
             >
-              {/* Name */}
-
+              {/* Document Type */}
               <div>
                 <label
                   htmlFor="document-type-name"
@@ -643,25 +600,19 @@ export default function DocumentTypesClient({
                 <input
                   id="document-type-name"
                   value={name}
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(event) =>
                     setName(
-                      event.target
-                        .value
+                      event.target.value
                     )
                   }
                   placeholder="e.g. Birth Certificate"
                   required
-                  disabled={
-                    loading
-                  }
+                  disabled={loading}
                   className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none transition placeholder:text-black/25 focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:opacity-50"
                 />
               </div>
 
               {/* Description */}
-
               <div>
                 <label
                   htmlFor="document-type-description"
@@ -672,28 +623,20 @@ export default function DocumentTypesClient({
 
                 <textarea
                   id="document-type-description"
-                  value={
-                    description
-                  }
-                  onChange={(
-                    event
-                  ) =>
+                  value={description}
+                  onChange={(event) =>
                     setDescription(
-                      event.target
-                        .value
+                      event.target.value
                     )
                   }
                   rows={3}
                   placeholder="Brief description..."
-                  disabled={
-                    loading
-                  }
+                  disabled={loading}
                   className="w-full resize-none rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-black/25 focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:opacity-50"
                 />
               </div>
 
               {/* Default Price */}
-
               <div>
                 <label
                   htmlFor="document-type-price"
@@ -710,44 +653,31 @@ export default function DocumentTypesClient({
                   type="number"
                   min="0"
                   step="0.01"
-                  value={
-                    defaultAmount
-                  }
-                  onChange={(
-                    event
-                  ) =>
+                  value={defaultAmount}
+                  onChange={(event) =>
                     setDefaultAmount(
-                      event.target
-                        .value
+                      event.target.value
                     )
                   }
                   placeholder="e.g. 5000.00"
                   required
-                  disabled={
-                    loading
-                  }
+                  disabled={loading}
                   className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none transition placeholder:text-black/25 focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:opacity-50"
                 />
 
                 <p className="mt-1.5 text-[11px] text-black/40">
-                  This price will be used as
-                  the starting price when this
-                  document is added to a client
-                  file.
+                  This price will be used as the starting
+                  price when this document is added to a
+                  client file.
                 </p>
               </div>
 
-              {/* Buttons */}
-
+              {/* Form Actions */}
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={
-                    handleClose
-                  }
-                  disabled={
-                    loading
-                  }
+                  onClick={handleClose}
+                  disabled={loading}
                   className="rounded-lg border border-black/10 px-4 py-2.5 text-xs font-medium text-black/50 transition hover:bg-black/5 hover:text-black disabled:opacity-50"
                 >
                   Cancel
@@ -755,15 +685,12 @@ export default function DocumentTypesClient({
 
                 <button
                   type="submit"
-                  disabled={
-                    loading
-                  }
+                  disabled={loading}
                   className="rounded-lg bg-black px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black disabled:opacity-50"
                 >
                   {loading
                     ? "Saving..."
-                    : editingId !==
-                      null
+                    : editingId !== null
                       ? "Save Changes"
                       : "Add Document Type"}
                 </button>

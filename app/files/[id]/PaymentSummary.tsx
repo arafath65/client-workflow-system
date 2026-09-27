@@ -57,8 +57,11 @@ export default function PaymentSummary({
       "CASH" | "CARD" | "BANK_TRANSFER" | "CHEQUE"
     >("CASH");
 
-  const [reversingPaymentId, setReversingPaymentId] =
+  const [processingPaymentId, setProcessingPaymentId] =
     useState<number | null>(null);
+
+  const [processingPaymentAction, setProcessingPaymentAction] =
+    useState<"REVERSE" | "REFUND" | null>(null);
 
   const [paymentFilter, setPaymentFilter] =
     useState<"CLEARED" | "CANCELLED" | "REFUNDED">("CLEARED");
@@ -236,18 +239,22 @@ export default function PaymentSummary({
     );
   }
 
-  const handleReversePayment = async (
+  const handlePaymentAction = async (
+    action: "REVERSE" | "REFUND",
     paymentId: number,
     amount: string
   ) => {
+    const isRefund = action === "REFUND";
     const confirmed = window.confirm(
-      `Reverse this payment of ${money(amount)}?\n\n` +
-        "The payment will remain in history but will no longer count as paid."
+      isRefund
+        ? `Refund this payment of ${money(amount)}?\n\nThe payment will be marked as refunded and will no longer count as paid.`
+        : `Reverse this payment of ${money(amount)}?\n\nThe payment will remain in history but will no longer count as paid.`
     );
 
     if (!confirmed) return;
 
-    setReversingPaymentId(paymentId);
+    setProcessingPaymentId(paymentId);
+    setProcessingPaymentAction(action);
     setError("");
 
     try {
@@ -260,6 +267,7 @@ export default function PaymentSummary({
           },
           body: JSON.stringify({
             paymentId,
+            action,
           }),
         }
       );
@@ -269,7 +277,9 @@ export default function PaymentSummary({
       if (!response.ok || !data.success) {
         setError(
           data.message ||
-            "Unable to reverse payment."
+            (isRefund
+              ? "Unable to refund payment."
+              : "Unable to reverse payment.")
         );
         return;
       }
@@ -277,7 +287,7 @@ export default function PaymentSummary({
       await loadPaymentSummary();
     } catch (error) {
       console.error(
-        "Reverse payment error:",
+        `${isRefund ? "Refund" : "Reverse"} payment error:`,
         error
       );
 
@@ -285,7 +295,8 @@ export default function PaymentSummary({
         "Unable to connect to the server."
       );
     } finally {
-      setReversingPaymentId(null);
+      setProcessingPaymentId(null);
+      setProcessingPaymentAction(null);
     }
   };
 
@@ -647,25 +658,49 @@ export default function PaymentSummary({
 
                     <td className="px-4 py-3 text-right">
                       {payment.status === "CLEARED" ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleReversePayment(
-                              payment.id,
-                              payment.amount
-                            )
-                          }
-                          disabled={
-                            reversingPaymentId ===
-                            payment.id
-                          }
-                          className="text-xs font-medium text-black/40 transition hover:text-red-600 disabled:opacity-50"
-                        >
-                          {reversingPaymentId ===
-                          payment.id
-                            ? "Reversing..."
-                            : "Reverse"}
-                        </button>
+                        <div className="flex items-center justify-end gap-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handlePaymentAction(
+                                "REFUND",
+                                payment.id,
+                                payment.amount
+                              )
+                            }
+                            disabled={
+                              processingPaymentId ===
+                              payment.id
+                            }
+                            className="text-xs font-medium text-black/45 transition hover:text-[#a66f00] disabled:opacity-50"
+                          >
+                            {processingPaymentId === payment.id &&
+                            processingPaymentAction === "REFUND"
+                              ? "Refunding..."
+                              : "Refund"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handlePaymentAction(
+                                "REVERSE",
+                                payment.id,
+                                payment.amount
+                              )
+                            }
+                            disabled={
+                              processingPaymentId ===
+                              payment.id
+                            }
+                            className="text-xs font-medium text-black/40 transition hover:text-red-600 disabled:opacity-50"
+                          >
+                            {processingPaymentId === payment.id &&
+                            processingPaymentAction === "REVERSE"
+                              ? "Reversing..."
+                              : "Reverse"}
+                          </button>
+                        </div>
                       ) : (
                         <span className="text-[10px] text-black/25">
                           —

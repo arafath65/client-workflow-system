@@ -189,6 +189,10 @@ export async function GET(
       );
     }
 
+    // --------------------------------------------------
+    // Billing Summary
+    // --------------------------------------------------
+
     const workflowFees = clientFile.fileWorkflows.reduce(
       (sum, workflow) =>
         sum + decimalToNumber(workflow.finalAmount),
@@ -201,7 +205,8 @@ export async function GET(
       0
     );
 
-    const totalAmount = workflowFees + extraCharges;
+    const totalAmount =
+      workflowFees + extraCharges;
 
     const clearedPayments = clientFile.payments.filter(
       (payment) => payment.status === "CLEARED"
@@ -249,7 +254,7 @@ export async function GET(
 }
 
 // ==================================================
-// PATCH - Reverse Payment
+// PATCH - Reverse or Refund Payment
 // ==================================================
 
 export async function PATCH(
@@ -291,6 +296,24 @@ export async function PATCH(
         ? Number((body as { paymentId?: unknown }).paymentId)
         : NaN;
 
+    const action =
+      typeof body === "object" &&
+      body !== null &&
+      "action" in body &&
+      typeof (body as { action?: unknown }).action === "string"
+        ? (body as { action: string }).action.toUpperCase()
+        : "REVERSE";
+
+    if (action !== "REVERSE" && action !== "REFUND") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid payment action.",
+        },
+        { status: 400 }
+      );
+    }
+
     if (!Number.isInteger(paymentId) || paymentId <= 0) {
       return NextResponse.json(
         {
@@ -311,7 +334,9 @@ export async function PATCH(
         amount: true,
         status: true,
         clientFile: {
-          select: { fileNumber: true },
+          select: {
+            fileNumber: true,
+          },
         },
       },
     });
@@ -340,49 +365,55 @@ export async function PATCH(
       return NextResponse.json(
         {
           success: false,
-          message: "Only a cleared payment can be reversed.",
+          message: `Only a cleared payment can be ${action === "REFUND" ? "refunded" : "reversed"}.`,
         },
         { status: 400 }
       );
     }
+
+    const newStatus = action === "REFUND" ? "REFUNDED" : "CANCELLED";
+    const auditAction = action === "REFUND" ? "REFUND" : "REVERSE";
+    const actionPastTense = action === "REFUND" ? "refunded" : "reversed";
 
     const updatedPayment = await prisma.payment.update({
       where: {
         id: paymentId,
       },
       data: {
-        status: "CANCELLED",
+        status: newStatus,
       },
     });
 
     await writeAuditLog({
       module: "PAYMENTS",
-      action: "REVERSE",
+      action: auditAction,
       entity: "PAYMENT",
-      entityId: updatedPayment.id,
-      description: `Payment #${updatedPayment.id} reversed for client file ${payment.clientFile.fileNumber}.`,
+      entityId: paymentId,
+      description: `Payment ${paymentId} of LKR ${payment.amount.toFixed(2)} ${actionPastTense} for file ${payment.clientFile.fileNumber}.`,
       metadata: {
-        paymentId: updatedPayment.id,
+        paymentId,
         clientFileId,
         fileNumber: payment.clientFile.fileNumber,
-        amount: Number(payment.amount),
-        previousStatus: payment.status,
-        newStatus: updatedPayment.status,
+        amount: payment.amount.toString(),
+        oldStatus: "CLEARED",
+        newStatus,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: "Payment reversed successfully.",
+      message: action === "REFUND"
+        ? "Payment refunded successfully."
+        : "Payment reversed successfully.",
       payment: updatedPayment,
     });
   } catch (error) {
-    console.error("Reverse payment error:", error);
+    console.error("Payment action error:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message: "Unable to reverse payment.",
+        message: "Unable to process payment action.",
       },
       { status: 500 }
     );
@@ -516,6 +547,25 @@ export async function POST(
       select: {
         id: true,
         fileNumber: true,
+        status: true,
+        fileWorkflows: {
+          select: {
+            finalAmount: true,
+          },
+        },
+        charges: {
+          select: {
+            totalAmount: true,
+          },
+        },
+        payments: {
+          where: {
+            status: "CLEARED",
+          },
+          select: {
+            amount: true,
+          },
+        },
       },
     });
 
@@ -526,6 +576,76 @@ export async function POST(
           message: "Client file not found.",
         },
         { status: 404 }
+      );
+    }
+
+    // --------------------------------------------------
+    // Prevent overpayment
+    //
+    // Example:
+    // Outstanding = 8,000
+    // Payment     = 9,000
+    // Result      = REJECTED
+    // --------------------------------------------------
+
+    const currentWorkflowFees =
+      clientFile.fileWorkflows.reduce(
+        (sum, workflow) =>
+          sum +
+          decimalToNumber(
+            workflow.finalAmount
+          ),
+        0
+      );
+
+    const currentExtraCharges =
+      clientFile.charges.reduce(
+        (sum, charge) =>
+          sum +
+          decimalToNumber(
+            charge.totalAmount
+          ),
+        0
+      );
+
+    const currentTotalAmount =
+      currentWorkflowFees +
+      currentExtraCharges;
+
+    const currentTotalPaid =
+      clientFile.payments.reduce(
+        (sum, payment) =>
+          sum +
+          decimalToNumber(
+            payment.amount
+          ),
+        0
+      );
+
+    const currentOutstanding =
+      clientFile.status === "CANCELLED"
+        ? 0
+        : Math.max(
+            currentTotalAmount -
+              currentTotalPaid,
+            0
+          );
+
+    const requestedPayment =
+      decimalToNumber(amount);
+
+    if (
+      status === "CLEARED" &&
+      requestedPayment >
+        currentOutstanding
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            `Payment amount cannot exceed the current outstanding balance of LKR ${currentOutstanding.toFixed(2)}.`,
+        },
+        { status: 400 }
       );
     }
 
@@ -584,17 +704,17 @@ export async function POST(
       action: "CREATE",
       entity: "PAYMENT",
       entityId: payment.id,
-      description: `Payment #${payment.id} of ${amount} recorded for client file ${clientFile.fileNumber}.`,
+      description: `Payment of ${amount} recorded for file ${clientFile.fileNumber}.`,
       metadata: {
         paymentId: payment.id,
         clientFileId,
         fileNumber: clientFile.fileNumber,
+        amount,
+        paymentMethod,
+        status,
+        referenceNo,
+        paidAt: paidAt.toISOString(),
         fileWorkflowId: rawFileWorkflowId,
-        amount: Number(payment.amount),
-        paymentMethod: payment.paymentMethod,
-        status: payment.status,
-        referenceNo: payment.referenceNo,
-        paidAt: payment.paidAt.toISOString(),
       },
     });
 

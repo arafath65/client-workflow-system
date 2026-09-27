@@ -2,13 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest
+) {
   try {
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search")?.trim() || "";
+    const {
+      searchParams,
+    } = new URL(request.url);
 
-    const clients = await prisma.client.findMany({
-      where: search
+    const search =
+      searchParams
+        .get("search")
+        ?.trim() || "";
+
+    const status =
+      searchParams
+        .get("status") || "";
+
+    const where = {
+      ...(search
         ? {
             OR: [
               {
@@ -23,67 +35,101 @@ export async function GET(request: NextRequest) {
               },
             ],
           }
-        : undefined,
-      orderBy: {
-        name: "asc",
-      },
-    });
+        : {}),
+
+      ...(status === "ACTIVE"
+        ? {
+            status: true,
+          }
+        : status === "INACTIVE"
+          ? {
+              status: false,
+            }
+          : {}),
+    };
+
+    const clients =
+      await prisma.client.findMany({
+        where,
+
+        orderBy: {
+          name: "asc",
+        },
+      });
 
     return NextResponse.json({
       success: true,
       clients,
     });
   } catch (error) {
-    console.error("Get clients error:", error);
+    console.error(
+      "Get clients error:",
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: "Unable to load clients.",
+        message:
+          "Unable to load clients.",
       },
       { status: 500 }
     );
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest
+) {
   try {
-    const body = await request.json();
+    const body =
+      await request.json();
 
-    const name = String(body.name || "").trim();
-    const whatsapp = String(body.whatsapp || "").trim();
+    const name = String(
+      body.name || ""
+    ).trim();
+
+    const whatsapp = String(
+      body.whatsapp || ""
+    ).trim();
 
     if (!name) {
       return NextResponse.json(
         {
           success: false,
-          message: "Client name is required.",
+          message:
+            "Client name is required.",
         },
         { status: 400 }
       );
     }
 
     // --------------------------------------------------
-    // Duplicate WhatsApp check
+    // Duplicate WhatsApp Check
     // --------------------------------------------------
+
     if (whatsapp) {
-      const existingClient = await prisma.client.findFirst({
-        where: {
-          whatsapp,
-        },
-        select: {
-          id: true,
-          name: true,
-          whatsapp: true,
-        },
-      });
+      const existingClient =
+        await prisma.client.findFirst({
+          where: {
+            whatsapp,
+          },
+
+          select: {
+            id: true,
+            name: true,
+            whatsapp: true,
+            status: true,
+          },
+        });
 
       if (existingClient) {
         return NextResponse.json(
           {
             success: false,
             duplicate: true,
-            client: existingClient,
+            client:
+              existingClient,
             message:
               "A client with this WhatsApp number already exists.",
           },
@@ -92,39 +138,58 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const client = await prisma.client.create({
-      data: {
-        name,
-        whatsapp: whatsapp || null,
+    // --------------------------------------------------
+    // Create Client
+    // --------------------------------------------------
+
+    const client =
+      await prisma.client.create({
+        data: {
+          name,
+          whatsapp:
+            whatsapp || null,
+          status: true,
+        },
+      });
+
+    await writeAuditLog({
+      module: "CLIENTS",
+
+      action: "CREATE",
+
+      entity: "Client",
+
+      entityId: client.id,
+
+      description: `Created client: ${client.name}`,
+
+      metadata: {
+        name: client.name,
+        whatsapp: client.whatsapp,
+        status: client.status,
       },
     });
 
-    await writeAuditLog({
-  module: "CLIENTS",
-  action: "CREATE",
-  entity: "Client",
-  entityId: client.id,
-  description: `Created client: ${client.name}`,
-  metadata: {
-    name: client.name,
-    whatsapp: client.whatsapp,
-  },
-});
-
-    return NextResponse.json({
-      success: true,
-      client,
-      message: "Client created successfully.",
-    });
-
-    
+    return NextResponse.json(
+      {
+        success: true,
+        client,
+        message:
+          "Client created successfully.",
+      },
+      { status: 201 }
+    );
   } catch (error) {
-    console.error("Create client error:", error);
+    console.error(
+      "Create client error:",
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: "Unable to create client.",
+        message:
+          "Unable to create client.",
       },
       { status: 500 }
     );

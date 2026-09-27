@@ -1,26 +1,69 @@
-import Link from "next/link";
 import Navigation from "../components/Navigation";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import AddClientButton from "./AddClientButton";
-import EditClientButton from "./EditClientButton";
-import ClientFilter from "./ClientFilter";
+import ClientsList from "./ClientsList";
 
-type ClientsPageProps = {
-  searchParams: Promise<{
-    search?: string;
-  }>;
+type ClientFileSummary = {
+  status: string;
+  fileWorkflows: {
+    finalAmount: unknown;
+  }[];
+  charges: {
+    totalAmount: unknown;
+  }[];
+  payments: {
+    amount: unknown;
+    status: string;
+  }[];
 };
 
-export default async function ClientsPage({
-  searchParams,
-}: ClientsPageProps) {
+function calculateFileDue(file: ClientFileSummary) {
+  if (file.status === "CANCELLED") {
+    return 0;
+  }
+
+  const workflowTotal =
+    file.fileWorkflows.reduce(
+      (sum, workflow) =>
+        sum + Number(workflow.finalAmount),
+      0
+    );
+
+  const chargeTotal =
+    file.charges.reduce(
+      (sum, charge) =>
+        sum + Number(charge.totalAmount),
+      0
+    );
+
+  const clearedPayments =
+    file.payments.reduce(
+      (sum, payment) =>
+        payment.status === "CLEARED"
+          ? sum + Number(payment.amount)
+          : sum,
+      0
+    );
+
+  return Math.max(
+    0,
+    workflowTotal +
+      chargeTotal -
+      clearedPayments
+  );
+}
+
+export default async function ClientsPage() {
   // --------------------------------------------------
   // Authentication
   // --------------------------------------------------
+
   const cookieStore = await cookies();
-  const sessionUser = cookieStore.get("session_user");
+
+  const sessionUser =
+    cookieStore.get("session_user");
 
   if (!sessionUser?.value) {
     redirect("/login");
@@ -28,52 +71,155 @@ export default async function ClientsPage({
 
   const userId = Number(sessionUser.value);
 
-  if (!Number.isInteger(userId)) {
+  if (
+    !Number.isInteger(userId) ||
+    userId <= 0
+  ) {
     redirect("/login");
   }
 
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      username: true,
-    },
-  });
+  const user =
+    await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        username: true,
+      },
+    });
 
   if (!user) {
     redirect("/login");
   }
 
   // --------------------------------------------------
-  // Search
+  // Load all clients once
   // --------------------------------------------------
-  const params = await searchParams;
-  const search = params.search?.trim() || "";
 
-  const clients = await prisma.client.findMany({
-    where: search
-      ? {
-          OR: [
-            {
-              name: {
-                contains: search,
+  const [
+    clients,
+    totalActiveClients,
+    inProgressClients,
+    completedClients,
+  ] = await Promise.all([
+    prisma.client.findMany({
+      select: {
+        id: true,
+        name: true,
+        whatsapp: true,
+        status: true,
+
+        files: {
+          select: {
+            status: true,
+
+            fileWorkflows: {
+              select: {
+                finalAmount: true,
               },
             },
-            {
-              whatsapp: {
-                contains: search,
+
+            charges: {
+              select: {
+                totalAmount: true,
               },
             },
-          ],
-        }
-      : undefined,
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
 
-  const totalClients = await prisma.client.count();
+            payments: {
+              select: {
+                amount: true,
+                status: true,
+              },
+            },
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+
+    prisma.client.count({
+      where: {
+        status: true,
+      },
+    }),
+
+    prisma.client.count({
+      where: {
+        status: true,
+        files: {
+          some: {
+            status: {
+              in: [
+                "OPEN",
+                "IN_PROGRESS",
+                "ON_HOLD",
+              ],
+            },
+          },
+        },
+      },
+    }),
+
+    prisma.client.count({
+      where: {
+        status: true,
+        files: {
+          some: {
+            status: "COMPLETED",
+          },
+          none: {
+            status: {
+              in: [
+                "OPEN",
+                "IN_PROGRESS",
+                "ON_HOLD",
+              ],
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  // --------------------------------------------------
+  // Prepare client data
+  // --------------------------------------------------
+
+  const clientRows = clients.map(
+    (client) => {
+      const totalFiles =
+        client.files.length;
+
+      const inProgressFiles =
+        client.files.filter(
+          (file) =>
+            file.status === "OPEN" ||
+            file.status === "IN_PROGRESS" ||
+            file.status === "ON_HOLD"
+        ).length;
+
+      const totalDue =
+        client.files.reduce(
+          (sum, file) =>
+            sum +
+            calculateFileDue(file),
+          0
+        );
+
+      return {
+        id: client.id,
+        name: client.name,
+        whatsapp: client.whatsapp,
+        status: client.status,
+        totalFiles,
+        inProgressFiles,
+        totalDue,
+      };
+    }
+  );
 
   return (
     <main className="min-h-screen bg-[#f6f6f4] text-[#171717]">
@@ -109,7 +255,10 @@ export default async function ClientsPage({
               </p>
             </div>
 
-            <form action="/api/auth/logout" method="POST">
+            <form
+              action="/api/auth/logout"
+              method="POST"
+            >
               <button
                 type="submit"
                 className="rounded-lg border border-black/10 px-3 py-2 text-xs font-medium hover:bg-black/[0.03]"
@@ -125,7 +274,7 @@ export default async function ClientsPage({
 
       {/* Main */}
       <section className="mx-auto max-w-7xl px-6 py-8">
-        {/* Heading */}
+        {/* Page Heading */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f9a800]">
@@ -137,8 +286,8 @@ export default async function ClientsPage({
             </h1>
 
             <p className="mt-2 text-sm text-black/50">
-              Manage your registered clients and their contact
-              information.
+              Manage your registered clients and
+              their contact information.
             </p>
           </div>
 
@@ -146,113 +295,57 @@ export default async function ClientsPage({
         </div>
 
         {/* Summary */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-black/10 bg-white p-5">
-            <p className="text-xs font-medium text-black/45">
-              Total Clients
-            </p>
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <SummaryCard
+            title="Total Clients"
+            value={String(totalActiveClients)}
+            description="Active registered clients"
+          />
 
-            <p className="mt-3 text-2xl font-semibold">
-              {totalClients}
-            </p>
+          <SummaryCard
+            title="In Progress"
+            value={String(inProgressClients)}
+            description="Clients with active files"
+          />
 
-            <p className="mt-1 text-xs text-black/35">
-              Registered clients
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-black/10 bg-white p-5">
-            <p className="text-xs font-medium text-black/45">
-              Search Results
-            </p>
-
-            <p className="mt-3 text-2xl font-semibold">
-              {clients.length}
-            </p>
-
-            <p className="mt-1 text-xs text-black/35">
-              Clients matching current search
-            </p>
-          </div>
+          <SummaryCard
+            title="Completed"
+            value={String(completedClients)}
+            description="Clients with no active files"
+          />
         </div>
 
         {/* Client List */}
         <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-sm font-semibold">
-                Client List
-              </h2>
-
-              <p className="mt-1 text-xs text-black/40">
-                Search and manage client records.
-              </p>
-            </div>
-
-            <ClientFilter />
-          </div>
-
-          {clients.length === 0 ? (
-            <div className="mt-6 flex min-h-40 items-center justify-center rounded-lg border border-dashed border-black/10 bg-[#fafaf9]">
-              <div className="text-center">
-                <p className="text-sm font-medium text-black/50">
-                  No clients found
-                </p>
-
-                <p className="mt-1 text-xs text-black/30">
-                  Add a client or change your search.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-5 overflow-hidden rounded-lg border border-black/10">
-              <div className="grid grid-cols-[1fr_1fr_auto] gap-4 border-b border-black/10 bg-[#fafaf9] px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                  Client
-                </p>
-
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                  WhatsApp
-                </p>
-
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                  Action
-                </p>
-              </div>
-
-              {clients.map((client) => (
-                <div
-                  key={client.id}
-                  className="grid grid-cols-[1fr_1fr_auto] items-center gap-4 border-b border-black/5 px-4 py-4 last:border-b-0 hover:bg-[#fafaf9]"
-                >
-                  <div>
-                    <Link
-  href={`/clients/${client.id}`}
-  className="text-xs font-semibold hover:text-[#d99000]"
->
-  {client.name}
-</Link>
-
-                    <p className="mt-0.5 text-[10px] text-black/35">
-                      Client #{client.id}
-                    </p>
-                  </div>
-
-                  <p className="text-xs text-black/55">
-                    {client.whatsapp || "—"}
-                  </p>
-
-                  <EditClientButton
-                    id={client.id}
-                    name={client.name}
-                    whatsapp={client.whatsapp}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <ClientsList clients={clientRows} />
         </div>
       </section>
     </main>
+  );
+}
+
+function SummaryCard({
+  title,
+  value,
+  description,
+}: {
+  title: string;
+  value: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-xl border border-black/10 bg-white p-5">
+      <p className="text-xs font-medium text-black/45">
+        {title}
+      </p>
+
+      <p className="mt-3 text-2xl font-semibold">
+        {value}
+      </p>
+
+      <p className="mt-1 text-xs text-black/35">
+        {description}
+      </p>
+    </div>
   );
 }

@@ -170,7 +170,7 @@ export default async function DocumentTypesPage({
 
       {/* Navigation */}
 
-      <Navigation currentPage="settings" />
+      <Navigation currentPage="document-types" />
 
       {/* Content */}
 

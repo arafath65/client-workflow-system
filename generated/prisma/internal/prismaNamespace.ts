@@ -1958,6 +1958,7 @@ export const ClientScalarFieldEnum = {
   id: 'id',
   name: 'name',
   whatsapp: 'whatsapp',
+  status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

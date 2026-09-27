@@ -282,38 +282,6 @@ function drawFooter(
   );
 }
 
-function drawSectionTitle(
-  doc: PDFKit.PDFDocument,
-  text: string
-) {
-  ensureSpace(doc, 28);
-
-  doc
-    .fillColor(COLORS.black)
-    .font("Helvetica-Bold")
-    .fontSize(11)
-    .text(
-      text,
-      LEFT,
-      doc.y
-    );
-
-  doc
-    .strokeColor(COLORS.accent)
-    .lineWidth(2)
-    .moveTo(
-      LEFT,
-      doc.y + 15
-    )
-    .lineTo(
-      LEFT + 34,
-      doc.y + 15
-    )
-    .stroke();
-
-  doc.y += 23;
-}
-
 function drawSummary(
   doc: PDFKit.PDFDocument,
   group: StaffGroup

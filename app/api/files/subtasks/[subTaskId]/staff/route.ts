@@ -1,6 +1,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAuditLog } from "@/lib/audit";
 
 type RouteContext = {
   params: Promise<{
@@ -44,9 +45,21 @@ export async function PATCH(
       );
     }
 
+    // --------------------------------------------------
+    // Find subtask and current staff assignment
+    // --------------------------------------------------
+
     const subTask =
       await prisma.fileWorkflowSubTask.findUnique({
         where: { id },
+        include: {
+          assignedStaff: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
       });
 
     if (!subTask) {
@@ -59,7 +72,14 @@ export async function PATCH(
       );
     }
 
-    if (assignedStaffId !== null && assignedStaffId !== undefined) {
+    // --------------------------------------------------
+    // Validate selected staff member
+    // --------------------------------------------------
+
+    if (
+      assignedStaffId !== null &&
+      assignedStaffId !== undefined
+    ) {
       const staff = await prisma.staff.findUnique({
         where: {
           id: assignedStaffId,
@@ -76,6 +96,10 @@ export async function PATCH(
         );
       }
     }
+
+    // --------------------------------------------------
+    // Update subtask staff assignment
+    // --------------------------------------------------
 
     const updatedSubTask =
       await prisma.fileWorkflowSubTask.update({
@@ -95,6 +119,38 @@ export async function PATCH(
           },
         },
       });
+
+    // --------------------------------------------------
+    // Audit Log: Staff assignment change
+    // --------------------------------------------------
+
+    const previousStaff = subTask.assignedStaff;
+    const newStaff = updatedSubTask.assignedStaff;
+
+    const isUnassignment = newStaff === null;
+
+    await writeAuditLog({
+      module: "WORKFLOW",
+      action: isUnassignment
+        ? "UNASSIGN_STAFF"
+        : "ASSIGN_STAFF",
+      entity: "FILE_WORKFLOW_SUBTASK",
+      entityId: updatedSubTask.id,
+      description: isUnassignment
+        ? `Removed staff assignment from subtask #${updatedSubTask.id}.`
+        : `Assigned ${newStaff.name} to subtask #${updatedSubTask.id}.`,
+      metadata: {
+        subTaskId: updatedSubTask.id,
+        previousStaffId:
+          previousStaff?.id ?? null,
+        previousStaffName:
+          previousStaff?.name ?? null,
+        newStaffId:
+          newStaff?.id ?? null,
+        newStaffName:
+          newStaff?.name ?? null,
+      },
+    });
 
     return NextResponse.json({
       success: true,

@@ -203,8 +203,8 @@ export default function FileActions({
                   Cancel Client File
                 </h2>
                 <p className="mt-1 text-xs text-black/40">
-                  {fileNumber} · {title}
-                </p>
+  {clientName} · {fileNumber} · {title}
+</p>
               </div>
 
               <button
