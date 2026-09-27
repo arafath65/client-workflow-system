@@ -2,11 +2,15 @@
   "name": "client-workflow-system",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "desktop": "electron .",
+    "desktop:prepare": "npm run build && node scripts/prepare-desktop.cjs",
+    "desktop:dist": "npm run desktop:prepare && electron-builder --win",
     "postinstall": "prisma skills sync || exit 0"
   },
   "dependencies": {
@@ -26,11 +30,54 @@
     "@types/pdfkit": "^0.17.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "electron": "44.4.5",
+    "electron-builder": "26.15.3",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "prisma": "^7.10.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
     "typescript": "^5"
+  },
+  "build": {
+    "appId": "com.aiglobal.clientworkflow",
+    "productName": "A&I Global Workflow System",
+    "executableName": "AIGlobalWorkflowSystem",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "desktop-runtime",
+        "to": "next"
+      },
+      {
+        "from": "electron/ai-global-logo.ico",
+        "to": "ai-global-logo.ico"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "electron/ai-global-logo.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "A&I Global Workflow System",
+      "deleteAppDataOnUninstall": false
+    }
   }
 }
