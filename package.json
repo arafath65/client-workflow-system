@@ -1,6 +1,6 @@
 {
   "name": "client-workflow-system",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "main": "electron/main.cjs",
   "scripts": {
@@ -78,6 +78,10 @@
       "createStartMenuShortcut": true,
       "shortcutName": "A&I Global Workflow System",
       "deleteAppDataOnUninstall": false
-    }
-  }
+    },
+    "copyright": "Copyright © 2026 A&I Global",
+    "artifactName": "A&I Global Workflow System Setup ${version}.${ext}"
+  },
+  "description": "Client Workflow Management System",
+  "author": "A&I Global"
 }
