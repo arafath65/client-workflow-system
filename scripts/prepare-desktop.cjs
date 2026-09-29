@@ -57,6 +57,13 @@ function copyDirectory(source, destination) {
   });
 }
 
+function removeIfExists(target) {
+  fs.rmSync(target, {
+    recursive: true,
+    force: true,
+  });
+}
+
 if (!fs.existsSync(standaloneDir)) {
   throw new Error(
     "Next.js standalone folder was not created. Run npm run build first."
@@ -64,10 +71,6 @@ if (!fs.existsSync(standaloneDir)) {
 }
 
 console.log("Preparing Next.js desktop package...");
-
-//
-// First prepare the normal Next.js standalone folder.
-//
 
 console.log("Copying public assets...");
 
@@ -83,21 +86,35 @@ copyDirectory(
   standaloneStaticDir
 );
 
-//
-// Create a separate desktop runtime folder.
-//
-// IMPORTANT:
-// We deliberately rename node_modules -> modules.
-// This prevents electron-builder from treating the
-// Next.js standalone runtime as Electron app dependencies.
-//
-
 console.log("Creating desktop runtime...");
 
 copyDirectory(
   standaloneDir,
   desktopRuntimeDir
 );
+
+console.log("Removing environment files from desktop runtime...");
+
+removeIfExists(
+  path.join(desktopRuntimeDir, ".env")
+);
+
+removeIfExists(
+  path.join(desktopRuntimeDir, ".env.local")
+);
+
+removeIfExists(
+  path.join(desktopRuntimeDir, ".env.production")
+);
+
+removeIfExists(
+  path.join(
+    desktopRuntimeDir,
+    ".env.production.local"
+  )
+);
+
+console.log("Preparing standalone Node modules...");
 
 const oldModulesDir = path.join(
   desktopRuntimeDir,
@@ -110,12 +127,8 @@ if (!fs.existsSync(oldModulesDir)) {
   );
 }
 
-fs.rmSync(
-  desktopRuntimeModulesDir,
-  {
-    recursive: true,
-    force: true,
-  }
+removeIfExists(
+  desktopRuntimeModulesDir
 );
 
 fs.renameSync(
@@ -126,10 +139,24 @@ fs.renameSync(
 console.log("");
 console.log("Desktop package prepared successfully.");
 console.log("");
-console.log(`Desktop runtime: ${desktopRuntimeDir}`);
-console.log(`Server:          ${path.join(desktopRuntimeDir, "server.js")}`);
-console.log(`Modules:         ${desktopRuntimeModulesDir}`);
-console.log(`Public:          ${path.join(desktopRuntimeDir, "public")}`);
+console.log(
+  `Desktop runtime: ${desktopRuntimeDir}`
+);
+console.log(
+  `Server:          ${path.join(
+    desktopRuntimeDir,
+    "server.js"
+  )}`
+);
+console.log(
+  `Modules:         ${desktopRuntimeModulesDir}`
+);
+console.log(
+  `Public:          ${path.join(
+    desktopRuntimeDir,
+    "public"
+  )}`
+);
 console.log(
   `Static:          ${path.join(
     desktopRuntimeDir,

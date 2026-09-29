@@ -35,7 +35,9 @@ if (!gotTheLock) {
   });
 
   app.whenReady().then(async () => {
-    app.setAppUserModelId("com.aiglobal.clientworkflow");
+    app.setAppUserModelId(
+      "com.aiglobal.clientworkflow"
+    );
 
     setupLogging();
 
@@ -49,7 +51,9 @@ if (!gotTheLock) {
       dialog.showErrorBox(
         "A&I Global Workflow System",
         `The application could not start.\n\n${
-          error instanceof Error ? error.message : String(error)
+          error instanceof Error
+            ? error.message
+            : String(error)
         }`
       );
 
@@ -60,10 +64,18 @@ if (!gotTheLock) {
 
 function getNextRoot() {
   if (app.isPackaged) {
-    return path.join(process.resourcesPath, "next");
+    return path.join(
+      process.resourcesPath,
+      "next"
+    );
   }
 
-  return path.join(__dirname, "..", ".next", "standalone");
+  return path.join(
+    __dirname,
+    "..",
+    ".next",
+    "standalone"
+  );
 }
 
 function getNodeModulesPath() {
@@ -95,6 +107,20 @@ function getIconPath() {
   );
 }
 
+function getConfigDirectory() {
+  return path.join(
+    app.getPath("userData"),
+    "config"
+  );
+}
+
+function getConfigFilePath() {
+  return path.join(
+    getConfigDirectory(),
+    "app.env"
+  );
+}
+
 function setupLogging() {
   try {
     const logDirectory = path.join(
@@ -102,9 +128,12 @@ function setupLogging() {
       "logs"
     );
 
-    fs.mkdirSync(logDirectory, {
-      recursive: true,
-    });
+    fs.mkdirSync(
+      logDirectory,
+      {
+        recursive: true,
+      }
+    );
 
     const logFile = path.join(
       logDirectory,
@@ -119,7 +148,7 @@ function setupLogging() {
     );
 
     logStream.write(
-      `\n\n===== Application started ${new Date().toISOString()} =====\n`
+      `\n===== Application started ${new Date().toISOString()} =====\n`
     );
   } catch {
     logStream = null;
@@ -127,9 +156,12 @@ function setupLogging() {
 }
 
 function logMessage(message) {
-  const text = `[${new Date().toISOString()}] ${message}\n`;
+  const text =
+    `[${new Date().toISOString()}] ${message}\n`;
 
-  console.log(text.trim());
+  console.log(
+    text.trim()
+  );
 
   if (logStream) {
     logStream.write(text);
@@ -142,256 +174,484 @@ function logError(error) {
       ? error.stack || error.message
       : String(error);
 
-  logMessage(`ERROR: ${message}`);
+  logMessage(
+    `ERROR: ${message}`
+  );
+}
+
+function parseEnvFile(content) {
+  const result = {};
+
+  const lines =
+    content.split(/\r?\n/);
+
+  for (const line of lines) {
+    const trimmed =
+      line.trim();
+
+    if (
+      !trimmed ||
+      trimmed.startsWith("#")
+    ) {
+      continue;
+    }
+
+    const separatorIndex =
+      trimmed.indexOf("=");
+
+    if (separatorIndex === -1) {
+      continue;
+    }
+
+    const key =
+      trimmed
+        .slice(
+          0,
+          separatorIndex
+        )
+        .trim();
+
+    let value =
+      trimmed
+        .slice(
+          separatorIndex + 1
+        )
+        .trim();
+
+    if (
+      value.length >= 2 &&
+      (
+        (
+          value.startsWith('"') &&
+          value.endsWith('"')
+        ) ||
+        (
+          value.startsWith("'") &&
+          value.endsWith("'")
+        )
+      )
+    ) {
+      value =
+        value.slice(
+          1,
+          -1
+        );
+    }
+
+    if (key) {
+      result[key] = value;
+    }
+  }
+
+  return result;
+}
+
+function ensureConfigTemplate() {
+  const configDirectory =
+    getConfigDirectory();
+
+  const configFile =
+    getConfigFilePath();
+
+  fs.mkdirSync(
+    configDirectory,
+    {
+      recursive: true,
+    }
+  );
+
+  if (!fs.existsSync(configFile)) {
+    const template = `# A&I Global Workflow System
+# Client database configuration
+
+DATABASE_URL=
+
+# Alternative database configuration
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=client_workflow_db
+`;
+
+    fs.writeFileSync(
+      configFile,
+      template,
+      "utf8"
+    );
+
+    logMessage(
+      `Created database configuration template: ${configFile}`
+    );
+  }
+
+  return configFile;
+}
+
+function loadPackagedEnvironment() {
+  if (!app.isPackaged) {
+    return;
+  }
+
+  const configFile =
+    ensureConfigTemplate();
+
+  const content =
+    fs.readFileSync(
+      configFile,
+      "utf8"
+    );
+
+  const config =
+    parseEnvFile(
+      content
+    );
+
+  Object.assign(
+    process.env,
+    config
+  );
+
+  const hasDatabaseUrl =
+    Boolean(
+      process.env.DATABASE_URL
+    );
+
+  const hasDatabaseSettings =
+    Boolean(
+      process.env.DB_HOST &&
+      process.env.DB_USER &&
+      process.env.DB_NAME
+    );
+
+  if (
+    !hasDatabaseUrl &&
+    !hasDatabaseSettings
+  ) {
+    throw new Error(
+      `Database configuration is missing.
+
+Please configure the following file:
+
+${configFile}
+
+Then start the application again.`
+    );
+  }
+
+  logMessage(
+    `Database configuration loaded from: ${configFile}`
+  );
 }
 
 function startNextServer() {
-  return new Promise((resolve, reject) => {
-    const nextRoot = getNextRoot();
+  return new Promise(
+    (resolve, reject) => {
+      try {
+        loadPackagedEnvironment();
 
-    const serverPath = path.join(
-      nextRoot,
-      "server.js"
-    );
+        const nextRoot =
+          getNextRoot();
 
-    if (!fs.existsSync(serverPath)) {
-      reject(
-        new Error(
-          `Next.js standalone server not found:\n\n${serverPath}\n\nRun the desktop build again.`
-        )
-      );
-
-      return;
-    }
-
-    logMessage(
-      `Starting Next.js server: ${serverPath}`
-    );
-
-    logMessage(
-      `Working directory: ${nextRoot}`
-    );
-
-    const nodeModulesPath = getNodeModulesPath();
-
-const env = {
-  ...process.env,
-
-  NODE_ENV: "production",
-
-  PORT: String(PORT),
-
-  HOSTNAME: "127.0.0.1",
-
-  ELECTRON_RUN_AS_NODE: "1",
-
-  ELECTRON_NO_ATTACH_CONSOLE: "1",
-
-  NODE_PATH:
-    nodeModulesPath +
-    path.delimiter +
-    (process.env.NODE_PATH || ""),
-};
-
-    nextProcess = spawn(
-      process.execPath,
-      [serverPath],
-      {
-        cwd: nextRoot,
-        env,
-        windowsHide: true,
-        stdio: [
-          "ignore",
-          "pipe",
-          "pipe",
-        ],
-      }
-    );
-
-    nextProcess.stdout.on(
-      "data",
-      (data) => {
-        logMessage(
-          `[Next.js] ${data.toString().trim()}`
-        );
-      }
-    );
-
-    nextProcess.stderr.on(
-      "data",
-      (data) => {
-        logMessage(
-          `[Next.js ERROR] ${data.toString().trim()}`
-        );
-      }
-    );
-
-    nextProcess.once(
-      "spawn",
-      () => {
-        logMessage(
-          `Next.js child process started. PID: ${nextProcess.pid}`
-        );
-
-        resolve();
-      }
-    );
-
-    nextProcess.once(
-      "error",
-      (error) => {
-        logError(
-          new Error(
-            `Failed to start Next.js child process: ${
-              error.message
-            }`
-          )
-        );
-
-        reject(error);
-      }
-    );
-
-    nextProcess.once(
-      "exit",
-      (code, signal) => {
-        logMessage(
-          `Next.js process exited. Code: ${code}, Signal: ${
-            signal || "none"
-          }`
-        );
-
-        if (
-          mainWindow &&
-          !mainWindow.isDestroyed()
-        ) {
-          dialog.showErrorBox(
-            "A&I Global Workflow System",
-            `The application server stopped unexpectedly.\n\nExit code: ${
-              code ?? "unknown"
-            }\nSignal: ${signal || "none"}`
+        const serverPath =
+          path.join(
+            nextRoot,
+            "server.js"
           );
 
-          app.quit();
+        if (
+          !fs.existsSync(
+            serverPath
+          )
+        ) {
+          reject(
+            new Error(
+              `Next.js standalone server not found:\n\n${serverPath}\n\nRun the desktop build again.`
+            )
+          );
+
+          return;
         }
+
+        const nodeModulesPath =
+          getNodeModulesPath();
+
+        logMessage(
+          `Starting Next.js server: ${serverPath}`
+        );
+
+        logMessage(
+          `Working directory: ${nextRoot}`
+        );
+
+        logMessage(
+          `Node modules path: ${nodeModulesPath}`
+        );
+
+        const env = {
+          ...process.env,
+
+          NODE_ENV:
+            "production",
+
+          PORT:
+            String(PORT),
+
+          HOSTNAME:
+            "127.0.0.1",
+
+          ELECTRON_RUN_AS_NODE:
+            "1",
+
+          ELECTRON_NO_ATTACH_CONSOLE:
+            "1",
+
+          NODE_PATH:
+            nodeModulesPath +
+            path.delimiter +
+            (
+              process.env.NODE_PATH ||
+              ""
+            ),
+        };
+
+        nextProcess =
+          spawn(
+            process.execPath,
+            [
+              serverPath,
+            ],
+            {
+              cwd:
+                nextRoot,
+
+              env,
+
+              windowsHide:
+                true,
+
+              stdio: [
+                "ignore",
+                "pipe",
+                "pipe",
+              ],
+            }
+          );
+
+        nextProcess.stdout.on(
+          "data",
+          (data) => {
+            logMessage(
+              `[Next.js] ${data
+                .toString()
+                .trim()}`
+            );
+          }
+        );
+
+        nextProcess.stderr.on(
+          "data",
+          (data) => {
+            logMessage(
+              `[Next.js ERROR] ${data
+                .toString()
+                .trim()}`
+            );
+          }
+        );
+
+        nextProcess.once(
+          "spawn",
+          () => {
+            logMessage(
+              `Next.js child process started. PID: ${nextProcess.pid}`
+            );
+
+            resolve();
+          }
+        );
+
+        nextProcess.once(
+          "error",
+          (error) => {
+            logError(error);
+            reject(error);
+          }
+        );
+
+        nextProcess.once(
+          "exit",
+          (code, signal) => {
+            logMessage(
+              `Next.js process exited. Code: ${code}, Signal: ${
+                signal || "none"
+              }`
+            );
+
+            if (
+              mainWindow &&
+              !mainWindow.isDestroyed()
+            ) {
+              dialog.showErrorBox(
+                "A&I Global Workflow System",
+                `The application server stopped unexpectedly.\n\nExit code: ${
+                  code ?? "unknown"
+                }\nSignal: ${
+                  signal || "none"
+                }`
+              );
+
+              app.quit();
+            }
+          }
+        );
+      } catch (error) {
+        logError(error);
+        reject(error);
       }
-    );
-  });
+    }
+  );
 }
 
 function waitForServer() {
-  return new Promise((resolve, reject) => {
-    const maxAttempts = 60;
+  return new Promise(
+    (resolve, reject) => {
+      const maxAttempts =
+        60;
 
-    let attempts = 0;
+      let attempts = 0;
 
-    function check() {
-      attempts += 1;
+      function check() {
+        attempts += 1;
 
-      logMessage(
-        `Checking Next.js server (${attempts}/${maxAttempts})...`
-      );
-
-      const request = http.get(
-        `${APP_URL}/login`,
-        (response) => {
-          response.resume();
-
-          logMessage(
-            `Server responded with HTTP ${response.statusCode}.`
-          );
-
-          if (
-            response.statusCode &&
-            response.statusCode < 500
-          ) {
-            resolve();
-            return;
-          }
-
-          retry();
-        }
-      );
-
-      request.setTimeout(
-        2000,
-        () => {
-          request.destroy();
-          retry();
-        }
-      );
-
-      request.on(
-        "error",
-        (error) => {
-          logMessage(
-            `Server check failed: ${error.message}`
-          );
-
-          retry();
-        }
-      );
-    }
-
-    function retry() {
-      if (attempts >= maxAttempts) {
-        reject(
-          new Error(
-            `The Next.js server did not respond at ${APP_URL} within the expected time.`
-          )
+        logMessage(
+          `Checking Next.js server (${attempts}/${maxAttempts})...`
         );
 
-        return;
+        const request =
+          http.get(
+            `${APP_URL}/login`,
+            (response) => {
+              response.resume();
+
+              logMessage(
+                `Server responded with HTTP ${response.statusCode}.`
+              );
+
+              if (
+                response.statusCode &&
+                response.statusCode < 500
+              ) {
+                resolve();
+                return;
+              }
+
+              retry();
+            }
+          );
+
+        request.setTimeout(
+          2000,
+          () => {
+            request.destroy();
+            retry();
+          }
+        );
+
+        request.on(
+          "error",
+          (error) => {
+            logMessage(
+              `Server check failed: ${error.message}`
+            );
+
+            retry();
+          }
+        );
       }
 
-      setTimeout(
-        check,
-        500
-      );
-    }
+      function retry() {
+        if (
+          attempts >=
+          maxAttempts
+        ) {
+          reject(
+            new Error(
+              `The Next.js server did not respond at ${APP_URL} within the expected time.`
+            )
+          );
 
-    check();
-  });
+          return;
+        }
+
+        setTimeout(
+          check,
+          500
+        );
+      }
+
+      check();
+    }
+  );
 }
 
 function createMainWindow() {
-  const iconPath = getIconPath();
+  const iconPath =
+    getIconPath();
 
   const windowOptions = {
-    width: 1440,
+    width:
+      1440,
 
-    height: 900,
+    height:
+      900,
 
-    minWidth: 1100,
+    minWidth:
+      1100,
 
-    minHeight: 700,
+    minHeight:
+      700,
 
-    show: false,
+    show:
+      false,
 
-    title: "A&I Global Workflow System",
+    title:
+      "A&I Global Workflow System",
 
-    backgroundColor: "#ffffff",
+    backgroundColor:
+      "#ffffff",
 
     webPreferences: {
-      contextIsolation: true,
+      contextIsolation:
+        true,
 
-      nodeIntegration: false,
+      nodeIntegration:
+        false,
 
-      sandbox: true,
+      sandbox:
+        true,
     },
   };
 
-  if (fs.existsSync(iconPath)) {
-    windowOptions.icon = iconPath;
+  if (
+    fs.existsSync(
+      iconPath
+    )
+  ) {
+    windowOptions.icon =
+      iconPath;
   }
 
-  mainWindow = new BrowserWindow(
-    windowOptions
-  );
+  mainWindow =
+    new BrowserWindow(
+      windowOptions
+    );
 
   mainWindow.removeMenu();
 
-  mainWindow.loadURL(APP_URL);
+  mainWindow.loadURL(
+    APP_URL
+  );
 
   mainWindow.once(
     "ready-to-show",
@@ -443,7 +703,8 @@ app.on(
 
       logStream.end();
 
-      logStream = null;
+      logStream =
+        null;
     }
   }
 );
