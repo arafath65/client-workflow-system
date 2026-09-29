@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
+const { execSync } = require("node:child_process");
 
 const projectRoot = path.resolve(__dirname, "..");
 
@@ -41,6 +42,21 @@ const desktopRuntimeModulesDir = path.join(
   "modules"
 );
 
+const migrationRuntimeDir = path.join(
+  desktopRuntimeDir,
+  "migration-runtime"
+);
+
+const projectPrismaDir = path.join(
+  projectRoot,
+  "prisma"
+);
+
+const projectPrismaConfig = path.join(
+  projectRoot,
+  "prisma.config.ts"
+);
+
 function copyDirectory(source, destination) {
   if (!fs.existsSync(source)) {
     throw new Error(`Source directory not found:\n${source}`);
@@ -64,9 +80,33 @@ function removeIfExists(target) {
   });
 }
 
+function copyFile(source, destination) {
+  if (!fs.existsSync(source)) {
+    throw new Error(`Source file not found:\n${source}`);
+  }
+
+  fs.mkdirSync(path.dirname(destination), {
+    recursive: true,
+  });
+
+  fs.copyFileSync(source, destination);
+}
+
 if (!fs.existsSync(standaloneDir)) {
   throw new Error(
     "Next.js standalone folder was not created. Run npm run build first."
+  );
+}
+
+if (!fs.existsSync(projectPrismaDir)) {
+  throw new Error(
+    `Prisma directory was not found:\n${projectPrismaDir}`
+  );
+}
+
+if (!fs.existsSync(projectPrismaConfig)) {
+  throw new Error(
+    `Prisma configuration file was not found:\n${projectPrismaConfig}`
   );
 }
 
@@ -108,10 +148,7 @@ removeIfExists(
 );
 
 removeIfExists(
-  path.join(
-    desktopRuntimeDir,
-    ".env.production.local"
-  )
+  path.join(desktopRuntimeDir, ".env.production.local")
 );
 
 console.log("Preparing standalone Node modules...");
@@ -136,29 +173,146 @@ fs.renameSync(
   desktopRuntimeModulesDir
 );
 
+console.log("Preparing Prisma migration runtime...");
+
+removeIfExists(
+  migrationRuntimeDir
+);
+
+fs.mkdirSync(
+  migrationRuntimeDir,
+  {
+    recursive: true,
+  }
+);
+
+const localPrismaPackagePath = path.join(
+  projectRoot,
+  "node_modules",
+  "prisma",
+  "package.json"
+);
+
+if (!fs.existsSync(localPrismaPackagePath)) {
+  throw new Error(
+    `Installed Prisma package was not found:\n${localPrismaPackagePath}\nRun npm install first.`
+  );
+}
+
+const localPrismaPackage = JSON.parse(
+  fs.readFileSync(
+    localPrismaPackagePath,
+    "utf8"
+  )
+);
+
+if (!localPrismaPackage.version) {
+  throw new Error(
+    "Unable to determine the installed Prisma CLI version."
+  );
+}
+
+const migrationPackageJson = {
+  name: "aiglobal-migration-runtime",
+  private: true,
+  version: "1.0.0",
+  dependencies: {
+    prisma: localPrismaPackage.version,
+  },
+};
+
+fs.writeFileSync(
+  path.join(
+    migrationRuntimeDir,
+    "package.json"
+  ),
+  JSON.stringify(
+    migrationPackageJson,
+    null,
+    2
+  ) + "\n",
+  "utf8"
+);
+
+copyDirectory(
+  projectPrismaDir,
+  path.join(
+    migrationRuntimeDir,
+    "prisma"
+  )
+);
+
+copyFile(
+  projectPrismaConfig,
+  path.join(
+    migrationRuntimeDir,
+    "prisma.config.ts"
+  )
+);
+
+const npmInstallCommand =
+  "npm install --omit=dev --no-audit --no-fund";
+
+console.log(
+  `Installing Prisma CLI ${localPrismaPackage.version} for the packaged migration runtime...`
+);
+
+execSync(
+  npmInstallCommand,
+  {
+    cwd: migrationRuntimeDir,
+    stdio: "inherit",
+    shell: true,
+  }
+);
+
+const migrationCliPath = path.join(
+  migrationRuntimeDir,
+  "node_modules",
+  "prisma",
+  "build",
+  "index.js"
+);
+
+if (!fs.existsSync(migrationCliPath)) {
+  throw new Error(
+    `Prisma migration CLI was not installed correctly:\n${migrationCliPath}`
+  );
+}
+
 console.log("");
 console.log("Desktop package prepared successfully.");
 console.log("");
 console.log(
-  `Desktop runtime: ${desktopRuntimeDir}`
+  `Desktop runtime:   ${desktopRuntimeDir}`
 );
 console.log(
-  `Server:          ${path.join(
+  `Server:            ${path.join(
     desktopRuntimeDir,
     "server.js"
   )}`
 );
 console.log(
-  `Modules:         ${desktopRuntimeModulesDir}`
+  `Modules:           ${desktopRuntimeModulesDir}`
 );
 console.log(
-  `Public:          ${path.join(
+  `Migration runtime: ${migrationRuntimeDir}`
+);
+console.log(
+  `Migrations:        ${path.join(
+    migrationRuntimeDir,
+    "prisma",
+    "migrations"
+  )}`
+);
+console.log(
+  `Public:             ${path.join(
     desktopRuntimeDir,
     "public"
   )}`
 );
 console.log(
-  `Static:          ${path.join(
+  `Static:             ${path.join(
     desktopRuntimeDir,
     ".next",
     "static"

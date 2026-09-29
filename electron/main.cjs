@@ -168,9 +168,20 @@ function registerIpcHandlers() {
           return result;
         }
 
+        // The connection test server is no longer needed.
+        // Stop it before changing the database schema.
+        stopNextServer();
+
+        await runDatabaseMigrations();
+
         saveDatabaseConfig(
           normalized
         );
+
+        // Start the application again using the migrated database.
+        await startNextServer();
+
+        await waitForServer();
 
         //
         // IMPORTANT:
@@ -866,6 +877,204 @@ function saveDatabaseConfig(
   );
 }
 
+
+function getMigrationRuntimeRoot() {
+  if (app.isPackaged) {
+    return path.join(
+      process.resourcesPath,
+      "next",
+      "migration-runtime"
+    );
+  }
+
+  return path.join(
+    __dirname,
+    ".."
+  );
+}
+
+function getMigrationCliPath() {
+  return path.join(
+    getMigrationRuntimeRoot(),
+    "node_modules",
+    "prisma",
+    "build",
+    "index.js"
+  );
+}
+
+function getMigrationConfigPath() {
+  return path.join(
+    getMigrationRuntimeRoot(),
+    "prisma.config.ts"
+  );
+}
+
+function runDatabaseMigrations() {
+  return new Promise(
+    (resolve, reject) => {
+      try {
+        const migrationRoot =
+          getMigrationRuntimeRoot();
+
+        const migrationCliPath =
+          getMigrationCliPath();
+
+        const migrationConfigPath =
+          getMigrationConfigPath();
+
+        if (
+          !fs.existsSync(
+            migrationCliPath
+          )
+        ) {
+          reject(
+            new Error(
+              `Prisma migration runtime was not found:\n\n${migrationCliPath}`
+            )
+          );
+
+          return;
+        }
+
+        if (
+          !fs.existsSync(
+            path.join(
+              migrationRoot,
+              "prisma",
+              "migrations"
+            )
+          )
+        ) {
+          reject(
+            new Error(
+              `Prisma migration files were not found:\n\n${path.join(
+                migrationRoot,
+                "prisma",
+                "migrations"
+              )}`
+            )
+          );
+
+          return;
+        }
+
+        if (
+          !fs.existsSync(
+            migrationConfigPath
+          )
+        ) {
+          reject(
+            new Error(
+              `Prisma configuration file was not found:\n\n${migrationConfigPath}`
+            )
+          );
+
+          return;
+        }
+
+        const nodeExecutable =
+          process.platform === "win32"
+            ? "node.exe"
+            : "node";
+
+        logMessage(
+          "Checking and applying pending database migrations..."
+        );
+
+        const migrationProcess =
+          spawn(
+            nodeExecutable,
+            [
+              migrationCliPath,
+              "migrate",
+              "deploy",
+              "--config",
+              migrationConfigPath,
+            ],
+            {
+              cwd: migrationRoot,
+              env: {
+                ...process.env,
+              },
+              windowsHide: true,
+              stdio: [
+                "ignore",
+                "pipe",
+                "pipe",
+              ],
+            }
+          );
+
+        migrationProcess.stdout.on(
+          "data",
+          (data) => {
+            logMessage(
+              `[Prisma] ${data
+                .toString()
+                .trim()}`
+            );
+          }
+        );
+
+        migrationProcess.stderr.on(
+          "data",
+          (data) => {
+            logMessage(
+              `[Prisma ERROR] ${data
+                .toString()
+                .trim()}`
+            );
+          }
+        );
+
+        migrationProcess.once(
+          "error",
+          (error) => {
+            logError(error);
+            reject(
+              new Error(
+                `Unable to start the database migration process. Make sure Node.js is installed on this computer.\n\n${error.message}`
+              )
+            );
+          }
+        );
+
+        migrationProcess.once(
+          "exit",
+          (code, signal) => {
+            if (code === 0) {
+              logMessage(
+                "Database migrations completed successfully."
+              );
+
+              resolve();
+              return;
+            }
+
+            const signalText =
+              signal
+                ? `\nSignal: ${signal}`
+                : "";
+
+            const message =
+              `Database migration failed.${signalText}\n\nCheck the application log for the Prisma migration details.`;
+
+            const error =
+              new Error(message);
+
+            logError(error);
+            reject(error);
+          }
+        );
+      } catch (error) {
+        logError(error);
+        reject(error);
+      }
+    }
+  );
+}
+
 function loadDevelopmentEnvironment() {
   if (app.isPackaged) {
     return;
@@ -1013,6 +1222,9 @@ async function startApplication() {
     // Use the project's local .env file.
     loadDevelopmentEnvironment();
   }
+
+  // Apply any migrations that are pending for the configured database.
+  await runDatabaseMigrations();
 
   await startNextServer();
 
