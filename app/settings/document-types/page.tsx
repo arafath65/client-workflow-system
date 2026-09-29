@@ -52,35 +52,64 @@ export default async function DocumentTypesPage({
   const params = await searchParams;
 
   const filter =
-    params.status === "inactive" || params.status === "all"
+    params.status === "inactive" ||
+    params.status === "all"
       ? params.status
       : "active";
 
   // --------------------------------------------------
-  // Load Document Types
+  // Load Document Types + Language Pricing
   // --------------------------------------------------
 
-  const documentTypes = await prisma.documentType.findMany({
-    where:
-      filter === "inactive"
-        ? {
-            status: false,
-          }
-        : filter === "all"
-          ? undefined
-          : {
-              status: true,
-            },
+  const documentTypes =
+    await prisma.documentType.findMany({
+      where:
+        filter === "inactive"
+          ? {
+              status: false,
+            }
+          : filter === "all"
+            ? undefined
+            : {
+                status: true,
+              },
 
+      orderBy: {
+        name: "asc",
+      },
+
+      include: {
+        languages: {
+          include: {
+            language: {
+              select: {
+                id: true,
+                name: true,
+                status: true,
+              },
+            },
+          },
+          orderBy: {
+            language: {
+              name: "asc",
+            },
+          },
+        },
+      },
+    });
+
+
+  // --------------------------------------------------
+  // Load Languages
+  // --------------------------------------------------
+
+  const languages = await prisma.language.findMany({
     orderBy: {
       name: "asc",
     },
-
     select: {
       id: true,
       name: true,
-      description: true,
-      defaultAmount: true,
       status: true,
     },
   });
@@ -110,15 +139,27 @@ export default async function DocumentTypesPage({
   // Serialize Decimal Values
   // --------------------------------------------------
 
-  const serializedDocumentTypes = documentTypes.map(
-    (documentType) => ({
+  const serializedDocumentTypes =
+    documentTypes.map((documentType) => ({
       id: documentType.id,
       name: documentType.name,
       description: documentType.description,
-      defaultAmount: Number(documentType.defaultAmount),
+      defaultAmount: Number(
+        documentType.defaultAmount
+      ),
       status: documentType.status,
-    })
-  );
+      languages: documentType.languages.map(
+        (item) => ({
+          languageId: item.languageId,
+          language: {
+            id: item.language.id,
+            name: item.language.name,
+            status: item.language.status,
+          },
+          price: Number(item.price),
+        })
+      ),
+    }));
 
   // --------------------------------------------------
   // Page
@@ -187,9 +228,9 @@ export default async function DocumentTypesPage({
           </h1>
 
           <p className="mt-2 text-sm text-black/50">
-            Manage reusable document types and their
-            default prices for document-based
-            workflows.
+            Manage reusable document types, languages,
+            and language-specific translation prices for
+            document-based workflows.
           </p>
         </div>
 
@@ -239,8 +280,8 @@ export default async function DocumentTypesPage({
               </h2>
 
               <p className="mt-1 text-xs text-black/40">
-                Reusable document types and their
-                default service prices.
+                Reusable document types and language
+                prices used by new client files.
               </p>
             </div>
 
@@ -252,11 +293,12 @@ export default async function DocumentTypesPage({
           {/* Client Component */}
 
           <DocumentTypesClient
-  key={filter}
-  initialDocumentTypes={
-    serializedDocumentTypes
-  }
-/>
+            key={filter}
+            initialDocumentTypes={
+              serializedDocumentTypes
+            }
+            initialLanguages={languages}
+          />
         </div>
       </section>
     </main>

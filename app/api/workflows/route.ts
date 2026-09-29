@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
 import { prisma } from "@/lib/prisma";
-import { writeAuditLog } from "@/lib/audit";
 
 function parseMoney(value: unknown): string | null {
   const raw = String(value ?? "").trim();
@@ -68,39 +66,12 @@ export async function POST(request: NextRequest) {
     const description = String(body.description ?? "").trim();
     const baseAmount = parseMoney(body.baseAmount);
 
-    let trackingMode: "STANDARD" | "DOCUMENT_BASED" =
-  "STANDARD";
-
-if (
-  body.trackingMode !== undefined &&
-  body.trackingMode !== null &&
-  body.trackingMode !== ""
-) {
-  const requestedTrackingMode = String(
-    body.trackingMode
-  );
-
-  if (
-    requestedTrackingMode !== "STANDARD" &&
-    requestedTrackingMode !== "DOCUMENT_BASED"
-  ) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Invalid workflow tracking mode.",
-      },
-      { status: 400 }
-    );
-  }
-
-  trackingMode =
-    requestedTrackingMode as
-      | "STANDARD"
-      | "DOCUMENT_BASED";
-}
+    const trackingMode =
+      body.trackingMode === "DOCUMENT_BASED"
+        ? "DOCUMENT_BASED"
+        : "STANDARD";
 
     const rawDefaultStaffId = body.defaultStaffId;
-
     let defaultStaffId: number | null = null;
 
     if (
@@ -149,17 +120,14 @@ if (
           id: defaultStaffId,
           status: true,
         },
-        select: {
-          id: true,
-        },
+        select: { id: true },
       });
 
       if (!staff) {
         return NextResponse.json(
           {
             success: false,
-            message:
-              "Selected staff member is not active or does not exist.",
+            message: "Selected staff member is not active or does not exist.",
           },
           { status: 400 }
         );
@@ -168,9 +136,7 @@ if (
 
     const existingWorkflow = await prisma.workflowTemplate.findFirst({
       where: {
-        name: {
-          equals: name,
-        },
+        name: { equals: name },
       },
     });
 
@@ -184,16 +150,15 @@ if (
       );
     }
 
-    const workflow =
-  await prisma.workflowTemplate.create({
-    data: {
-      name,
-      description: description || null,
-      defaultStaffId,
-      baseAmount,
-      trackingMode,
-      status: true,
-    },
+    const workflow = await prisma.workflowTemplate.create({
+      data: {
+        name,
+        description: description || null,
+        defaultStaffId,
+        baseAmount,
+        trackingMode,
+        status: true,
+      },
       include: {
         defaultStaff: {
           select: {
@@ -203,25 +168,6 @@ if (
         },
       },
     });
-
-    // ==============================================
-    // Audit log: workflow created
-    // ==============================================
-
-    await writeAuditLog({
-  module: "WORKFLOWS",
-  action: "CREATE",
-  entity: "WORKFLOW_TEMPLATE",
-  entityId: workflow.id,
-  description: `Workflow "${workflow.name}" created.`,
-  metadata: {
-    workflowId: workflow.id,
-    workflowName: workflow.name,
-    trackingMode: workflow.trackingMode,
-    defaultStaffId,
-    baseAmount,
-  },
-});
 
     return NextResponse.json(
       {

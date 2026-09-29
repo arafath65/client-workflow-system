@@ -1,12 +1,7 @@
-
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
-
-// ==================================================
-// Route Context
-// ==================================================
 
 type RouteContext = {
   params: Promise<{
@@ -14,9 +9,10 @@ type RouteContext = {
   }>;
 };
 
-// ==================================================
-// Helpers
-// ==================================================
+type LanguageInput = {
+  languageId?: unknown;
+  price?: unknown;
+};
 
 function parseId(value: string): number | null {
   const id = Number(value);
@@ -28,6 +24,22 @@ function parseId(value: string): number | null {
   return id;
 }
 
+function parseMoney(value: unknown): number | null {
+  const raw = String(value ?? "").trim();
+
+  if (!/^\d+(?:\.\d{1,2})?$/.test(raw)) {
+    return null;
+  }
+
+  const amount = Number(raw);
+
+  if (!Number.isFinite(amount) || amount < 0) {
+    return null;
+  }
+
+  return amount;
+}
+
 function serializeDocumentType(
   documentType: {
     id: number;
@@ -35,6 +47,15 @@ function serializeDocumentType(
     description: string | null;
     defaultAmount: unknown;
     status: boolean;
+    languages?: Array<{
+      languageId: number;
+      price: unknown;
+      language: {
+        id: number;
+        name: string;
+        status: boolean;
+      };
+    }>;
   }
 ) {
   return {
@@ -45,7 +66,40 @@ function serializeDocumentType(
       documentType.defaultAmount
     ),
     status: documentType.status,
+    languages: (
+      documentType.languages ?? []
+    ).map((item) => ({
+      languageId: item.languageId,
+        language: item.language,
+        price: Number(item.price),
+      })),
   };
+}
+
+async function loadDocumentType(id: number) {
+  return prisma.documentType.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      languages: {
+        include: {
+          language: {
+            select: {
+              id: true,
+              name: true,
+              status: true,
+            },
+          },
+        },
+        orderBy: {
+          language: {
+            name: "asc",
+          },
+        },
+      },
+    },
+  });
 }
 
 // ==================================================
@@ -57,10 +111,6 @@ export async function PATCH(
   { params }: RouteContext
 ) {
   try {
-    // --------------------------------------------------
-    // Get ID
-    // --------------------------------------------------
-
     const { id: rawId } = await params;
     const id = parseId(rawId);
 
@@ -73,10 +123,6 @@ export async function PATCH(
         { status: 400 }
       );
     }
-
-    // --------------------------------------------------
-    // Read Request Body
-    // --------------------------------------------------
 
     let body: unknown;
 
@@ -111,40 +157,21 @@ export async function PATCH(
       description?: unknown;
       defaultAmount?: unknown;
       status?: unknown;
+      languages?: unknown;
     };
 
-    // --------------------------------------------------
-    // Check Existing Document Type
-    // --------------------------------------------------
-
     const existingDocumentType =
-      await prisma.documentType.findUnique({
-        where: {
-          id,
-        },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          defaultAmount: true,
-          status: true,
-        },
-      });
+      await loadDocumentType(id);
 
     if (!existingDocumentType) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "Document type not found.",
+          message: "Document type not found.",
         },
         { status: 404 }
       );
     }
-
-    // --------------------------------------------------
-    // Detect Update Type
-    // --------------------------------------------------
 
     const hasStatus =
       Object.prototype.hasOwnProperty.call(
@@ -170,11 +197,18 @@ export async function PATCH(
         "defaultAmount"
       );
 
+    const hasLanguages =
+      Object.prototype.hasOwnProperty.call(
+        requestBody,
+        "languages"
+      );
+
     const isStatusOnlyUpdate =
       hasStatus &&
       !hasName &&
       !hasDescription &&
-      !hasDefaultAmount;
+      !hasDefaultAmount &&
+      !hasLanguages;
 
     // ==================================================
     // STATUS ONLY
@@ -182,21 +216,16 @@ export async function PATCH(
 
     if (isStatusOnlyUpdate) {
       if (
-        typeof requestBody.status !==
-        "boolean"
+        typeof requestBody.status !== "boolean"
       ) {
         return NextResponse.json(
           {
             success: false,
-            message:
-              "Status must be true or false.",
+            message: "Status must be true or false.",
           },
           { status: 400 }
         );
       }
-
-      const nextStatus =
-        requestBody.status;
 
       const updatedDocumentType =
         await prisma.documentType.update({
@@ -204,51 +233,51 @@ export async function PATCH(
             id,
           },
           data: {
-            status: nextStatus,
-          },
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            defaultAmount: true,
-            status: true,
+            status: requestBody.status,
           },
         });
 
-      // --------------------------------------------------
-      // Audit Log
-      // --------------------------------------------------
+      const fullDocumentType =
+        await loadDocumentType(
+          updatedDocumentType.id
+        );
+
+      if (!fullDocumentType) {
+        throw new Error(
+          "Unable to load updated document type."
+        );
+      }
 
       await writeAuditLog({
         module: "SETTINGS",
-        action: nextStatus
+        action: requestBody.status
           ? "ACTIVATE"
           : "DEACTIVATE",
         entity: "DOCUMENT_TYPE",
-        entityId:
-          updatedDocumentType.id,
-        description: nextStatus
-          ? `Document type "${updatedDocumentType.name}" activated.`
-          : `Document type "${updatedDocumentType.name}" deactivated.`,
+        entityId: fullDocumentType.id,
+        description:
+          requestBody.status
+            ? `Document type "${fullDocumentType.name}" activated.`
+            : `Document type "${fullDocumentType.name}" deactivated.`,
         metadata: {
           documentTypeId:
-            updatedDocumentType.id,
-          name:
-            updatedDocumentType.name,
+            fullDocumentType.id,
+          name: fullDocumentType.name,
           oldStatus:
             existingDocumentType.status,
-          newStatus: nextStatus,
+          newStatus:
+            fullDocumentType.status,
         },
       });
 
       return NextResponse.json({
         success: true,
-        message: nextStatus
+        message: requestBody.status
           ? "Document type activated successfully."
           : "Document type deactivated successfully.",
         documentType:
           serializeDocumentType(
-            updatedDocumentType
+            fullDocumentType
           ),
       });
     }
@@ -258,8 +287,7 @@ export async function PATCH(
     // ==================================================
 
     const name =
-      typeof requestBody.name ===
-      "string"
+      typeof requestBody.name === "string"
         ? requestBody.name.trim()
         : existingDocumentType.name;
 
@@ -267,8 +295,7 @@ export async function PATCH(
       typeof requestBody.description ===
       "string"
         ? requestBody.description.trim()
-        : requestBody.description ===
-          null
+        : requestBody.description === null
           ? null
           : existingDocumentType.description;
 
@@ -283,101 +310,32 @@ export async function PATCH(
       );
     }
 
-    // --------------------------------------------------
-    // Parse Default Amount
-    // --------------------------------------------------
+    const parsedDefaultAmount =
+      hasDefaultAmount
+        ? parseMoney(
+            requestBody.defaultAmount
+          )
+        : Number(
+            existingDocumentType.defaultAmount
+          );
 
-    let defaultAmount =
-      Number(
-        existingDocumentType.defaultAmount
+    if (parsedDefaultAmount === null) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Valid default price is required.",
+        },
+        { status: 400 }
       );
-
-    if (hasDefaultAmount) {
-      const rawAmount =
-        requestBody.defaultAmount;
-
-      if (
-        typeof rawAmount !==
-          "string" &&
-        typeof rawAmount !==
-          "number"
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "Valid default price is required.",
-          },
-          { status: 400 }
-        );
-      }
-
-      const amountText =
-        String(rawAmount).trim();
-
-      if (
-        !/^\d+(?:\.\d{1,2})?$/.test(
-          amountText
-        )
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "Valid default price is required.",
-          },
-          { status: 400 }
-        );
-      }
-
-      defaultAmount =
-        Number(amountText);
-
-      if (
-        !Number.isFinite(
-          defaultAmount
-        ) ||
-        defaultAmount < 0
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "Default price must be zero or greater.",
-          },
-          { status: 400 }
-        );
-      }
     }
 
-    // --------------------------------------------------
-    // Validate Optional Status
-    // --------------------------------------------------
+    const defaultAmount = parsedDefaultAmount;
 
-    let status =
-      existingDocumentType.status;
-
-    if (hasStatus) {
-      if (
-        typeof requestBody.status !==
-        "boolean"
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "Status must be true or false.",
-          },
-          { status: 400 }
-        );
-      }
-
-      status = requestBody.status;
-    }
-
-    // --------------------------------------------------
-    // Check Duplicate Name
-    // --------------------------------------------------
+    const status =
+      typeof requestBody.status === "boolean"
+        ? requestBody.status
+        : existingDocumentType.status;
 
     const duplicate =
       await prisma.documentType.findFirst({
@@ -405,42 +363,191 @@ export async function PATCH(
       );
     }
 
-    // --------------------------------------------------
-    // Update
-    // --------------------------------------------------
+    const languageRows: Array<{
+      languageId: number;
+      price: number;
+    }> = [];
+
+    if (hasLanguages) {
+      if (!Array.isArray(requestBody.languages)) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Languages must be an array.",
+          },
+          { status: 400 }
+        );
+      }
+
+      for (
+        const item of
+          requestBody.languages as unknown[]
+      ) {
+        if (
+          typeof item !== "object" ||
+          item === null ||
+          Array.isArray(item)
+        ) {
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "Invalid language configuration.",
+            },
+            { status: 400 }
+          );
+        }
+
+        const input =
+          item as LanguageInput;
+
+        const languageId =
+          Number(input.languageId);
+
+        const price =
+          parseMoney(input.price);
+
+        if (
+          !Number.isInteger(languageId) ||
+          languageId <= 0 ||
+          price === null
+        ) {
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "Every selected language must have a valid price.",
+            },
+            { status: 400 }
+          );
+        }
+
+        languageRows.push({
+          languageId,
+          price,
+        });
+      }
+
+      const languageIds =
+        languageRows.map(
+          (item) => item.languageId
+        );
+
+      if (
+        new Set(languageIds).size !==
+        languageIds.length
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "The same language cannot be configured more than once.",
+          },
+          { status: 400 }
+        );
+      }
+
+      if (languageIds.length > 0) {
+        const activeLanguages =
+          await prisma.language.findMany({
+            where: {
+              id: {
+                in: languageIds,
+              },
+              status: true,
+            },
+            select: {
+              id: true,
+            },
+          });
+
+        if (
+          activeLanguages.length !==
+          languageIds.length
+        ) {
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "One or more selected languages are invalid or inactive.",
+            },
+            { status: 400 }
+          );
+        }
+      }
+    }
 
     const updatedDocumentType =
-      await prisma.documentType.update({
-        where: {
-          id,
-        },
-        data: {
-          name,
-          description:
-            description || null,
-          defaultAmount,
-          status,
-        },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          defaultAmount: true,
-          status: true,
-        },
-      });
+      await prisma.$transaction(
+        async (tx) => {
+          await tx.documentType.update({
+              where: {
+                id,
+              },
+              data: {
+                name,
+                description:
+                  description || null,
+                defaultAmount,
+                status,
+              },
+            });
 
-    // --------------------------------------------------
-    // Audit Log
-    // --------------------------------------------------
+          if (hasLanguages) {
+            await tx.documentTypeLanguage.deleteMany({
+              where: {
+                documentTypeId: id,
+              },
+            });
+
+            if (languageRows.length > 0) {
+              await tx.documentTypeLanguage.createMany({
+                data: languageRows.map(
+                  (item) => ({
+                    documentTypeId: id,
+                    languageId:
+                      item.languageId,
+                    price: item.price,
+                  })
+                ),
+              });
+            }
+          }
+
+          return tx.documentType.findUniqueOrThrow({
+            where: {
+              id,
+            },
+            include: {
+              languages: {
+                include: {
+                  language: {
+                    select: {
+                      id: true,
+                      name: true,
+                      status: true,
+                    },
+                  },
+                },
+                orderBy: {
+                  language: {
+                    name: "asc",
+                  },
+                },
+              },
+            },
+          });
+        }
+      );
 
     await writeAuditLog({
       module: "SETTINGS",
       action: "UPDATE",
       entity: "DOCUMENT_TYPE",
-      entityId:
-        updatedDocumentType.id,
-      description: `Document type "${updatedDocumentType.name}" updated.`,
+      entityId: updatedDocumentType.id,
+      description:
+        `Document type "${updatedDocumentType.name}" updated.`,
       metadata: {
         documentTypeId:
           updatedDocumentType.id,
@@ -455,6 +562,17 @@ export async function PATCH(
             ),
           status:
             existingDocumentType.status,
+          languages:
+            existingDocumentType.languages.map(
+              (item) => ({
+                languageId:
+                  item.languageId,
+                languageName:
+                  item.language.name,
+                price:
+                  Number(item.price),
+              })
+            ),
         },
         newValues: {
           name:
@@ -467,13 +585,20 @@ export async function PATCH(
             ),
           status:
             updatedDocumentType.status,
+          languages:
+            updatedDocumentType.languages.map(
+              (item) => ({
+                languageId:
+                  item.languageId,
+                languageName:
+                  item.language.name,
+                price:
+                  Number(item.price),
+              })
+            ),
         },
       },
     });
-
-    // --------------------------------------------------
-    // Response
-    // --------------------------------------------------
 
     return NextResponse.json({
       success: true,

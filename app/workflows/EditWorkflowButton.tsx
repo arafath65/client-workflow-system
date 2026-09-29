@@ -1,9 +1,14 @@
-
 "use client";
 
 import { FormEvent, useState } from "react";
 
 type StaffData = {
+  id: number;
+  name: string;
+  status: boolean;
+};
+
+type DocumentTypeData = {
   id: number;
   name: string;
   status: boolean;
@@ -16,6 +21,12 @@ type WorkflowData = {
   status: boolean;
   defaultStaffId?: number | null;
   baseAmount: string | number;
+  trackingMode?: "STANDARD" | "DOCUMENT_BASED";
+  documentTypeId?: number | null;
+  documentType?: {
+    id: number;
+    name: string;
+  } | null;
 };
 
 type Props = {
@@ -28,7 +39,13 @@ export default function EditWorkflowButton({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [staffLoading, setStaffLoading] = useState(false);
+  const [documentTypesLoading, setDocumentTypesLoading] =
+    useState(false);
+
   const [staff, setStaff] = useState<StaffData[]>([]);
+  const [documentTypes, setDocumentTypes] =
+    useState<DocumentTypeData[]>([]);
+
   const [defaultStaffId, setDefaultStaffId] = useState(
     workflow.defaultStaffId?.toString() ?? ""
   );
@@ -37,29 +54,93 @@ export default function EditWorkflowButton({
     String(workflow.baseAmount ?? "0")
   );
 
+  const [trackingMode, setTrackingMode] = useState<
+    "STANDARD" | "DOCUMENT_BASED"
+  >(
+    workflow.trackingMode === "DOCUMENT_BASED"
+      ? "DOCUMENT_BASED"
+      : "STANDARD"
+  );
+
+  const [documentTypeId, setDocumentTypeId] = useState(
+    workflow.documentTypeId?.toString() ??
+      workflow.documentType?.id?.toString() ??
+      ""
+  );
+
   const [staffError, setStaffError] = useState("");
+  const [documentTypeError, setDocumentTypeError] =
+    useState("");
 
   const handleOpen = async () => {
     setOpen(true);
     setStaffLoading(true);
+    setDocumentTypesLoading(true);
     setStaffError("");
+    setDocumentTypeError("");
 
     try {
-      const response = await fetch("/api/staff");
-      const data = await response.json();
+      const [staffResponse, documentTypeResponse] =
+        await Promise.all([
+          fetch("/api/staff", {
+            cache: "no-store",
+          }),
+          fetch("/api/document-types", {
+            cache: "no-store",
+          }),
+        ]);
 
-      if (!response.ok || !data.success) {
+      const staffData = await staffResponse.json();
+      const documentTypeData =
+        await documentTypeResponse.json();
+
+      if (!staffResponse.ok || !staffData.success) {
         throw new Error(
-          data.message || "Unable to load staff members."
+          staffData.message ||
+            "Unable to load staff members."
         );
       }
 
-      setStaff(data.staff ?? []);
+      if (
+        !documentTypeResponse.ok ||
+        !documentTypeData.success
+      ) {
+        throw new Error(
+          documentTypeData.message ||
+            "Unable to load document types."
+        );
+      }
+
+      setStaff(
+        (staffData.staff ?? []).filter(
+          (member: StaffData) =>
+            member.status !== false
+        )
+      );
+
+      setDocumentTypes(
+        (documentTypeData.documentTypes ?? []).filter(
+          (item: DocumentTypeData) =>
+            item.status !== false
+        )
+      );
     } catch (error) {
-      console.error("Load staff error:", error);
-      setStaffError("Unable to load staff members.");
+      console.error("Load edit workflow data error:", error);
+
+      setStaffError(
+        error instanceof Error
+          ? error.message
+          : "Unable to load staff members."
+      );
+
+      setDocumentTypeError(
+        error instanceof Error
+          ? error.message
+          : "Unable to load document types."
+      );
     } finally {
       setStaffLoading(false);
+      setDocumentTypesLoading(false);
     }
   };
 
@@ -80,14 +161,30 @@ export default function EditWorkflowButton({
       formData.get("description") ?? ""
     ).trim();
 
-    const cleanBaseAmount = baseAmount.trim();
+    const cleanBaseAmount =
+      trackingMode === "DOCUMENT_BASED"
+        ? "0.00"
+        : baseAmount.trim();
 
     if (!name) {
       alert("Workflow name is required.");
       return;
     }
 
-    if (!/^\d+(?:\.\d{1,2})?$/.test(cleanBaseAmount)) {
+    if (
+      trackingMode === "DOCUMENT_BASED" &&
+      !documentTypeId
+    ) {
+      alert("Document Base is required for a document-based workflow.");
+      return;
+    }
+
+    if (
+      trackingMode === "STANDARD" &&
+      !/^\d+(?:\.\d{1,2})?$/.test(
+        cleanBaseAmount
+      )
+    ) {
       alert("Valid service price is required.");
       return;
     }
@@ -108,6 +205,11 @@ export default function EditWorkflowButton({
             defaultStaffId: defaultStaffId
               ? Number(defaultStaffId)
               : null,
+            trackingMode,
+            documentTypeId:
+              trackingMode === "DOCUMENT_BASED"
+                ? Number(documentTypeId)
+                : null,
             baseAmount: cleanBaseAmount,
           }),
         }
@@ -115,16 +217,20 @@ export default function EditWorkflowButton({
 
       const data = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         alert(
-          data.message || "Unable to update workflow."
+          data.message ||
+            "Unable to update workflow."
         );
         return;
       }
 
       window.location.reload();
     } catch (error) {
-      console.error("Update workflow error:", error);
+      console.error(
+        "Update workflow error:",
+        error
+      );
 
       alert("Unable to connect to the server.");
     } finally {
@@ -145,7 +251,6 @@ export default function EditWorkflowButton({
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
-            {/* Header */}
             <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
               <div>
                 <h2 className="text-base font-semibold">
@@ -167,12 +272,10 @@ export default function EditWorkflowButton({
               </button>
             </div>
 
-            {/* Form */}
             <form
               onSubmit={handleSubmit}
               className="space-y-4 px-6 py-6"
             >
-              {/* Name */}
               <div>
                 <label
                   htmlFor={`edit-workflow-name-${workflow.id}`}
@@ -192,7 +295,6 @@ export default function EditWorkflowButton({
                 />
               </div>
 
-              {/* Description */}
               <div>
                 <label
                   htmlFor={`edit-workflow-description-${workflow.id}`}
@@ -204,41 +306,133 @@ export default function EditWorkflowButton({
                 <textarea
                   id={`edit-workflow-description-${workflow.id}`}
                   name="description"
-                  rows={4}
+                  rows={3}
                   defaultValue={workflow.description ?? ""}
                   className="w-full resize-none rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
                 />
               </div>
 
-              {/* Default Service Price */}
               <div>
-                <label
-                  htmlFor={`edit-workflow-price-${workflow.id}`}
-                  className="mb-1.5 block text-xs font-medium text-black/60"
-                >
-                  Default Service Price (LKR)
-                  <span className="ml-1 text-red-500">*</span>
+                <label className="mb-1.5 block text-xs font-medium text-black/60">
+                  Tracking Mode
                 </label>
 
-                <input
-                  id={`edit-workflow-price-${workflow.id}`}
-                  name="baseAmount"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={baseAmount}
-                  onChange={(e) => setBaseAmount(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:opacity-50"
-                />
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setTrackingMode("STANDARD")
+                    }
+                    disabled={loading}
+                    className={`rounded-lg border px-3 py-2.5 text-left text-xs ${
+                      trackingMode === "STANDARD"
+                        ? "border-[#f9a800] bg-[#f9a800]/10"
+                        : "border-black/10 bg-white"
+                    }`}
+                  >
+                    <p className="font-semibold">
+                      Standard
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-black/40">
+                      One workflow task chain.
+                    </p>
+                  </button>
 
-                <p className="mt-1.5 text-[11px] text-black/40">
-                  This price becomes the starting price for new client files using this service. Existing files keep their saved price.
-                </p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setTrackingMode("DOCUMENT_BASED")
+                    }
+                    disabled={loading}
+                    className={`rounded-lg border px-3 py-2.5 text-left text-xs ${
+                      trackingMode === "DOCUMENT_BASED"
+                        ? "border-[#f9a800] bg-[#f9a800]/10"
+                        : "border-black/10 bg-white"
+                    }`}
+                  >
+                    <p className="font-semibold">
+                      Document Based
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-black/40">
+                      Independent chain per language document.
+                    </p>
+                  </button>
+                </div>
               </div>
 
-              {/* Default Responsible Staff */}
+              {trackingMode === "DOCUMENT_BASED" ? (
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-black/60">
+                    Document Base{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+
+                  <select
+                    value={documentTypeId}
+                    onChange={(event) =>
+                      setDocumentTypeId(
+                        event.target.value
+                      )
+                    }
+                    disabled={
+                      loading ||
+                      documentTypesLoading
+                    }
+                    className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:opacity-50"
+                  >
+                    <option value="">
+                      {documentTypesLoading
+                        ? "Loading document types..."
+                        : "Select Document Base"}
+                    </option>
+
+                    {documentTypes.map(
+                      (documentType) => (
+                        <option
+                          key={documentType.id}
+                          value={documentType.id}
+                        >
+                          {documentType.name}
+                        </option>
+                      )
+                    )}
+                  </select>
+
+                  {documentTypeError && (
+                    <p className="mt-1.5 text-xs text-red-500">
+                      {documentTypeError}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <label
+                    htmlFor={`edit-workflow-price-${workflow.id}`}
+                    className="mb-1.5 block text-xs font-medium text-black/60"
+                  >
+                    Default Service Price (LKR)
+                    <span className="ml-1 text-red-500">*</span>
+                  </label>
+
+                  <input
+                    id={`edit-workflow-price-${workflow.id}`}
+                    name="baseAmount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={baseAmount}
+                    onChange={(event) =>
+                      setBaseAmount(
+                        event.target.value
+                      )
+                    }
+                    required
+                    disabled={loading}
+                    className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:opacity-50"
+                  />
+                </div>
+              )}
+
               <div>
                 <label
                   htmlFor={`edit-workflow-staff-${workflow.id}`}
@@ -250,10 +444,15 @@ export default function EditWorkflowButton({
                 <select
                   id={`edit-workflow-staff-${workflow.id}`}
                   value={defaultStaffId}
-                  onChange={(e) =>
-                    setDefaultStaffId(e.target.value)
+                  onChange={(event) =>
+                    setDefaultStaffId(
+                      event.target.value
+                    )
                   }
-                  disabled={staffLoading || !!staffError}
+                  disabled={
+                    staffLoading ||
+                    !!staffError
+                  }
                   className="h-10 w-full rounded-lg border border-black/10 bg-white px-3 text-sm outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10 disabled:opacity-50"
                 >
                   <option value="">
@@ -272,33 +471,17 @@ export default function EditWorkflowButton({
 
                 {staffLoading && (
                   <p className="mt-1.5 text-xs text-black/40">
-                    Loading staff members...
+                    Loading...
                   </p>
                 )}
 
                 {staffError && (
-                  <div className="mt-2">
-                    <p className="text-xs text-red-500">
-                      {staffError}
-                    </p>
-
-                    <button
-                      type="button"
-                      onClick={handleOpen}
-                      className="mt-1 text-xs font-medium text-black underline"
-                    >
-                      Try again
-                    </button>
-                  </div>
+                  <p className="mt-1.5 text-xs text-red-500">
+                    {staffError}
+                  </p>
                 )}
-
-                <p className="mt-1.5 text-xs text-black/40">
-                  This staff member will be the default
-                  responsible person for this workflow.
-                </p>
               </div>
 
-              {/* Buttons */}
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -311,10 +494,16 @@ export default function EditWorkflowButton({
 
                 <button
                   type="submit"
-                  disabled={loading || staffLoading}
+                  disabled={
+                    loading ||
+                    staffLoading ||
+                    documentTypesLoading
+                  }
                   className="rounded-lg bg-black px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black disabled:opacity-50"
                 >
-                  {loading ? "Saving..." : "Save Changes"}
+                  {loading
+                    ? "Saving..."
+                    : "Save Changes"}
                 </button>
               </div>
             </form>

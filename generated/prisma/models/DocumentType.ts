@@ -236,7 +236,9 @@ export type DocumentTypeWhereInput = {
   status?: Prisma.BoolFilter<"DocumentType"> | boolean
   createdAt?: Prisma.DateTimeFilter<"DocumentType"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentType"> | Date | string
+  languages?: Prisma.DocumentTypeLanguageListRelationFilter
   fileDocuments?: Prisma.FileWorkflowDocumentListRelationFilter
+  baseWorkflows?: Prisma.WorkflowTemplateListRelationFilter
 }
 
 export type DocumentTypeOrderByWithRelationInput = {
@@ -247,7 +249,9 @@ export type DocumentTypeOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  languages?: Prisma.DocumentTypeLanguageOrderByRelationAggregateInput
   fileDocuments?: Prisma.FileWorkflowDocumentOrderByRelationAggregateInput
+  baseWorkflows?: Prisma.WorkflowTemplateOrderByRelationAggregateInput
   _relevance?: Prisma.DocumentTypeOrderByRelevanceInput
 }
 
@@ -262,7 +266,9 @@ export type DocumentTypeWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.BoolFilter<"DocumentType"> | boolean
   createdAt?: Prisma.DateTimeFilter<"DocumentType"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DocumentType"> | Date | string
+  languages?: Prisma.DocumentTypeLanguageListRelationFilter
   fileDocuments?: Prisma.FileWorkflowDocumentListRelationFilter
+  baseWorkflows?: Prisma.WorkflowTemplateListRelationFilter
 }, "id" | "name">
 
 export type DocumentTypeOrderByWithAggregationInput = {
@@ -300,7 +306,9 @@ export type DocumentTypeCreateInput = {
   status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  languages?: Prisma.DocumentTypeLanguageCreateNestedManyWithoutDocumentTypeInput
   fileDocuments?: Prisma.FileWorkflowDocumentCreateNestedManyWithoutDocumentTypeInput
+  baseWorkflows?: Prisma.WorkflowTemplateCreateNestedManyWithoutDocumentTypeInput
 }
 
 export type DocumentTypeUncheckedCreateInput = {
@@ -311,7 +319,9 @@ export type DocumentTypeUncheckedCreateInput = {
   status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  languages?: Prisma.DocumentTypeLanguageUncheckedCreateNestedManyWithoutDocumentTypeInput
   fileDocuments?: Prisma.FileWorkflowDocumentUncheckedCreateNestedManyWithoutDocumentTypeInput
+  baseWorkflows?: Prisma.WorkflowTemplateUncheckedCreateNestedManyWithoutDocumentTypeInput
 }
 
 export type DocumentTypeUpdateInput = {
@@ -321,7 +331,9 @@ export type DocumentTypeUpdateInput = {
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  languages?: Prisma.DocumentTypeLanguageUpdateManyWithoutDocumentTypeNestedInput
   fileDocuments?: Prisma.FileWorkflowDocumentUpdateManyWithoutDocumentTypeNestedInput
+  baseWorkflows?: Prisma.WorkflowTemplateUpdateManyWithoutDocumentTypeNestedInput
 }
 
 export type DocumentTypeUncheckedUpdateInput = {
@@ -332,7 +344,9 @@ export type DocumentTypeUncheckedUpdateInput = {
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  languages?: Prisma.DocumentTypeLanguageUncheckedUpdateManyWithoutDocumentTypeNestedInput
   fileDocuments?: Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutDocumentTypeNestedInput
+  baseWorkflows?: Prisma.WorkflowTemplateUncheckedUpdateManyWithoutDocumentTypeNestedInput
 }
 
 export type DocumentTypeCreateManyInput = {
@@ -362,6 +376,11 @@ export type DocumentTypeUncheckedUpdateManyInput = {
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type DocumentTypeNullableScalarRelationFilter = {
+  is?: Prisma.DocumentTypeWhereInput | null
+  isNot?: Prisma.DocumentTypeWhereInput | null
 }
 
 export type DocumentTypeOrderByRelevanceInput = {
@@ -415,6 +434,36 @@ export type DocumentTypeScalarRelationFilter = {
   isNot?: Prisma.DocumentTypeWhereInput
 }
 
+export type DocumentTypeCreateNestedOneWithoutBaseWorkflowsInput = {
+  create?: Prisma.XOR<Prisma.DocumentTypeCreateWithoutBaseWorkflowsInput, Prisma.DocumentTypeUncheckedCreateWithoutBaseWorkflowsInput>
+  connectOrCreate?: Prisma.DocumentTypeCreateOrConnectWithoutBaseWorkflowsInput
+  connect?: Prisma.DocumentTypeWhereUniqueInput
+}
+
+export type DocumentTypeUpdateOneWithoutBaseWorkflowsNestedInput = {
+  create?: Prisma.XOR<Prisma.DocumentTypeCreateWithoutBaseWorkflowsInput, Prisma.DocumentTypeUncheckedCreateWithoutBaseWorkflowsInput>
+  connectOrCreate?: Prisma.DocumentTypeCreateOrConnectWithoutBaseWorkflowsInput
+  upsert?: Prisma.DocumentTypeUpsertWithoutBaseWorkflowsInput
+  disconnect?: Prisma.DocumentTypeWhereInput | boolean
+  delete?: Prisma.DocumentTypeWhereInput | boolean
+  connect?: Prisma.DocumentTypeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentTypeUpdateToOneWithWhereWithoutBaseWorkflowsInput, Prisma.DocumentTypeUpdateWithoutBaseWorkflowsInput>, Prisma.DocumentTypeUncheckedUpdateWithoutBaseWorkflowsInput>
+}
+
+export type DocumentTypeCreateNestedOneWithoutLanguagesInput = {
+  create?: Prisma.XOR<Prisma.DocumentTypeCreateWithoutLanguagesInput, Prisma.DocumentTypeUncheckedCreateWithoutLanguagesInput>
+  connectOrCreate?: Prisma.DocumentTypeCreateOrConnectWithoutLanguagesInput
+  connect?: Prisma.DocumentTypeWhereUniqueInput
+}
+
+export type DocumentTypeUpdateOneRequiredWithoutLanguagesNestedInput = {
+  create?: Prisma.XOR<Prisma.DocumentTypeCreateWithoutLanguagesInput, Prisma.DocumentTypeUncheckedCreateWithoutLanguagesInput>
+  connectOrCreate?: Prisma.DocumentTypeCreateOrConnectWithoutLanguagesInput
+  upsert?: Prisma.DocumentTypeUpsertWithoutLanguagesInput
+  connect?: Prisma.DocumentTypeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentTypeUpdateToOneWithWhereWithoutLanguagesInput, Prisma.DocumentTypeUpdateWithoutLanguagesInput>, Prisma.DocumentTypeUncheckedUpdateWithoutLanguagesInput>
+}
+
 export type DocumentTypeCreateNestedOneWithoutFileDocumentsInput = {
   create?: Prisma.XOR<Prisma.DocumentTypeCreateWithoutFileDocumentsInput, Prisma.DocumentTypeUncheckedCreateWithoutFileDocumentsInput>
   connectOrCreate?: Prisma.DocumentTypeCreateOrConnectWithoutFileDocumentsInput
@@ -429,6 +478,130 @@ export type DocumentTypeUpdateOneRequiredWithoutFileDocumentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DocumentTypeUpdateToOneWithWhereWithoutFileDocumentsInput, Prisma.DocumentTypeUpdateWithoutFileDocumentsInput>, Prisma.DocumentTypeUncheckedUpdateWithoutFileDocumentsInput>
 }
 
+export type DocumentTypeCreateWithoutBaseWorkflowsInput = {
+  name: string
+  description?: string | null
+  defaultAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  languages?: Prisma.DocumentTypeLanguageCreateNestedManyWithoutDocumentTypeInput
+  fileDocuments?: Prisma.FileWorkflowDocumentCreateNestedManyWithoutDocumentTypeInput
+}
+
+export type DocumentTypeUncheckedCreateWithoutBaseWorkflowsInput = {
+  id?: number
+  name: string
+  description?: string | null
+  defaultAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  languages?: Prisma.DocumentTypeLanguageUncheckedCreateNestedManyWithoutDocumentTypeInput
+  fileDocuments?: Prisma.FileWorkflowDocumentUncheckedCreateNestedManyWithoutDocumentTypeInput
+}
+
+export type DocumentTypeCreateOrConnectWithoutBaseWorkflowsInput = {
+  where: Prisma.DocumentTypeWhereUniqueInput
+  create: Prisma.XOR<Prisma.DocumentTypeCreateWithoutBaseWorkflowsInput, Prisma.DocumentTypeUncheckedCreateWithoutBaseWorkflowsInput>
+}
+
+export type DocumentTypeUpsertWithoutBaseWorkflowsInput = {
+  update: Prisma.XOR<Prisma.DocumentTypeUpdateWithoutBaseWorkflowsInput, Prisma.DocumentTypeUncheckedUpdateWithoutBaseWorkflowsInput>
+  create: Prisma.XOR<Prisma.DocumentTypeCreateWithoutBaseWorkflowsInput, Prisma.DocumentTypeUncheckedCreateWithoutBaseWorkflowsInput>
+  where?: Prisma.DocumentTypeWhereInput
+}
+
+export type DocumentTypeUpdateToOneWithWhereWithoutBaseWorkflowsInput = {
+  where?: Prisma.DocumentTypeWhereInput
+  data: Prisma.XOR<Prisma.DocumentTypeUpdateWithoutBaseWorkflowsInput, Prisma.DocumentTypeUncheckedUpdateWithoutBaseWorkflowsInput>
+}
+
+export type DocumentTypeUpdateWithoutBaseWorkflowsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  languages?: Prisma.DocumentTypeLanguageUpdateManyWithoutDocumentTypeNestedInput
+  fileDocuments?: Prisma.FileWorkflowDocumentUpdateManyWithoutDocumentTypeNestedInput
+}
+
+export type DocumentTypeUncheckedUpdateWithoutBaseWorkflowsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  languages?: Prisma.DocumentTypeLanguageUncheckedUpdateManyWithoutDocumentTypeNestedInput
+  fileDocuments?: Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutDocumentTypeNestedInput
+}
+
+export type DocumentTypeCreateWithoutLanguagesInput = {
+  name: string
+  description?: string | null
+  defaultAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fileDocuments?: Prisma.FileWorkflowDocumentCreateNestedManyWithoutDocumentTypeInput
+  baseWorkflows?: Prisma.WorkflowTemplateCreateNestedManyWithoutDocumentTypeInput
+}
+
+export type DocumentTypeUncheckedCreateWithoutLanguagesInput = {
+  id?: number
+  name: string
+  description?: string | null
+  defaultAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fileDocuments?: Prisma.FileWorkflowDocumentUncheckedCreateNestedManyWithoutDocumentTypeInput
+  baseWorkflows?: Prisma.WorkflowTemplateUncheckedCreateNestedManyWithoutDocumentTypeInput
+}
+
+export type DocumentTypeCreateOrConnectWithoutLanguagesInput = {
+  where: Prisma.DocumentTypeWhereUniqueInput
+  create: Prisma.XOR<Prisma.DocumentTypeCreateWithoutLanguagesInput, Prisma.DocumentTypeUncheckedCreateWithoutLanguagesInput>
+}
+
+export type DocumentTypeUpsertWithoutLanguagesInput = {
+  update: Prisma.XOR<Prisma.DocumentTypeUpdateWithoutLanguagesInput, Prisma.DocumentTypeUncheckedUpdateWithoutLanguagesInput>
+  create: Prisma.XOR<Prisma.DocumentTypeCreateWithoutLanguagesInput, Prisma.DocumentTypeUncheckedCreateWithoutLanguagesInput>
+  where?: Prisma.DocumentTypeWhereInput
+}
+
+export type DocumentTypeUpdateToOneWithWhereWithoutLanguagesInput = {
+  where?: Prisma.DocumentTypeWhereInput
+  data: Prisma.XOR<Prisma.DocumentTypeUpdateWithoutLanguagesInput, Prisma.DocumentTypeUncheckedUpdateWithoutLanguagesInput>
+}
+
+export type DocumentTypeUpdateWithoutLanguagesInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fileDocuments?: Prisma.FileWorkflowDocumentUpdateManyWithoutDocumentTypeNestedInput
+  baseWorkflows?: Prisma.WorkflowTemplateUpdateManyWithoutDocumentTypeNestedInput
+}
+
+export type DocumentTypeUncheckedUpdateWithoutLanguagesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fileDocuments?: Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutDocumentTypeNestedInput
+  baseWorkflows?: Prisma.WorkflowTemplateUncheckedUpdateManyWithoutDocumentTypeNestedInput
+}
+
 export type DocumentTypeCreateWithoutFileDocumentsInput = {
   name: string
   description?: string | null
@@ -436,6 +609,8 @@ export type DocumentTypeCreateWithoutFileDocumentsInput = {
   status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  languages?: Prisma.DocumentTypeLanguageCreateNestedManyWithoutDocumentTypeInput
+  baseWorkflows?: Prisma.WorkflowTemplateCreateNestedManyWithoutDocumentTypeInput
 }
 
 export type DocumentTypeUncheckedCreateWithoutFileDocumentsInput = {
@@ -446,6 +621,8 @@ export type DocumentTypeUncheckedCreateWithoutFileDocumentsInput = {
   status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  languages?: Prisma.DocumentTypeLanguageUncheckedCreateNestedManyWithoutDocumentTypeInput
+  baseWorkflows?: Prisma.WorkflowTemplateUncheckedCreateNestedManyWithoutDocumentTypeInput
 }
 
 export type DocumentTypeCreateOrConnectWithoutFileDocumentsInput = {
@@ -471,6 +648,8 @@ export type DocumentTypeUpdateWithoutFileDocumentsInput = {
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  languages?: Prisma.DocumentTypeLanguageUpdateManyWithoutDocumentTypeNestedInput
+  baseWorkflows?: Prisma.WorkflowTemplateUpdateManyWithoutDocumentTypeNestedInput
 }
 
 export type DocumentTypeUncheckedUpdateWithoutFileDocumentsInput = {
@@ -481,6 +660,8 @@ export type DocumentTypeUncheckedUpdateWithoutFileDocumentsInput = {
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  languages?: Prisma.DocumentTypeLanguageUncheckedUpdateManyWithoutDocumentTypeNestedInput
+  baseWorkflows?: Prisma.WorkflowTemplateUncheckedUpdateManyWithoutDocumentTypeNestedInput
 }
 
 
@@ -489,11 +670,15 @@ export type DocumentTypeUncheckedUpdateWithoutFileDocumentsInput = {
  */
 
 export type DocumentTypeCountOutputType = {
+  languages: number
   fileDocuments: number
+  baseWorkflows: number
 }
 
 export type DocumentTypeCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  languages?: boolean | DocumentTypeCountOutputTypeCountLanguagesArgs
   fileDocuments?: boolean | DocumentTypeCountOutputTypeCountFileDocumentsArgs
+  baseWorkflows?: boolean | DocumentTypeCountOutputTypeCountBaseWorkflowsArgs
 }
 
 /**
@@ -509,8 +694,22 @@ export type DocumentTypeCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types
 /**
  * DocumentTypeCountOutputType without action
  */
+export type DocumentTypeCountOutputTypeCountLanguagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DocumentTypeLanguageWhereInput
+}
+
+/**
+ * DocumentTypeCountOutputType without action
+ */
 export type DocumentTypeCountOutputTypeCountFileDocumentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.FileWorkflowDocumentWhereInput
+}
+
+/**
+ * DocumentTypeCountOutputType without action
+ */
+export type DocumentTypeCountOutputTypeCountBaseWorkflowsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WorkflowTemplateWhereInput
 }
 
 
@@ -522,7 +721,9 @@ export type DocumentTypeSelect<ExtArgs extends runtime.Types.Extensions.Internal
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  languages?: boolean | Prisma.DocumentType$languagesArgs<ExtArgs>
   fileDocuments?: boolean | Prisma.DocumentType$fileDocumentsArgs<ExtArgs>
+  baseWorkflows?: boolean | Prisma.DocumentType$baseWorkflowsArgs<ExtArgs>
   _count?: boolean | Prisma.DocumentTypeCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["documentType"]>
 
@@ -540,14 +741,18 @@ export type DocumentTypeSelectScalar = {
 
 export type DocumentTypeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "defaultAmount" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["documentType"]>
 export type DocumentTypeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  languages?: boolean | Prisma.DocumentType$languagesArgs<ExtArgs>
   fileDocuments?: boolean | Prisma.DocumentType$fileDocumentsArgs<ExtArgs>
+  baseWorkflows?: boolean | Prisma.DocumentType$baseWorkflowsArgs<ExtArgs>
   _count?: boolean | Prisma.DocumentTypeCountOutputTypeDefaultArgs<ExtArgs>
 }
 
 export type $DocumentTypePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "DocumentType"
   objects: {
+    languages: Prisma.$DocumentTypeLanguagePayload<ExtArgs>[]
     fileDocuments: Prisma.$FileWorkflowDocumentPayload<ExtArgs>[]
+    baseWorkflows: Prisma.$WorkflowTemplatePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -897,7 +1102,9 @@ readonly fields: DocumentTypeFieldRefs;
  */
 export interface Prisma__DocumentTypeClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  languages<T extends Prisma.DocumentType$languagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentType$languagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DocumentTypeLanguagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   fileDocuments<T extends Prisma.DocumentType$fileDocumentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentType$fileDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FileWorkflowDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  baseWorkflows<T extends Prisma.DocumentType$baseWorkflowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentType$baseWorkflowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1282,6 +1489,30 @@ export type DocumentTypeDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
 }
 
 /**
+ * DocumentType.languages
+ */
+export type DocumentType$languagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DocumentTypeLanguage
+   */
+  select?: Prisma.DocumentTypeLanguageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DocumentTypeLanguage
+   */
+  omit?: Prisma.DocumentTypeLanguageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DocumentTypeLanguageInclude<ExtArgs> | null
+  where?: Prisma.DocumentTypeLanguageWhereInput
+  orderBy?: Prisma.DocumentTypeLanguageOrderByWithRelationInput | Prisma.DocumentTypeLanguageOrderByWithRelationInput[]
+  cursor?: Prisma.DocumentTypeLanguageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DocumentTypeLanguageScalarFieldEnum | Prisma.DocumentTypeLanguageScalarFieldEnum[]
+}
+
+/**
  * DocumentType.fileDocuments
  */
 export type DocumentType$fileDocumentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1303,6 +1534,30 @@ export type DocumentType$fileDocumentsArgs<ExtArgs extends runtime.Types.Extensi
   take?: number
   skip?: number
   distinct?: Prisma.FileWorkflowDocumentScalarFieldEnum | Prisma.FileWorkflowDocumentScalarFieldEnum[]
+}
+
+/**
+ * DocumentType.baseWorkflows
+ */
+export type DocumentType$baseWorkflowsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WorkflowTemplate
+   */
+  select?: Prisma.WorkflowTemplateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WorkflowTemplate
+   */
+  omit?: Prisma.WorkflowTemplateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkflowTemplateInclude<ExtArgs> | null
+  where?: Prisma.WorkflowTemplateWhereInput
+  orderBy?: Prisma.WorkflowTemplateOrderByWithRelationInput | Prisma.WorkflowTemplateOrderByWithRelationInput[]
+  cursor?: Prisma.WorkflowTemplateWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WorkflowTemplateScalarFieldEnum | Prisma.WorkflowTemplateScalarFieldEnum[]
 }
 
 /**

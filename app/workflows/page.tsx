@@ -76,6 +76,12 @@ export default async function WorkflowsPage({
           name: true,
         },
       },
+      documentType: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 
@@ -244,7 +250,7 @@ export default async function WorkflowsPage({
             /* Workflow Table */
 
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1050px]">
+              <table className="w-full min-w-[1180px]">
                 <thead>
                   <tr className="border-b border-black/10 bg-[#fafaf9]">
                     <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -253,6 +259,14 @@ export default async function WorkflowsPage({
 
                     <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
                       Description
+                    </th>
+
+                    <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                      Tracking
+                    </th>
+
+                    <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                      Document Base
                     </th>
 
                     <th className="px-5 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -281,8 +295,6 @@ export default async function WorkflowsPage({
                         !workflow.status ? "opacity-60" : ""
                       }`}
                     >
-                      {/* Workflow Title */}
-
                       <td className="px-5 py-4">
                         <Link
                           href={`/workflows/${workflow.id}`}
@@ -292,26 +304,49 @@ export default async function WorkflowsPage({
                         </Link>
                       </td>
 
-                      {/* Description */}
-
-                      <td className="max-w-md px-5 py-4">
+                      <td className="max-w-xs px-5 py-4">
                         <p className="truncate text-xs text-black/55">
                           {workflow.description || "—"}
                         </p>
                       </td>
 
-                      {/* Service Price */}
-
-                      <td className="px-5 py-4 text-right">
-                        <span className="text-xs font-semibold text-black/70">
-                          LKR {Number(workflow.baseAmount).toLocaleString("en-LK", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                      <td className="px-5 py-4">
+                        <span className="rounded-full bg-black/[0.04] px-2.5 py-1 text-[10px] font-medium text-black/55">
+                          {workflow.trackingMode === "DOCUMENT_BASED"
+                            ? "Document Based"
+                            : "Standard"}
                         </span>
                       </td>
 
-                      {/* Default Responsible Person */}
+                      <td className="px-5 py-4">
+                        {workflow.documentType ? (
+                          <span className="text-xs font-medium text-black/70">
+                            {workflow.documentType.name}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-black/35">
+                            —
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="px-5 py-4 text-right">
+                        {workflow.trackingMode === "DOCUMENT_BASED" ? (
+                          <span className="text-xs text-black/35">
+                            Language pricing
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold text-black/70">
+                            LKR{" "}
+                            {Number(
+                              workflow.baseAmount
+                            ).toLocaleString("en-LK", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                        )}
+                      </td>
 
                       <td className="px-5 py-4">
                         {workflow.defaultStaff ? (
@@ -325,35 +360,39 @@ export default async function WorkflowsPage({
                         )}
                       </td>
 
-                      {/* Status */}
-
                       <td className="px-5 py-4">
                         <StatusBadge active={workflow.status} />
                       </td>
 
-                      {/* Actions */}
-
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-4">
-  <EditWorkflowButton
-    workflow={{
-      id: workflow.id,
-      name: workflow.name,
-      description: workflow.description,
-      status: workflow.status,
-      defaultStaffId: workflow.defaultStaffId,
-      baseAmount: workflow.baseAmount.toString(),
-    }}
-  />
+                          <EditWorkflowButton
+                            workflow={{
+                              id: workflow.id,
+                              name: workflow.name,
+                              description: workflow.description,
+                              status: workflow.status,
+                              defaultStaffId:
+                                workflow.defaultStaffId,
+                              baseAmount:
+                                workflow.baseAmount.toString(),
+                              trackingMode:
+                                workflow.trackingMode,
+                              documentTypeId:
+                                workflow.documentTypeId,
+                              documentType:
+                                workflow.documentType,
+                            }}
+                          />
 
-  <WorkflowStatusButton
-    workflow={{
-      id: workflow.id,
-      name: workflow.name,
-      status: workflow.status,
-    }}
-  />
-</div>
+                          <WorkflowStatusButton
+                            workflow={{
+                              id: workflow.id,
+                              name: workflow.name,
+                              status: workflow.status,
+                            }}
+                          />
+                        </div>
                       </td>
                     </tr>
                   ))}

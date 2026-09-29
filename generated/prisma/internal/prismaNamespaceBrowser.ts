@@ -60,6 +60,8 @@ export const ModelName = {
   WorkflowSubTask: 'WorkflowSubTask',
   FileWorkflow: 'FileWorkflow',
   DocumentType: 'DocumentType',
+  Language: 'Language',
+  DocumentTypeLanguage: 'DocumentTypeLanguage',
   FileWorkflowDocument: 'FileWorkflowDocument',
   PaymentAllocation: 'PaymentAllocation',
   WorkflowTask: 'WorkflowTask',
@@ -157,6 +159,7 @@ export const WorkflowTemplateScalarFieldEnum = {
   description: 'description',
   defaultStaffId: 'defaultStaffId',
   trackingMode: 'trackingMode',
+  documentTypeId: 'documentTypeId',
   baseAmount: 'baseAmount',
   status: 'status',
   createdAt: 'createdAt',
@@ -227,10 +230,34 @@ export const DocumentTypeScalarFieldEnum = {
 export type DocumentTypeScalarFieldEnum = (typeof DocumentTypeScalarFieldEnum)[keyof typeof DocumentTypeScalarFieldEnum]
 
 
+export const LanguageScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LanguageScalarFieldEnum = (typeof LanguageScalarFieldEnum)[keyof typeof LanguageScalarFieldEnum]
+
+
+export const DocumentTypeLanguageScalarFieldEnum = {
+  documentTypeId: 'documentTypeId',
+  languageId: 'languageId',
+  price: 'price',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentTypeLanguageScalarFieldEnum = (typeof DocumentTypeLanguageScalarFieldEnum)[keyof typeof DocumentTypeLanguageScalarFieldEnum]
+
+
 export const FileWorkflowDocumentScalarFieldEnum = {
   id: 'id',
   fileWorkflowId: 'fileWorkflowId',
   documentTypeId: 'documentTypeId',
+  languageId: 'languageId',
+  languageName: 'languageName',
   documentName: 'documentName',
   baseAmount: 'baseAmount',
   discountAmount: 'discountAmount',
@@ -503,7 +530,15 @@ export const DocumentTypeOrderByRelevanceFieldEnum = {
 export type DocumentTypeOrderByRelevanceFieldEnum = (typeof DocumentTypeOrderByRelevanceFieldEnum)[keyof typeof DocumentTypeOrderByRelevanceFieldEnum]
 
 
+export const LanguageOrderByRelevanceFieldEnum = {
+  name: 'name'
+} as const
+
+export type LanguageOrderByRelevanceFieldEnum = (typeof LanguageOrderByRelevanceFieldEnum)[keyof typeof LanguageOrderByRelevanceFieldEnum]
+
+
 export const FileWorkflowDocumentOrderByRelevanceFieldEnum = {
+  languageName: 'languageName',
   documentName: 'documentName'
 } as const
 

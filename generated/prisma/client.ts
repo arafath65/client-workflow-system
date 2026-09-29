@@ -87,6 +87,16 @@ export type FileWorkflow = Prisma.FileWorkflowModel
  */
 export type DocumentType = Prisma.DocumentTypeModel
 /**
+ * Model Language
+ * 
+ */
+export type Language = Prisma.LanguageModel
+/**
+ * Model DocumentTypeLanguage
+ * 
+ */
+export type DocumentTypeLanguage = Prisma.DocumentTypeLanguageModel
+/**
  * Model FileWorkflowDocument
  * 
  */

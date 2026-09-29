@@ -29,12 +29,14 @@ export type AggregateWorkflowTemplate = {
 export type WorkflowTemplateAvgAggregateOutputType = {
   id: number | null
   defaultStaffId: number | null
+  documentTypeId: number | null
   baseAmount: runtime.Decimal | null
 }
 
 export type WorkflowTemplateSumAggregateOutputType = {
   id: number | null
   defaultStaffId: number | null
+  documentTypeId: number | null
   baseAmount: runtime.Decimal | null
 }
 
@@ -44,6 +46,7 @@ export type WorkflowTemplateMinAggregateOutputType = {
   description: string | null
   defaultStaffId: number | null
   trackingMode: $Enums.WorkflowTrackingMode | null
+  documentTypeId: number | null
   baseAmount: runtime.Decimal | null
   status: boolean | null
   createdAt: Date | null
@@ -56,6 +59,7 @@ export type WorkflowTemplateMaxAggregateOutputType = {
   description: string | null
   defaultStaffId: number | null
   trackingMode: $Enums.WorkflowTrackingMode | null
+  documentTypeId: number | null
   baseAmount: runtime.Decimal | null
   status: boolean | null
   createdAt: Date | null
@@ -68,6 +72,7 @@ export type WorkflowTemplateCountAggregateOutputType = {
   description: number
   defaultStaffId: number
   trackingMode: number
+  documentTypeId: number
   baseAmount: number
   status: number
   createdAt: number
@@ -79,12 +84,14 @@ export type WorkflowTemplateCountAggregateOutputType = {
 export type WorkflowTemplateAvgAggregateInputType = {
   id?: true
   defaultStaffId?: true
+  documentTypeId?: true
   baseAmount?: true
 }
 
 export type WorkflowTemplateSumAggregateInputType = {
   id?: true
   defaultStaffId?: true
+  documentTypeId?: true
   baseAmount?: true
 }
 
@@ -94,6 +101,7 @@ export type WorkflowTemplateMinAggregateInputType = {
   description?: true
   defaultStaffId?: true
   trackingMode?: true
+  documentTypeId?: true
   baseAmount?: true
   status?: true
   createdAt?: true
@@ -106,6 +114,7 @@ export type WorkflowTemplateMaxAggregateInputType = {
   description?: true
   defaultStaffId?: true
   trackingMode?: true
+  documentTypeId?: true
   baseAmount?: true
   status?: true
   createdAt?: true
@@ -118,6 +127,7 @@ export type WorkflowTemplateCountAggregateInputType = {
   description?: true
   defaultStaffId?: true
   trackingMode?: true
+  documentTypeId?: true
   baseAmount?: true
   status?: true
   createdAt?: true
@@ -217,6 +227,7 @@ export type WorkflowTemplateGroupByOutputType = {
   description: string | null
   defaultStaffId: number | null
   trackingMode: $Enums.WorkflowTrackingMode
+  documentTypeId: number | null
   baseAmount: runtime.Decimal
   status: boolean
   createdAt: Date
@@ -252,11 +263,13 @@ export type WorkflowTemplateWhereInput = {
   description?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
   defaultStaffId?: Prisma.IntNullableFilter<"WorkflowTemplate"> | number | null
   trackingMode?: Prisma.EnumWorkflowTrackingModeFilter<"WorkflowTemplate"> | $Enums.WorkflowTrackingMode
+  documentTypeId?: Prisma.IntNullableFilter<"WorkflowTemplate"> | number | null
   baseAmount?: Prisma.DecimalFilter<"WorkflowTemplate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFilter<"WorkflowTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
   defaultStaff?: Prisma.XOR<Prisma.StaffNullableScalarRelationFilter, Prisma.StaffWhereInput> | null
+  documentType?: Prisma.XOR<Prisma.DocumentTypeNullableScalarRelationFilter, Prisma.DocumentTypeWhereInput> | null
   steps?: Prisma.WorkflowStepListRelationFilter
   fileWorkflows?: Prisma.FileWorkflowListRelationFilter
 }
@@ -267,11 +280,13 @@ export type WorkflowTemplateOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrderInput | Prisma.SortOrder
   trackingMode?: Prisma.SortOrder
+  documentTypeId?: Prisma.SortOrderInput | Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   defaultStaff?: Prisma.StaffOrderByWithRelationInput
+  documentType?: Prisma.DocumentTypeOrderByWithRelationInput
   steps?: Prisma.WorkflowStepOrderByRelationAggregateInput
   fileWorkflows?: Prisma.FileWorkflowOrderByRelationAggregateInput
   _relevance?: Prisma.WorkflowTemplateOrderByRelevanceInput
@@ -286,11 +301,13 @@ export type WorkflowTemplateWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
   defaultStaffId?: Prisma.IntNullableFilter<"WorkflowTemplate"> | number | null
   trackingMode?: Prisma.EnumWorkflowTrackingModeFilter<"WorkflowTemplate"> | $Enums.WorkflowTrackingMode
+  documentTypeId?: Prisma.IntNullableFilter<"WorkflowTemplate"> | number | null
   baseAmount?: Prisma.DecimalFilter<"WorkflowTemplate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFilter<"WorkflowTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
   defaultStaff?: Prisma.XOR<Prisma.StaffNullableScalarRelationFilter, Prisma.StaffWhereInput> | null
+  documentType?: Prisma.XOR<Prisma.DocumentTypeNullableScalarRelationFilter, Prisma.DocumentTypeWhereInput> | null
   steps?: Prisma.WorkflowStepListRelationFilter
   fileWorkflows?: Prisma.FileWorkflowListRelationFilter
 }, "id">
@@ -301,6 +318,7 @@ export type WorkflowTemplateOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrderInput | Prisma.SortOrder
   trackingMode?: Prisma.SortOrder
+  documentTypeId?: Prisma.SortOrderInput | Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -321,6 +339,7 @@ export type WorkflowTemplateScalarWhereWithAggregatesInput = {
   description?: Prisma.StringNullableWithAggregatesFilter<"WorkflowTemplate"> | string | null
   defaultStaffId?: Prisma.IntNullableWithAggregatesFilter<"WorkflowTemplate"> | number | null
   trackingMode?: Prisma.EnumWorkflowTrackingModeWithAggregatesFilter<"WorkflowTemplate"> | $Enums.WorkflowTrackingMode
+  documentTypeId?: Prisma.IntNullableWithAggregatesFilter<"WorkflowTemplate"> | number | null
   baseAmount?: Prisma.DecimalWithAggregatesFilter<"WorkflowTemplate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolWithAggregatesFilter<"WorkflowTemplate"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"WorkflowTemplate"> | Date | string
@@ -336,6 +355,7 @@ export type WorkflowTemplateCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultStaff?: Prisma.StaffCreateNestedOneWithoutWorkflowTemplatesInput
+  documentType?: Prisma.DocumentTypeCreateNestedOneWithoutBaseWorkflowsInput
   steps?: Prisma.WorkflowStepCreateNestedManyWithoutWorkflowTemplateInput
   fileWorkflows?: Prisma.FileWorkflowCreateNestedManyWithoutWorkflowTemplateInput
 }
@@ -346,6 +366,7 @@ export type WorkflowTemplateUncheckedCreateInput = {
   description?: string | null
   defaultStaffId?: number | null
   trackingMode?: $Enums.WorkflowTrackingMode
+  documentTypeId?: number | null
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -363,6 +384,7 @@ export type WorkflowTemplateUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultStaff?: Prisma.StaffUpdateOneWithoutWorkflowTemplatesNestedInput
+  documentType?: Prisma.DocumentTypeUpdateOneWithoutBaseWorkflowsNestedInput
   steps?: Prisma.WorkflowStepUpdateManyWithoutWorkflowTemplateNestedInput
   fileWorkflows?: Prisma.FileWorkflowUpdateManyWithoutWorkflowTemplateNestedInput
 }
@@ -373,6 +395,7 @@ export type WorkflowTemplateUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
+  documentTypeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -387,6 +410,7 @@ export type WorkflowTemplateCreateManyInput = {
   description?: string | null
   defaultStaffId?: number | null
   trackingMode?: $Enums.WorkflowTrackingMode
+  documentTypeId?: number | null
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -409,6 +433,7 @@ export type WorkflowTemplateUncheckedUpdateManyInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
+  documentTypeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -437,6 +462,7 @@ export type WorkflowTemplateCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrder
   trackingMode?: Prisma.SortOrder
+  documentTypeId?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -446,6 +472,7 @@ export type WorkflowTemplateCountOrderByAggregateInput = {
 export type WorkflowTemplateAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrder
+  documentTypeId?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
 }
 
@@ -455,6 +482,7 @@ export type WorkflowTemplateMaxOrderByAggregateInput = {
   description?: Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrder
   trackingMode?: Prisma.SortOrder
+  documentTypeId?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -467,6 +495,7 @@ export type WorkflowTemplateMinOrderByAggregateInput = {
   description?: Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrder
   trackingMode?: Prisma.SortOrder
+  documentTypeId?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -476,6 +505,7 @@ export type WorkflowTemplateMinOrderByAggregateInput = {
 export type WorkflowTemplateSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   defaultStaffId?: Prisma.SortOrder
+  documentTypeId?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
 }
 
@@ -566,6 +596,48 @@ export type WorkflowTemplateUpdateOneRequiredWithoutFileWorkflowsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.WorkflowTemplateUpdateToOneWithWhereWithoutFileWorkflowsInput, Prisma.WorkflowTemplateUpdateWithoutFileWorkflowsInput>, Prisma.WorkflowTemplateUncheckedUpdateWithoutFileWorkflowsInput>
 }
 
+export type WorkflowTemplateCreateNestedManyWithoutDocumentTypeInput = {
+  create?: Prisma.XOR<Prisma.WorkflowTemplateCreateWithoutDocumentTypeInput, Prisma.WorkflowTemplateUncheckedCreateWithoutDocumentTypeInput> | Prisma.WorkflowTemplateCreateWithoutDocumentTypeInput[] | Prisma.WorkflowTemplateUncheckedCreateWithoutDocumentTypeInput[]
+  connectOrCreate?: Prisma.WorkflowTemplateCreateOrConnectWithoutDocumentTypeInput | Prisma.WorkflowTemplateCreateOrConnectWithoutDocumentTypeInput[]
+  createMany?: Prisma.WorkflowTemplateCreateManyDocumentTypeInputEnvelope
+  connect?: Prisma.WorkflowTemplateWhereUniqueInput | Prisma.WorkflowTemplateWhereUniqueInput[]
+}
+
+export type WorkflowTemplateUncheckedCreateNestedManyWithoutDocumentTypeInput = {
+  create?: Prisma.XOR<Prisma.WorkflowTemplateCreateWithoutDocumentTypeInput, Prisma.WorkflowTemplateUncheckedCreateWithoutDocumentTypeInput> | Prisma.WorkflowTemplateCreateWithoutDocumentTypeInput[] | Prisma.WorkflowTemplateUncheckedCreateWithoutDocumentTypeInput[]
+  connectOrCreate?: Prisma.WorkflowTemplateCreateOrConnectWithoutDocumentTypeInput | Prisma.WorkflowTemplateCreateOrConnectWithoutDocumentTypeInput[]
+  createMany?: Prisma.WorkflowTemplateCreateManyDocumentTypeInputEnvelope
+  connect?: Prisma.WorkflowTemplateWhereUniqueInput | Prisma.WorkflowTemplateWhereUniqueInput[]
+}
+
+export type WorkflowTemplateUpdateManyWithoutDocumentTypeNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkflowTemplateCreateWithoutDocumentTypeInput, Prisma.WorkflowTemplateUncheckedCreateWithoutDocumentTypeInput> | Prisma.WorkflowTemplateCreateWithoutDocumentTypeInput[] | Prisma.WorkflowTemplateUncheckedCreateWithoutDocumentTypeInput[]
+  connectOrCreate?: Prisma.WorkflowTemplateCreateOrConnectWithoutDocumentTypeInput | Prisma.WorkflowTemplateCreateOrConnectWithoutDocumentTypeInput[]
+  upsert?: Prisma.WorkflowTemplateUpsertWithWhereUniqueWithoutDocumentTypeInput | Prisma.WorkflowTemplateUpsertWithWhereUniqueWithoutDocumentTypeInput[]
+  createMany?: Prisma.WorkflowTemplateCreateManyDocumentTypeInputEnvelope
+  set?: Prisma.WorkflowTemplateWhereUniqueInput | Prisma.WorkflowTemplateWhereUniqueInput[]
+  disconnect?: Prisma.WorkflowTemplateWhereUniqueInput | Prisma.WorkflowTemplateWhereUniqueInput[]
+  delete?: Prisma.WorkflowTemplateWhereUniqueInput | Prisma.WorkflowTemplateWhereUniqueInput[]
+  connect?: Prisma.WorkflowTemplateWhereUniqueInput | Prisma.WorkflowTemplateWhereUniqueInput[]
+  update?: Prisma.WorkflowTemplateUpdateWithWhereUniqueWithoutDocumentTypeInput | Prisma.WorkflowTemplateUpdateWithWhereUniqueWithoutDocumentTypeInput[]
+  updateMany?: Prisma.WorkflowTemplateUpdateManyWithWhereWithoutDocumentTypeInput | Prisma.WorkflowTemplateUpdateManyWithWhereWithoutDocumentTypeInput[]
+  deleteMany?: Prisma.WorkflowTemplateScalarWhereInput | Prisma.WorkflowTemplateScalarWhereInput[]
+}
+
+export type WorkflowTemplateUncheckedUpdateManyWithoutDocumentTypeNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkflowTemplateCreateWithoutDocumentTypeInput, Prisma.WorkflowTemplateUncheckedCreateWithoutDocumentTypeInput> | Prisma.WorkflowTemplateCreateWithoutDocumentTypeInput[] | Prisma.WorkflowTemplateUncheckedCreateWithoutDocumentTypeInput[]
+  connectOrCreate?: Prisma.WorkflowTemplateCreateOrConnectWithoutDocumentTypeInput | Prisma.WorkflowTemplateCreateOrConnectWithoutDocumentTypeInput[]
+  upsert?: Prisma.WorkflowTemplateUpsertWithWhereUniqueWithoutDocumentTypeInput | Prisma.WorkflowTemplateUpsertWithWhereUniqueWithoutDocumentTypeInput[]
+  createMany?: Prisma.WorkflowTemplateCreateManyDocumentTypeInputEnvelope
+  set?: Prisma.WorkflowTemplateWhereUniqueInput | Prisma.WorkflowTemplateWhereUniqueInput[]
+  disconnect?: Prisma.WorkflowTemplateWhereUniqueInput | Prisma.WorkflowTemplateWhereUniqueInput[]
+  delete?: Prisma.WorkflowTemplateWhereUniqueInput | Prisma.WorkflowTemplateWhereUniqueInput[]
+  connect?: Prisma.WorkflowTemplateWhereUniqueInput | Prisma.WorkflowTemplateWhereUniqueInput[]
+  update?: Prisma.WorkflowTemplateUpdateWithWhereUniqueWithoutDocumentTypeInput | Prisma.WorkflowTemplateUpdateWithWhereUniqueWithoutDocumentTypeInput[]
+  updateMany?: Prisma.WorkflowTemplateUpdateManyWithWhereWithoutDocumentTypeInput | Prisma.WorkflowTemplateUpdateManyWithWhereWithoutDocumentTypeInput[]
+  deleteMany?: Prisma.WorkflowTemplateScalarWhereInput | Prisma.WorkflowTemplateScalarWhereInput[]
+}
+
 export type WorkflowTemplateCreateWithoutDefaultStaffInput = {
   name: string
   description?: string | null
@@ -574,6 +646,7 @@ export type WorkflowTemplateCreateWithoutDefaultStaffInput = {
   status?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  documentType?: Prisma.DocumentTypeCreateNestedOneWithoutBaseWorkflowsInput
   steps?: Prisma.WorkflowStepCreateNestedManyWithoutWorkflowTemplateInput
   fileWorkflows?: Prisma.FileWorkflowCreateNestedManyWithoutWorkflowTemplateInput
 }
@@ -583,6 +656,7 @@ export type WorkflowTemplateUncheckedCreateWithoutDefaultStaffInput = {
   name: string
   description?: string | null
   trackingMode?: $Enums.WorkflowTrackingMode
+  documentTypeId?: number | null
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -626,6 +700,7 @@ export type WorkflowTemplateScalarWhereInput = {
   description?: Prisma.StringNullableFilter<"WorkflowTemplate"> | string | null
   defaultStaffId?: Prisma.IntNullableFilter<"WorkflowTemplate"> | number | null
   trackingMode?: Prisma.EnumWorkflowTrackingModeFilter<"WorkflowTemplate"> | $Enums.WorkflowTrackingMode
+  documentTypeId?: Prisma.IntNullableFilter<"WorkflowTemplate"> | number | null
   baseAmount?: Prisma.DecimalFilter<"WorkflowTemplate"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFilter<"WorkflowTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"WorkflowTemplate"> | Date | string
@@ -641,6 +716,7 @@ export type WorkflowTemplateCreateWithoutStepsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultStaff?: Prisma.StaffCreateNestedOneWithoutWorkflowTemplatesInput
+  documentType?: Prisma.DocumentTypeCreateNestedOneWithoutBaseWorkflowsInput
   fileWorkflows?: Prisma.FileWorkflowCreateNestedManyWithoutWorkflowTemplateInput
 }
 
@@ -650,6 +726,7 @@ export type WorkflowTemplateUncheckedCreateWithoutStepsInput = {
   description?: string | null
   defaultStaffId?: number | null
   trackingMode?: $Enums.WorkflowTrackingMode
+  documentTypeId?: number | null
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -682,6 +759,7 @@ export type WorkflowTemplateUpdateWithoutStepsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultStaff?: Prisma.StaffUpdateOneWithoutWorkflowTemplatesNestedInput
+  documentType?: Prisma.DocumentTypeUpdateOneWithoutBaseWorkflowsNestedInput
   fileWorkflows?: Prisma.FileWorkflowUpdateManyWithoutWorkflowTemplateNestedInput
 }
 
@@ -691,6 +769,7 @@ export type WorkflowTemplateUncheckedUpdateWithoutStepsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
+  documentTypeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -707,6 +786,7 @@ export type WorkflowTemplateCreateWithoutFileWorkflowsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   defaultStaff?: Prisma.StaffCreateNestedOneWithoutWorkflowTemplatesInput
+  documentType?: Prisma.DocumentTypeCreateNestedOneWithoutBaseWorkflowsInput
   steps?: Prisma.WorkflowStepCreateNestedManyWithoutWorkflowTemplateInput
 }
 
@@ -716,6 +796,7 @@ export type WorkflowTemplateUncheckedCreateWithoutFileWorkflowsInput = {
   description?: string | null
   defaultStaffId?: number | null
   trackingMode?: $Enums.WorkflowTrackingMode
+  documentTypeId?: number | null
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -748,6 +829,7 @@ export type WorkflowTemplateUpdateWithoutFileWorkflowsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   defaultStaff?: Prisma.StaffUpdateOneWithoutWorkflowTemplatesNestedInput
+  documentType?: Prisma.DocumentTypeUpdateOneWithoutBaseWorkflowsNestedInput
   steps?: Prisma.WorkflowStepUpdateManyWithoutWorkflowTemplateNestedInput
 }
 
@@ -757,6 +839,7 @@ export type WorkflowTemplateUncheckedUpdateWithoutFileWorkflowsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   defaultStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
+  documentTypeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -764,11 +847,65 @@ export type WorkflowTemplateUncheckedUpdateWithoutFileWorkflowsInput = {
   steps?: Prisma.WorkflowStepUncheckedUpdateManyWithoutWorkflowTemplateNestedInput
 }
 
+export type WorkflowTemplateCreateWithoutDocumentTypeInput = {
+  name: string
+  description?: string | null
+  trackingMode?: $Enums.WorkflowTrackingMode
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  defaultStaff?: Prisma.StaffCreateNestedOneWithoutWorkflowTemplatesInput
+  steps?: Prisma.WorkflowStepCreateNestedManyWithoutWorkflowTemplateInput
+  fileWorkflows?: Prisma.FileWorkflowCreateNestedManyWithoutWorkflowTemplateInput
+}
+
+export type WorkflowTemplateUncheckedCreateWithoutDocumentTypeInput = {
+  id?: number
+  name: string
+  description?: string | null
+  defaultStaffId?: number | null
+  trackingMode?: $Enums.WorkflowTrackingMode
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  steps?: Prisma.WorkflowStepUncheckedCreateNestedManyWithoutWorkflowTemplateInput
+  fileWorkflows?: Prisma.FileWorkflowUncheckedCreateNestedManyWithoutWorkflowTemplateInput
+}
+
+export type WorkflowTemplateCreateOrConnectWithoutDocumentTypeInput = {
+  where: Prisma.WorkflowTemplateWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkflowTemplateCreateWithoutDocumentTypeInput, Prisma.WorkflowTemplateUncheckedCreateWithoutDocumentTypeInput>
+}
+
+export type WorkflowTemplateCreateManyDocumentTypeInputEnvelope = {
+  data: Prisma.WorkflowTemplateCreateManyDocumentTypeInput | Prisma.WorkflowTemplateCreateManyDocumentTypeInput[]
+  skipDuplicates?: boolean
+}
+
+export type WorkflowTemplateUpsertWithWhereUniqueWithoutDocumentTypeInput = {
+  where: Prisma.WorkflowTemplateWhereUniqueInput
+  update: Prisma.XOR<Prisma.WorkflowTemplateUpdateWithoutDocumentTypeInput, Prisma.WorkflowTemplateUncheckedUpdateWithoutDocumentTypeInput>
+  create: Prisma.XOR<Prisma.WorkflowTemplateCreateWithoutDocumentTypeInput, Prisma.WorkflowTemplateUncheckedCreateWithoutDocumentTypeInput>
+}
+
+export type WorkflowTemplateUpdateWithWhereUniqueWithoutDocumentTypeInput = {
+  where: Prisma.WorkflowTemplateWhereUniqueInput
+  data: Prisma.XOR<Prisma.WorkflowTemplateUpdateWithoutDocumentTypeInput, Prisma.WorkflowTemplateUncheckedUpdateWithoutDocumentTypeInput>
+}
+
+export type WorkflowTemplateUpdateManyWithWhereWithoutDocumentTypeInput = {
+  where: Prisma.WorkflowTemplateScalarWhereInput
+  data: Prisma.XOR<Prisma.WorkflowTemplateUpdateManyMutationInput, Prisma.WorkflowTemplateUncheckedUpdateManyWithoutDocumentTypeInput>
+}
+
 export type WorkflowTemplateCreateManyDefaultStaffInput = {
   id?: number
   name: string
   description?: string | null
   trackingMode?: $Enums.WorkflowTrackingMode
+  documentTypeId?: number | null
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: boolean
   createdAt?: Date | string
@@ -783,6 +920,7 @@ export type WorkflowTemplateUpdateWithoutDefaultStaffInput = {
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  documentType?: Prisma.DocumentTypeUpdateOneWithoutBaseWorkflowsNestedInput
   steps?: Prisma.WorkflowStepUpdateManyWithoutWorkflowTemplateNestedInput
   fileWorkflows?: Prisma.FileWorkflowUpdateManyWithoutWorkflowTemplateNestedInput
 }
@@ -792,6 +930,7 @@ export type WorkflowTemplateUncheckedUpdateWithoutDefaultStaffInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
+  documentTypeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -804,6 +943,58 @@ export type WorkflowTemplateUncheckedUpdateManyWithoutDefaultStaffInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
+  documentTypeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type WorkflowTemplateCreateManyDocumentTypeInput = {
+  id?: number
+  name: string
+  description?: string | null
+  defaultStaffId?: number | null
+  trackingMode?: $Enums.WorkflowTrackingMode
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type WorkflowTemplateUpdateWithoutDocumentTypeInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  defaultStaff?: Prisma.StaffUpdateOneWithoutWorkflowTemplatesNestedInput
+  steps?: Prisma.WorkflowStepUpdateManyWithoutWorkflowTemplateNestedInput
+  fileWorkflows?: Prisma.FileWorkflowUpdateManyWithoutWorkflowTemplateNestedInput
+}
+
+export type WorkflowTemplateUncheckedUpdateWithoutDocumentTypeInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  steps?: Prisma.WorkflowStepUncheckedUpdateManyWithoutWorkflowTemplateNestedInput
+  fileWorkflows?: Prisma.FileWorkflowUncheckedUpdateManyWithoutWorkflowTemplateNestedInput
+}
+
+export type WorkflowTemplateUncheckedUpdateManyWithoutDocumentTypeInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultStaffId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   trackingMode?: Prisma.EnumWorkflowTrackingModeFieldUpdateOperationsInput | $Enums.WorkflowTrackingMode
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -857,11 +1048,13 @@ export type WorkflowTemplateSelect<ExtArgs extends runtime.Types.Extensions.Inte
   description?: boolean
   defaultStaffId?: boolean
   trackingMode?: boolean
+  documentTypeId?: boolean
   baseAmount?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   defaultStaff?: boolean | Prisma.WorkflowTemplate$defaultStaffArgs<ExtArgs>
+  documentType?: boolean | Prisma.WorkflowTemplate$documentTypeArgs<ExtArgs>
   steps?: boolean | Prisma.WorkflowTemplate$stepsArgs<ExtArgs>
   fileWorkflows?: boolean | Prisma.WorkflowTemplate$fileWorkflowsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkflowTemplateCountOutputTypeDefaultArgs<ExtArgs>
@@ -875,15 +1068,17 @@ export type WorkflowTemplateSelectScalar = {
   description?: boolean
   defaultStaffId?: boolean
   trackingMode?: boolean
+  documentTypeId?: boolean
   baseAmount?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WorkflowTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "defaultStaffId" | "trackingMode" | "baseAmount" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowTemplate"]>
+export type WorkflowTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "defaultStaffId" | "trackingMode" | "documentTypeId" | "baseAmount" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["workflowTemplate"]>
 export type WorkflowTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   defaultStaff?: boolean | Prisma.WorkflowTemplate$defaultStaffArgs<ExtArgs>
+  documentType?: boolean | Prisma.WorkflowTemplate$documentTypeArgs<ExtArgs>
   steps?: boolean | Prisma.WorkflowTemplate$stepsArgs<ExtArgs>
   fileWorkflows?: boolean | Prisma.WorkflowTemplate$fileWorkflowsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkflowTemplateCountOutputTypeDefaultArgs<ExtArgs>
@@ -893,6 +1088,7 @@ export type $WorkflowTemplatePayload<ExtArgs extends runtime.Types.Extensions.In
   name: "WorkflowTemplate"
   objects: {
     defaultStaff: Prisma.$StaffPayload<ExtArgs> | null
+    documentType: Prisma.$DocumentTypePayload<ExtArgs> | null
     steps: Prisma.$WorkflowStepPayload<ExtArgs>[]
     fileWorkflows: Prisma.$FileWorkflowPayload<ExtArgs>[]
   }
@@ -902,6 +1098,7 @@ export type $WorkflowTemplatePayload<ExtArgs extends runtime.Types.Extensions.In
     description: string | null
     defaultStaffId: number | null
     trackingMode: $Enums.WorkflowTrackingMode
+    documentTypeId: number | null
     baseAmount: runtime.Decimal
     status: boolean
     createdAt: Date
@@ -1247,6 +1444,7 @@ readonly fields: WorkflowTemplateFieldRefs;
 export interface Prisma__WorkflowTemplateClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   defaultStaff<T extends Prisma.WorkflowTemplate$defaultStaffArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowTemplate$defaultStaffArgs<ExtArgs>>): Prisma.Prisma__StaffClient<runtime.Types.Result.GetResult<Prisma.$StaffPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  documentType<T extends Prisma.WorkflowTemplate$documentTypeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowTemplate$documentTypeArgs<ExtArgs>>): Prisma.Prisma__DocumentTypeClient<runtime.Types.Result.GetResult<Prisma.$DocumentTypePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   steps<T extends Prisma.WorkflowTemplate$stepsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowTemplate$stepsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowStepPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   fileWorkflows<T extends Prisma.WorkflowTemplate$fileWorkflowsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowTemplate$fileWorkflowsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FileWorkflowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1283,6 +1481,7 @@ export interface WorkflowTemplateFieldRefs {
   readonly description: Prisma.FieldRef<"WorkflowTemplate", 'String'>
   readonly defaultStaffId: Prisma.FieldRef<"WorkflowTemplate", 'Int'>
   readonly trackingMode: Prisma.FieldRef<"WorkflowTemplate", 'WorkflowTrackingMode'>
+  readonly documentTypeId: Prisma.FieldRef<"WorkflowTemplate", 'Int'>
   readonly baseAmount: Prisma.FieldRef<"WorkflowTemplate", 'Decimal'>
   readonly status: Prisma.FieldRef<"WorkflowTemplate", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"WorkflowTemplate", 'DateTime'>
@@ -1651,6 +1850,25 @@ export type WorkflowTemplate$defaultStaffArgs<ExtArgs extends runtime.Types.Exte
    */
   include?: Prisma.StaffInclude<ExtArgs> | null
   where?: Prisma.StaffWhereInput
+}
+
+/**
+ * WorkflowTemplate.documentType
+ */
+export type WorkflowTemplate$documentTypeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DocumentType
+   */
+  select?: Prisma.DocumentTypeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DocumentType
+   */
+  omit?: Prisma.DocumentTypeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DocumentTypeInclude<ExtArgs> | null
+  where?: Prisma.DocumentTypeWhereInput
 }
 
 /**

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
 
@@ -26,6 +27,15 @@ function serializeDocumentType(documentType: {
   status: boolean;
   createdAt: Date;
   updatedAt: Date;
+  languages?: Array<{
+    languageId: number;
+    price: unknown;
+    language: {
+      id: number;
+      name: string;
+      status: boolean;
+    };
+  }>;
 }) {
   return {
     id: documentType.id,
@@ -35,6 +45,11 @@ function serializeDocumentType(documentType: {
     status: documentType.status,
     createdAt: documentType.createdAt,
     updatedAt: documentType.updatedAt,
+    languages: (documentType.languages ?? []).map((item) => ({
+      languageId: item.languageId,
+      language: item.language,
+      price: Number(item.price),
+    })),
   };
 }
 
@@ -44,18 +59,42 @@ function serializeDocumentType(documentType: {
 
 export async function GET() {
   try {
-    const documentTypes = await prisma.documentType.findMany({
-      orderBy: {
-        name: "asc",
-      },
-    });
+    const documentTypes =
+      await prisma.documentType.findMany({
+        orderBy: {
+          name: "asc",
+        },
+        include: {
+          languages: {
+            include: {
+              language: {
+                select: {
+                  id: true,
+                  name: true,
+                  status: true,
+                },
+              },
+            },
+            orderBy: {
+              language: {
+                name: "asc",
+              },
+            },
+          },
+        },
+      });
 
     return NextResponse.json({
       success: true,
-      documentTypes: documentTypes.map(serializeDocumentType),
+      documentTypes: documentTypes.map(
+        serializeDocumentType
+      ),
     });
   } catch (error) {
-    console.error("Load document types error:", error);
+    console.error(
+      "Load document types error:",
+      error
+    );
 
     return NextResponse.json(
       {
@@ -71,19 +110,29 @@ export async function GET() {
 // POST - Create Document Type
 // ==================================================
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest
+) {
   try {
     const body = await request.json();
 
-    const name = String(body.name ?? "").trim();
-    const description = String(body.description ?? "").trim();
-    const defaultAmount = parseMoney(body.defaultAmount);
+    const name = String(
+      body.name ?? ""
+    ).trim();
+
+    const description = String(
+      body.description ?? ""
+    ).trim();
+
+    const defaultAmount =
+      parseMoney(body.defaultAmount);
 
     if (!name) {
       return NextResponse.json(
         {
           success: false,
-          message: "Document type name is required.",
+          message:
+            "Document type name is required.",
         },
         { status: 400 }
       );
@@ -93,65 +142,283 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "Valid default price is required.",
+          message:
+            "Valid default price is required.",
         },
         { status: 400 }
       );
     }
 
-    const existing = await prisma.documentType.findUnique({
-      where: {
-        name,
-      },
-    });
+    const existing =
+      await prisma.documentType.findUnique({
+        where: {
+          name,
+        },
+      });
 
     if (existing) {
       return NextResponse.json(
         {
           success: false,
-          message: "A document type with this name already exists.",
+          message:
+            "A document type with this name already exists.",
         },
         { status: 409 }
       );
     }
 
-    const documentType = await prisma.documentType.create({
-      data: {
-        name,
-        description: description || null,
-        defaultAmount,
-        status: true,
-      },
-    });
+    const rawLanguages =
+      Array.isArray(body.languages)
+        ? body.languages
+        : null;
+
+    const documentType =
+      await prisma.$transaction(
+        async (tx) => {
+          const created =
+            await tx.documentType.create({
+              data: {
+                name,
+                description:
+                  description || null,
+                defaultAmount,
+                status: true,
+              },
+            });
+
+          // When languages were explicitly supplied,
+          // save those prices. Otherwise, configure every
+          // currently active language at the default price.
+          let languageRows: Array<{
+            languageId: number;
+            price: string;
+          }> = [];
+
+          if (rawLanguages !== null) {
+            languageRows =
+              rawLanguages.map(
+                (item: unknown) => {
+                  if (
+                    typeof item !== "object" ||
+                    item === null ||
+                    Array.isArray(item)
+                  ) {
+                    throw new Error(
+                      "INVALID_LANGUAGE_CONFIGURATION"
+                    );
+                  }
+
+                  const input =
+                    item as {
+                      languageId?: unknown;
+                      price?: unknown;
+                    };
+
+                  const languageId =
+                    Number(input.languageId);
+
+                  const price =
+                    parseMoney(input.price);
+
+                  if (
+                    !Number.isInteger(languageId) ||
+                    languageId <= 0 ||
+                    price === null
+                  ) {
+                    throw new Error(
+                      "INVALID_LANGUAGE_CONFIGURATION"
+                    );
+                  }
+
+                  return {
+                    languageId,
+                    price,
+                  };
+                }
+              );
+          } else {
+            const activeLanguages =
+              await tx.language.findMany({
+                where: {
+                  status: true,
+                },
+                select: {
+                  id: true,
+                },
+              });
+
+            languageRows =
+              activeLanguages.map(
+                (language) => ({
+                  languageId: language.id,
+                  price: defaultAmount,
+                })
+              );
+          }
+
+          if (languageRows.length > 0) {
+            const uniqueIds =
+              new Set(
+                languageRows.map(
+                  (item) => item.languageId
+                )
+              );
+
+            if (
+              uniqueIds.size !==
+              languageRows.length
+            ) {
+              throw new Error(
+                "DUPLICATE_LANGUAGE_CONFIGURATION"
+              );
+            }
+
+            const languageIds =
+              languageRows.map(
+                (item) => item.languageId
+              );
+
+            const activeLanguages =
+              await tx.language.findMany({
+                where: {
+                  id: {
+                    in: languageIds,
+                  },
+                  status: true,
+                },
+                select: {
+                  id: true,
+                },
+              });
+
+            if (
+              activeLanguages.length !==
+              uniqueIds.size
+            ) {
+              throw new Error(
+                "INVALID_LANGUAGE_CONFIGURATION"
+              );
+            }
+
+            await tx.documentTypeLanguage.createMany({
+              data: languageRows.map(
+                (item) => ({
+                  documentTypeId: created.id,
+                  languageId:
+                    item.languageId,
+                  price: item.price,
+                })
+              ),
+            });
+          }
+
+          return tx.documentType.findUniqueOrThrow({
+            where: {
+              id: created.id,
+            },
+            include: {
+              languages: {
+                include: {
+                  language: {
+                    select: {
+                      id: true,
+                      name: true,
+                      status: true,
+                    },
+                  },
+                },
+                orderBy: {
+                  language: {
+                    name: "asc",
+                  },
+                },
+              },
+            },
+          });
+        }
+      );
 
     await writeAuditLog({
       module: "SETTINGS",
       action: "CREATE",
       entity: "DOCUMENT_TYPE",
       entityId: documentType.id,
-      description: `Document type "${documentType.name}" created.`,
+      description:
+        `Document type "${documentType.name}" created.`,
       metadata: {
         name: documentType.name,
         description: documentType.description,
         defaultAmount,
+        languages:
+          documentType.languages.map(
+            (item) => ({
+              languageId:
+                item.languageId,
+              languageName:
+                item.language.name,
+              price:
+                Number(item.price),
+            })
+          ),
       },
     });
 
     return NextResponse.json(
       {
         success: true,
-        message: "Document type created successfully.",
-        documentType: serializeDocumentType(documentType),
+        message:
+          "Document type created successfully.",
+        documentType:
+          serializeDocumentType(
+            documentType
+          ),
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error("Create document type error:", error);
+    console.error(
+      "Create document type error:",
+      error
+    );
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "";
+
+    if (
+      message ===
+      "DUPLICATE_LANGUAGE_CONFIGURATION"
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "The same language cannot be configured more than once.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (
+      message ===
+      "INVALID_LANGUAGE_CONFIGURATION"
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "One or more selected languages are invalid or inactive.",
+        },
+        { status: 400 }
+      );
+    }
 
     return NextResponse.json(
       {
         success: false,
-        message: "Unable to create document type.",
+        message:
+          "Unable to create document type.",
       },
       { status: 500 }
     );

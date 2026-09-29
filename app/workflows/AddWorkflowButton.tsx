@@ -2,10 +2,10 @@
 "use client";
 
 import {
-  FormEvent,
   useEffect,
   useRef,
   useState,
+  type FormEvent,
 } from "react";
 
 type Staff = {
@@ -96,6 +96,7 @@ export default function AddWorkflowButton() {
   const resetForm = () => {
     if (nameRef.current) {
       nameRef.current.value = "";
+      setTrackingMode("STANDARD");
     }
 
     if (descriptionRef.current) {
@@ -104,7 +105,6 @@ export default function AddWorkflowButton() {
 
     setDefaultStaffId("");
     setBaseAmount("");
-    setTrackingMode("STANDARD");
     setStaffError("");
   };
 
@@ -156,14 +156,14 @@ export default function AddWorkflowButton() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-  name,
-  description,
-  defaultStaffId: defaultStaffId
-    ? Number(defaultStaffId)
-    : null,
-  baseAmount: cleanBaseAmount,
-  trackingMode,
-}),
+          name,
+          description,
+          defaultStaffId: defaultStaffId
+            ? Number(defaultStaffId)
+            : null,
+          baseAmount: cleanBaseAmount,
+          trackingMode,
+        }),
       });
 
       const data = await response.json();
@@ -204,8 +204,8 @@ export default function AddWorkflowButton() {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="flex max-h-[calc(100vh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="fixed inset-0 z-50 flex h-[100dvh] items-center justify-center overflow-hidden bg-black/50 p-4 backdrop-blur-sm">
+          <div className="flex h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-full max-w-md min-h-0 flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
             {/* Modal Header */}
 
             <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
@@ -232,9 +232,9 @@ export default function AddWorkflowButton() {
             {/* Form */}
 
             <form
-  onSubmit={handleSubmit}
-  className="max-h-[calc(100vh-9rem)] space-y-4 overflow-y-auto px-6 py-6"
->
+              onSubmit={handleSubmit}
+              className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-6"
+            >
               {/* Workflow Name */}
 
               <div>

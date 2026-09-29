@@ -30,6 +30,7 @@ export type FileWorkflowDocumentAvgAggregateOutputType = {
   id: number | null
   fileWorkflowId: number | null
   documentTypeId: number | null
+  languageId: number | null
   baseAmount: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
   finalAmount: runtime.Decimal | null
@@ -40,6 +41,7 @@ export type FileWorkflowDocumentSumAggregateOutputType = {
   id: number | null
   fileWorkflowId: number | null
   documentTypeId: number | null
+  languageId: number | null
   baseAmount: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
   finalAmount: runtime.Decimal | null
@@ -50,6 +52,8 @@ export type FileWorkflowDocumentMinAggregateOutputType = {
   id: number | null
   fileWorkflowId: number | null
   documentTypeId: number | null
+  languageId: number | null
+  languageName: string | null
   documentName: string | null
   baseAmount: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
@@ -66,6 +70,8 @@ export type FileWorkflowDocumentMaxAggregateOutputType = {
   id: number | null
   fileWorkflowId: number | null
   documentTypeId: number | null
+  languageId: number | null
+  languageName: string | null
   documentName: string | null
   baseAmount: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
@@ -82,6 +88,8 @@ export type FileWorkflowDocumentCountAggregateOutputType = {
   id: number
   fileWorkflowId: number
   documentTypeId: number
+  languageId: number
+  languageName: number
   documentName: number
   baseAmount: number
   discountAmount: number
@@ -100,6 +108,7 @@ export type FileWorkflowDocumentAvgAggregateInputType = {
   id?: true
   fileWorkflowId?: true
   documentTypeId?: true
+  languageId?: true
   baseAmount?: true
   discountAmount?: true
   finalAmount?: true
@@ -110,6 +119,7 @@ export type FileWorkflowDocumentSumAggregateInputType = {
   id?: true
   fileWorkflowId?: true
   documentTypeId?: true
+  languageId?: true
   baseAmount?: true
   discountAmount?: true
   finalAmount?: true
@@ -120,6 +130,8 @@ export type FileWorkflowDocumentMinAggregateInputType = {
   id?: true
   fileWorkflowId?: true
   documentTypeId?: true
+  languageId?: true
+  languageName?: true
   documentName?: true
   baseAmount?: true
   discountAmount?: true
@@ -136,6 +148,8 @@ export type FileWorkflowDocumentMaxAggregateInputType = {
   id?: true
   fileWorkflowId?: true
   documentTypeId?: true
+  languageId?: true
+  languageName?: true
   documentName?: true
   baseAmount?: true
   discountAmount?: true
@@ -152,6 +166,8 @@ export type FileWorkflowDocumentCountAggregateInputType = {
   id?: true
   fileWorkflowId?: true
   documentTypeId?: true
+  languageId?: true
+  languageName?: true
   documentName?: true
   baseAmount?: true
   discountAmount?: true
@@ -255,6 +271,8 @@ export type FileWorkflowDocumentGroupByOutputType = {
   id: number
   fileWorkflowId: number
   documentTypeId: number
+  languageId: number | null
+  languageName: string | null
   documentName: string
   baseAmount: runtime.Decimal
   discountAmount: runtime.Decimal
@@ -294,6 +312,8 @@ export type FileWorkflowDocumentWhereInput = {
   id?: Prisma.IntFilter<"FileWorkflowDocument"> | number
   fileWorkflowId?: Prisma.IntFilter<"FileWorkflowDocument"> | number
   documentTypeId?: Prisma.IntFilter<"FileWorkflowDocument"> | number
+  languageId?: Prisma.IntNullableFilter<"FileWorkflowDocument"> | number | null
+  languageName?: Prisma.StringNullableFilter<"FileWorkflowDocument"> | string | null
   documentName?: Prisma.StringFilter<"FileWorkflowDocument"> | string
   baseAmount?: Prisma.DecimalFilter<"FileWorkflowDocument"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFilter<"FileWorkflowDocument"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -306,6 +326,7 @@ export type FileWorkflowDocumentWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"FileWorkflowDocument"> | Date | string
   fileWorkflow?: Prisma.XOR<Prisma.FileWorkflowScalarRelationFilter, Prisma.FileWorkflowWhereInput>
   documentType?: Prisma.XOR<Prisma.DocumentTypeScalarRelationFilter, Prisma.DocumentTypeWhereInput>
+  language?: Prisma.XOR<Prisma.LanguageNullableScalarRelationFilter, Prisma.LanguageWhereInput> | null
   tasks?: Prisma.WorkflowTaskListRelationFilter
 }
 
@@ -313,6 +334,8 @@ export type FileWorkflowDocumentOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   fileWorkflowId?: Prisma.SortOrder
   documentTypeId?: Prisma.SortOrder
+  languageId?: Prisma.SortOrderInput | Prisma.SortOrder
+  languageName?: Prisma.SortOrderInput | Prisma.SortOrder
   documentName?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
@@ -325,6 +348,7 @@ export type FileWorkflowDocumentOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   fileWorkflow?: Prisma.FileWorkflowOrderByWithRelationInput
   documentType?: Prisma.DocumentTypeOrderByWithRelationInput
+  language?: Prisma.LanguageOrderByWithRelationInput
   tasks?: Prisma.WorkflowTaskOrderByRelationAggregateInput
   _relevance?: Prisma.FileWorkflowDocumentOrderByRelevanceInput
 }
@@ -336,6 +360,8 @@ export type FileWorkflowDocumentWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.FileWorkflowDocumentWhereInput | Prisma.FileWorkflowDocumentWhereInput[]
   fileWorkflowId?: Prisma.IntFilter<"FileWorkflowDocument"> | number
   documentTypeId?: Prisma.IntFilter<"FileWorkflowDocument"> | number
+  languageId?: Prisma.IntNullableFilter<"FileWorkflowDocument"> | number | null
+  languageName?: Prisma.StringNullableFilter<"FileWorkflowDocument"> | string | null
   documentName?: Prisma.StringFilter<"FileWorkflowDocument"> | string
   baseAmount?: Prisma.DecimalFilter<"FileWorkflowDocument"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFilter<"FileWorkflowDocument"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -348,6 +374,7 @@ export type FileWorkflowDocumentWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"FileWorkflowDocument"> | Date | string
   fileWorkflow?: Prisma.XOR<Prisma.FileWorkflowScalarRelationFilter, Prisma.FileWorkflowWhereInput>
   documentType?: Prisma.XOR<Prisma.DocumentTypeScalarRelationFilter, Prisma.DocumentTypeWhereInput>
+  language?: Prisma.XOR<Prisma.LanguageNullableScalarRelationFilter, Prisma.LanguageWhereInput> | null
   tasks?: Prisma.WorkflowTaskListRelationFilter
 }, "id">
 
@@ -355,6 +382,8 @@ export type FileWorkflowDocumentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   fileWorkflowId?: Prisma.SortOrder
   documentTypeId?: Prisma.SortOrder
+  languageId?: Prisma.SortOrderInput | Prisma.SortOrder
+  languageName?: Prisma.SortOrderInput | Prisma.SortOrder
   documentName?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
@@ -379,6 +408,8 @@ export type FileWorkflowDocumentScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"FileWorkflowDocument"> | number
   fileWorkflowId?: Prisma.IntWithAggregatesFilter<"FileWorkflowDocument"> | number
   documentTypeId?: Prisma.IntWithAggregatesFilter<"FileWorkflowDocument"> | number
+  languageId?: Prisma.IntNullableWithAggregatesFilter<"FileWorkflowDocument"> | number | null
+  languageName?: Prisma.StringNullableWithAggregatesFilter<"FileWorkflowDocument"> | string | null
   documentName?: Prisma.StringWithAggregatesFilter<"FileWorkflowDocument"> | string
   baseAmount?: Prisma.DecimalWithAggregatesFilter<"FileWorkflowDocument"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalWithAggregatesFilter<"FileWorkflowDocument"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -392,6 +423,7 @@ export type FileWorkflowDocumentScalarWhereWithAggregatesInput = {
 }
 
 export type FileWorkflowDocumentCreateInput = {
+  languageName?: string | null
   documentName: string
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -404,6 +436,7 @@ export type FileWorkflowDocumentCreateInput = {
   updatedAt?: Date | string
   fileWorkflow: Prisma.FileWorkflowCreateNestedOneWithoutDocumentsInput
   documentType: Prisma.DocumentTypeCreateNestedOneWithoutFileDocumentsInput
+  language?: Prisma.LanguageCreateNestedOneWithoutFileDocumentsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowDocumentInput
 }
 
@@ -411,6 +444,8 @@ export type FileWorkflowDocumentUncheckedCreateInput = {
   id?: number
   fileWorkflowId: number
   documentTypeId: number
+  languageId?: number | null
+  languageName?: string | null
   documentName: string
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -425,6 +460,7 @@ export type FileWorkflowDocumentUncheckedCreateInput = {
 }
 
 export type FileWorkflowDocumentUpdateInput = {
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -437,6 +473,7 @@ export type FileWorkflowDocumentUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflow?: Prisma.FileWorkflowUpdateOneRequiredWithoutDocumentsNestedInput
   documentType?: Prisma.DocumentTypeUpdateOneRequiredWithoutFileDocumentsNestedInput
+  language?: Prisma.LanguageUpdateOneWithoutFileDocumentsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowDocumentNestedInput
 }
 
@@ -444,6 +481,8 @@ export type FileWorkflowDocumentUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   fileWorkflowId?: Prisma.IntFieldUpdateOperationsInput | number
   documentTypeId?: Prisma.IntFieldUpdateOperationsInput | number
+  languageId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -461,6 +500,8 @@ export type FileWorkflowDocumentCreateManyInput = {
   id?: number
   fileWorkflowId: number
   documentTypeId: number
+  languageId?: number | null
+  languageName?: string | null
   documentName: string
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -474,6 +515,7 @@ export type FileWorkflowDocumentCreateManyInput = {
 }
 
 export type FileWorkflowDocumentUpdateManyMutationInput = {
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -490,6 +532,8 @@ export type FileWorkflowDocumentUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   fileWorkflowId?: Prisma.IntFieldUpdateOperationsInput | number
   documentTypeId?: Prisma.IntFieldUpdateOperationsInput | number
+  languageId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -522,6 +566,8 @@ export type FileWorkflowDocumentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   fileWorkflowId?: Prisma.SortOrder
   documentTypeId?: Prisma.SortOrder
+  languageId?: Prisma.SortOrder
+  languageName?: Prisma.SortOrder
   documentName?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
@@ -538,6 +584,7 @@ export type FileWorkflowDocumentAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   fileWorkflowId?: Prisma.SortOrder
   documentTypeId?: Prisma.SortOrder
+  languageId?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
   finalAmount?: Prisma.SortOrder
@@ -548,6 +595,8 @@ export type FileWorkflowDocumentMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   fileWorkflowId?: Prisma.SortOrder
   documentTypeId?: Prisma.SortOrder
+  languageId?: Prisma.SortOrder
+  languageName?: Prisma.SortOrder
   documentName?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
@@ -564,6 +613,8 @@ export type FileWorkflowDocumentMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   fileWorkflowId?: Prisma.SortOrder
   documentTypeId?: Prisma.SortOrder
+  languageId?: Prisma.SortOrder
+  languageName?: Prisma.SortOrder
   documentName?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
@@ -580,6 +631,7 @@ export type FileWorkflowDocumentSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   fileWorkflowId?: Prisma.SortOrder
   documentTypeId?: Prisma.SortOrder
+  languageId?: Prisma.SortOrder
   baseAmount?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
   finalAmount?: Prisma.SortOrder
@@ -675,6 +727,48 @@ export type FileWorkflowDocumentUncheckedUpdateManyWithoutDocumentTypeNestedInpu
   deleteMany?: Prisma.FileWorkflowDocumentScalarWhereInput | Prisma.FileWorkflowDocumentScalarWhereInput[]
 }
 
+export type FileWorkflowDocumentCreateNestedManyWithoutLanguageInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowDocumentCreateWithoutLanguageInput, Prisma.FileWorkflowDocumentUncheckedCreateWithoutLanguageInput> | Prisma.FileWorkflowDocumentCreateWithoutLanguageInput[] | Prisma.FileWorkflowDocumentUncheckedCreateWithoutLanguageInput[]
+  connectOrCreate?: Prisma.FileWorkflowDocumentCreateOrConnectWithoutLanguageInput | Prisma.FileWorkflowDocumentCreateOrConnectWithoutLanguageInput[]
+  createMany?: Prisma.FileWorkflowDocumentCreateManyLanguageInputEnvelope
+  connect?: Prisma.FileWorkflowDocumentWhereUniqueInput | Prisma.FileWorkflowDocumentWhereUniqueInput[]
+}
+
+export type FileWorkflowDocumentUncheckedCreateNestedManyWithoutLanguageInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowDocumentCreateWithoutLanguageInput, Prisma.FileWorkflowDocumentUncheckedCreateWithoutLanguageInput> | Prisma.FileWorkflowDocumentCreateWithoutLanguageInput[] | Prisma.FileWorkflowDocumentUncheckedCreateWithoutLanguageInput[]
+  connectOrCreate?: Prisma.FileWorkflowDocumentCreateOrConnectWithoutLanguageInput | Prisma.FileWorkflowDocumentCreateOrConnectWithoutLanguageInput[]
+  createMany?: Prisma.FileWorkflowDocumentCreateManyLanguageInputEnvelope
+  connect?: Prisma.FileWorkflowDocumentWhereUniqueInput | Prisma.FileWorkflowDocumentWhereUniqueInput[]
+}
+
+export type FileWorkflowDocumentUpdateManyWithoutLanguageNestedInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowDocumentCreateWithoutLanguageInput, Prisma.FileWorkflowDocumentUncheckedCreateWithoutLanguageInput> | Prisma.FileWorkflowDocumentCreateWithoutLanguageInput[] | Prisma.FileWorkflowDocumentUncheckedCreateWithoutLanguageInput[]
+  connectOrCreate?: Prisma.FileWorkflowDocumentCreateOrConnectWithoutLanguageInput | Prisma.FileWorkflowDocumentCreateOrConnectWithoutLanguageInput[]
+  upsert?: Prisma.FileWorkflowDocumentUpsertWithWhereUniqueWithoutLanguageInput | Prisma.FileWorkflowDocumentUpsertWithWhereUniqueWithoutLanguageInput[]
+  createMany?: Prisma.FileWorkflowDocumentCreateManyLanguageInputEnvelope
+  set?: Prisma.FileWorkflowDocumentWhereUniqueInput | Prisma.FileWorkflowDocumentWhereUniqueInput[]
+  disconnect?: Prisma.FileWorkflowDocumentWhereUniqueInput | Prisma.FileWorkflowDocumentWhereUniqueInput[]
+  delete?: Prisma.FileWorkflowDocumentWhereUniqueInput | Prisma.FileWorkflowDocumentWhereUniqueInput[]
+  connect?: Prisma.FileWorkflowDocumentWhereUniqueInput | Prisma.FileWorkflowDocumentWhereUniqueInput[]
+  update?: Prisma.FileWorkflowDocumentUpdateWithWhereUniqueWithoutLanguageInput | Prisma.FileWorkflowDocumentUpdateWithWhereUniqueWithoutLanguageInput[]
+  updateMany?: Prisma.FileWorkflowDocumentUpdateManyWithWhereWithoutLanguageInput | Prisma.FileWorkflowDocumentUpdateManyWithWhereWithoutLanguageInput[]
+  deleteMany?: Prisma.FileWorkflowDocumentScalarWhereInput | Prisma.FileWorkflowDocumentScalarWhereInput[]
+}
+
+export type FileWorkflowDocumentUncheckedUpdateManyWithoutLanguageNestedInput = {
+  create?: Prisma.XOR<Prisma.FileWorkflowDocumentCreateWithoutLanguageInput, Prisma.FileWorkflowDocumentUncheckedCreateWithoutLanguageInput> | Prisma.FileWorkflowDocumentCreateWithoutLanguageInput[] | Prisma.FileWorkflowDocumentUncheckedCreateWithoutLanguageInput[]
+  connectOrCreate?: Prisma.FileWorkflowDocumentCreateOrConnectWithoutLanguageInput | Prisma.FileWorkflowDocumentCreateOrConnectWithoutLanguageInput[]
+  upsert?: Prisma.FileWorkflowDocumentUpsertWithWhereUniqueWithoutLanguageInput | Prisma.FileWorkflowDocumentUpsertWithWhereUniqueWithoutLanguageInput[]
+  createMany?: Prisma.FileWorkflowDocumentCreateManyLanguageInputEnvelope
+  set?: Prisma.FileWorkflowDocumentWhereUniqueInput | Prisma.FileWorkflowDocumentWhereUniqueInput[]
+  disconnect?: Prisma.FileWorkflowDocumentWhereUniqueInput | Prisma.FileWorkflowDocumentWhereUniqueInput[]
+  delete?: Prisma.FileWorkflowDocumentWhereUniqueInput | Prisma.FileWorkflowDocumentWhereUniqueInput[]
+  connect?: Prisma.FileWorkflowDocumentWhereUniqueInput | Prisma.FileWorkflowDocumentWhereUniqueInput[]
+  update?: Prisma.FileWorkflowDocumentUpdateWithWhereUniqueWithoutLanguageInput | Prisma.FileWorkflowDocumentUpdateWithWhereUniqueWithoutLanguageInput[]
+  updateMany?: Prisma.FileWorkflowDocumentUpdateManyWithWhereWithoutLanguageInput | Prisma.FileWorkflowDocumentUpdateManyWithWhereWithoutLanguageInput[]
+  deleteMany?: Prisma.FileWorkflowDocumentScalarWhereInput | Prisma.FileWorkflowDocumentScalarWhereInput[]
+}
+
 export type FileWorkflowDocumentCreateNestedOneWithoutTasksInput = {
   create?: Prisma.XOR<Prisma.FileWorkflowDocumentCreateWithoutTasksInput, Prisma.FileWorkflowDocumentUncheckedCreateWithoutTasksInput>
   connectOrCreate?: Prisma.FileWorkflowDocumentCreateOrConnectWithoutTasksInput
@@ -692,6 +786,7 @@ export type FileWorkflowDocumentUpdateOneWithoutTasksNestedInput = {
 }
 
 export type FileWorkflowDocumentCreateWithoutFileWorkflowInput = {
+  languageName?: string | null
   documentName: string
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -703,12 +798,15 @@ export type FileWorkflowDocumentCreateWithoutFileWorkflowInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   documentType: Prisma.DocumentTypeCreateNestedOneWithoutFileDocumentsInput
+  language?: Prisma.LanguageCreateNestedOneWithoutFileDocumentsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowDocumentInput
 }
 
 export type FileWorkflowDocumentUncheckedCreateWithoutFileWorkflowInput = {
   id?: number
   documentTypeId: number
+  languageId?: number | null
+  languageName?: string | null
   documentName: string
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -755,6 +853,8 @@ export type FileWorkflowDocumentScalarWhereInput = {
   id?: Prisma.IntFilter<"FileWorkflowDocument"> | number
   fileWorkflowId?: Prisma.IntFilter<"FileWorkflowDocument"> | number
   documentTypeId?: Prisma.IntFilter<"FileWorkflowDocument"> | number
+  languageId?: Prisma.IntNullableFilter<"FileWorkflowDocument"> | number | null
+  languageName?: Prisma.StringNullableFilter<"FileWorkflowDocument"> | string | null
   documentName?: Prisma.StringFilter<"FileWorkflowDocument"> | string
   baseAmount?: Prisma.DecimalFilter<"FileWorkflowDocument"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFilter<"FileWorkflowDocument"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -768,6 +868,7 @@ export type FileWorkflowDocumentScalarWhereInput = {
 }
 
 export type FileWorkflowDocumentCreateWithoutDocumentTypeInput = {
+  languageName?: string | null
   documentName: string
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -779,12 +880,15 @@ export type FileWorkflowDocumentCreateWithoutDocumentTypeInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   fileWorkflow: Prisma.FileWorkflowCreateNestedOneWithoutDocumentsInput
+  language?: Prisma.LanguageCreateNestedOneWithoutFileDocumentsInput
   tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowDocumentInput
 }
 
 export type FileWorkflowDocumentUncheckedCreateWithoutDocumentTypeInput = {
   id?: number
   fileWorkflowId: number
+  languageId?: number | null
+  languageName?: string | null
   documentName: string
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -824,7 +928,8 @@ export type FileWorkflowDocumentUpdateManyWithWhereWithoutDocumentTypeInput = {
   data: Prisma.XOR<Prisma.FileWorkflowDocumentUpdateManyMutationInput, Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutDocumentTypeInput>
 }
 
-export type FileWorkflowDocumentCreateWithoutTasksInput = {
+export type FileWorkflowDocumentCreateWithoutLanguageInput = {
+  languageName?: string | null
   documentName: string
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -837,12 +942,76 @@ export type FileWorkflowDocumentCreateWithoutTasksInput = {
   updatedAt?: Date | string
   fileWorkflow: Prisma.FileWorkflowCreateNestedOneWithoutDocumentsInput
   documentType: Prisma.DocumentTypeCreateNestedOneWithoutFileDocumentsInput
+  tasks?: Prisma.WorkflowTaskCreateNestedManyWithoutFileWorkflowDocumentInput
+}
+
+export type FileWorkflowDocumentUncheckedCreateWithoutLanguageInput = {
+  id?: number
+  fileWorkflowId: number
+  documentTypeId: number
+  languageName?: string | null
+  documentName: string
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.WorkflowStatus
+  sortOrder?: number
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tasks?: Prisma.WorkflowTaskUncheckedCreateNestedManyWithoutFileWorkflowDocumentInput
+}
+
+export type FileWorkflowDocumentCreateOrConnectWithoutLanguageInput = {
+  where: Prisma.FileWorkflowDocumentWhereUniqueInput
+  create: Prisma.XOR<Prisma.FileWorkflowDocumentCreateWithoutLanguageInput, Prisma.FileWorkflowDocumentUncheckedCreateWithoutLanguageInput>
+}
+
+export type FileWorkflowDocumentCreateManyLanguageInputEnvelope = {
+  data: Prisma.FileWorkflowDocumentCreateManyLanguageInput | Prisma.FileWorkflowDocumentCreateManyLanguageInput[]
+  skipDuplicates?: boolean
+}
+
+export type FileWorkflowDocumentUpsertWithWhereUniqueWithoutLanguageInput = {
+  where: Prisma.FileWorkflowDocumentWhereUniqueInput
+  update: Prisma.XOR<Prisma.FileWorkflowDocumentUpdateWithoutLanguageInput, Prisma.FileWorkflowDocumentUncheckedUpdateWithoutLanguageInput>
+  create: Prisma.XOR<Prisma.FileWorkflowDocumentCreateWithoutLanguageInput, Prisma.FileWorkflowDocumentUncheckedCreateWithoutLanguageInput>
+}
+
+export type FileWorkflowDocumentUpdateWithWhereUniqueWithoutLanguageInput = {
+  where: Prisma.FileWorkflowDocumentWhereUniqueInput
+  data: Prisma.XOR<Prisma.FileWorkflowDocumentUpdateWithoutLanguageInput, Prisma.FileWorkflowDocumentUncheckedUpdateWithoutLanguageInput>
+}
+
+export type FileWorkflowDocumentUpdateManyWithWhereWithoutLanguageInput = {
+  where: Prisma.FileWorkflowDocumentScalarWhereInput
+  data: Prisma.XOR<Prisma.FileWorkflowDocumentUpdateManyMutationInput, Prisma.FileWorkflowDocumentUncheckedUpdateManyWithoutLanguageInput>
+}
+
+export type FileWorkflowDocumentCreateWithoutTasksInput = {
+  languageName?: string | null
+  documentName: string
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.WorkflowStatus
+  sortOrder?: number
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fileWorkflow: Prisma.FileWorkflowCreateNestedOneWithoutDocumentsInput
+  documentType: Prisma.DocumentTypeCreateNestedOneWithoutFileDocumentsInput
+  language?: Prisma.LanguageCreateNestedOneWithoutFileDocumentsInput
 }
 
 export type FileWorkflowDocumentUncheckedCreateWithoutTasksInput = {
   id?: number
   fileWorkflowId: number
   documentTypeId: number
+  languageId?: number | null
+  languageName?: string | null
   documentName: string
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -872,6 +1041,7 @@ export type FileWorkflowDocumentUpdateToOneWithWhereWithoutTasksInput = {
 }
 
 export type FileWorkflowDocumentUpdateWithoutTasksInput = {
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -884,12 +1054,15 @@ export type FileWorkflowDocumentUpdateWithoutTasksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflow?: Prisma.FileWorkflowUpdateOneRequiredWithoutDocumentsNestedInput
   documentType?: Prisma.DocumentTypeUpdateOneRequiredWithoutFileDocumentsNestedInput
+  language?: Prisma.LanguageUpdateOneWithoutFileDocumentsNestedInput
 }
 
 export type FileWorkflowDocumentUncheckedUpdateWithoutTasksInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   fileWorkflowId?: Prisma.IntFieldUpdateOperationsInput | number
   documentTypeId?: Prisma.IntFieldUpdateOperationsInput | number
+  languageId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -905,6 +1078,8 @@ export type FileWorkflowDocumentUncheckedUpdateWithoutTasksInput = {
 export type FileWorkflowDocumentCreateManyFileWorkflowInput = {
   id?: number
   documentTypeId: number
+  languageId?: number | null
+  languageName?: string | null
   documentName: string
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -918,6 +1093,7 @@ export type FileWorkflowDocumentCreateManyFileWorkflowInput = {
 }
 
 export type FileWorkflowDocumentUpdateWithoutFileWorkflowInput = {
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -929,12 +1105,15 @@ export type FileWorkflowDocumentUpdateWithoutFileWorkflowInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   documentType?: Prisma.DocumentTypeUpdateOneRequiredWithoutFileDocumentsNestedInput
+  language?: Prisma.LanguageUpdateOneWithoutFileDocumentsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowDocumentNestedInput
 }
 
 export type FileWorkflowDocumentUncheckedUpdateWithoutFileWorkflowInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   documentTypeId?: Prisma.IntFieldUpdateOperationsInput | number
+  languageId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -951,6 +1130,8 @@ export type FileWorkflowDocumentUncheckedUpdateWithoutFileWorkflowInput = {
 export type FileWorkflowDocumentUncheckedUpdateManyWithoutFileWorkflowInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   documentTypeId?: Prisma.IntFieldUpdateOperationsInput | number
+  languageId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -966,6 +1147,8 @@ export type FileWorkflowDocumentUncheckedUpdateManyWithoutFileWorkflowInput = {
 export type FileWorkflowDocumentCreateManyDocumentTypeInput = {
   id?: number
   fileWorkflowId: number
+  languageId?: number | null
+  languageName?: string | null
   documentName: string
   baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -979,6 +1162,7 @@ export type FileWorkflowDocumentCreateManyDocumentTypeInput = {
 }
 
 export type FileWorkflowDocumentUpdateWithoutDocumentTypeInput = {
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -990,12 +1174,15 @@ export type FileWorkflowDocumentUpdateWithoutDocumentTypeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fileWorkflow?: Prisma.FileWorkflowUpdateOneRequiredWithoutDocumentsNestedInput
+  language?: Prisma.LanguageUpdateOneWithoutFileDocumentsNestedInput
   tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowDocumentNestedInput
 }
 
 export type FileWorkflowDocumentUncheckedUpdateWithoutDocumentTypeInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   fileWorkflowId?: Prisma.IntFieldUpdateOperationsInput | number
+  languageId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1012,6 +1199,77 @@ export type FileWorkflowDocumentUncheckedUpdateWithoutDocumentTypeInput = {
 export type FileWorkflowDocumentUncheckedUpdateManyWithoutDocumentTypeInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   fileWorkflowId?: Prisma.IntFieldUpdateOperationsInput | number
+  languageId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentName?: Prisma.StringFieldUpdateOperationsInput | string
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type FileWorkflowDocumentCreateManyLanguageInput = {
+  id?: number
+  fileWorkflowId: number
+  documentTypeId: number
+  languageName?: string | null
+  documentName: string
+  baseAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: $Enums.WorkflowStatus
+  sortOrder?: number
+  startedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type FileWorkflowDocumentUpdateWithoutLanguageInput = {
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentName?: Prisma.StringFieldUpdateOperationsInput | string
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fileWorkflow?: Prisma.FileWorkflowUpdateOneRequiredWithoutDocumentsNestedInput
+  documentType?: Prisma.DocumentTypeUpdateOneRequiredWithoutFileDocumentsNestedInput
+  tasks?: Prisma.WorkflowTaskUpdateManyWithoutFileWorkflowDocumentNestedInput
+}
+
+export type FileWorkflowDocumentUncheckedUpdateWithoutLanguageInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  fileWorkflowId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentTypeId?: Prisma.IntFieldUpdateOperationsInput | number
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  documentName?: Prisma.StringFieldUpdateOperationsInput | string
+  baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  finalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  status?: Prisma.EnumWorkflowStatusFieldUpdateOperationsInput | $Enums.WorkflowStatus
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tasks?: Prisma.WorkflowTaskUncheckedUpdateManyWithoutFileWorkflowDocumentNestedInput
+}
+
+export type FileWorkflowDocumentUncheckedUpdateManyWithoutLanguageInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  fileWorkflowId?: Prisma.IntFieldUpdateOperationsInput | number
+  documentTypeId?: Prisma.IntFieldUpdateOperationsInput | number
+  languageName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   documentName?: Prisma.StringFieldUpdateOperationsInput | string
   baseAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1059,6 +1317,8 @@ export type FileWorkflowDocumentSelect<ExtArgs extends runtime.Types.Extensions.
   id?: boolean
   fileWorkflowId?: boolean
   documentTypeId?: boolean
+  languageId?: boolean
+  languageName?: boolean
   documentName?: boolean
   baseAmount?: boolean
   discountAmount?: boolean
@@ -1071,6 +1331,7 @@ export type FileWorkflowDocumentSelect<ExtArgs extends runtime.Types.Extensions.
   updatedAt?: boolean
   fileWorkflow?: boolean | Prisma.FileWorkflowDefaultArgs<ExtArgs>
   documentType?: boolean | Prisma.DocumentTypeDefaultArgs<ExtArgs>
+  language?: boolean | Prisma.FileWorkflowDocument$languageArgs<ExtArgs>
   tasks?: boolean | Prisma.FileWorkflowDocument$tasksArgs<ExtArgs>
   _count?: boolean | Prisma.FileWorkflowDocumentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["fileWorkflowDocument"]>
@@ -1081,6 +1342,8 @@ export type FileWorkflowDocumentSelectScalar = {
   id?: boolean
   fileWorkflowId?: boolean
   documentTypeId?: boolean
+  languageId?: boolean
+  languageName?: boolean
   documentName?: boolean
   baseAmount?: boolean
   discountAmount?: boolean
@@ -1093,10 +1356,11 @@ export type FileWorkflowDocumentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type FileWorkflowDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileWorkflowId" | "documentTypeId" | "documentName" | "baseAmount" | "discountAmount" | "finalAmount" | "status" | "sortOrder" | "startedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["fileWorkflowDocument"]>
+export type FileWorkflowDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileWorkflowId" | "documentTypeId" | "languageId" | "languageName" | "documentName" | "baseAmount" | "discountAmount" | "finalAmount" | "status" | "sortOrder" | "startedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["fileWorkflowDocument"]>
 export type FileWorkflowDocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   fileWorkflow?: boolean | Prisma.FileWorkflowDefaultArgs<ExtArgs>
   documentType?: boolean | Prisma.DocumentTypeDefaultArgs<ExtArgs>
+  language?: boolean | Prisma.FileWorkflowDocument$languageArgs<ExtArgs>
   tasks?: boolean | Prisma.FileWorkflowDocument$tasksArgs<ExtArgs>
   _count?: boolean | Prisma.FileWorkflowDocumentCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1106,12 +1370,15 @@ export type $FileWorkflowDocumentPayload<ExtArgs extends runtime.Types.Extension
   objects: {
     fileWorkflow: Prisma.$FileWorkflowPayload<ExtArgs>
     documentType: Prisma.$DocumentTypePayload<ExtArgs>
+    language: Prisma.$LanguagePayload<ExtArgs> | null
     tasks: Prisma.$WorkflowTaskPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     fileWorkflowId: number
     documentTypeId: number
+    languageId: number | null
+    languageName: string | null
     documentName: string
     baseAmount: runtime.Decimal
     discountAmount: runtime.Decimal
@@ -1464,6 +1731,7 @@ export interface Prisma__FileWorkflowDocumentClient<T, Null = never, ExtArgs ext
   readonly [Symbol.toStringTag]: "PrismaPromise"
   fileWorkflow<T extends Prisma.FileWorkflowDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflowDefaultArgs<ExtArgs>>): Prisma.Prisma__FileWorkflowClient<runtime.Types.Result.GetResult<Prisma.$FileWorkflowPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   documentType<T extends Prisma.DocumentTypeDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DocumentTypeDefaultArgs<ExtArgs>>): Prisma.Prisma__DocumentTypeClient<runtime.Types.Result.GetResult<Prisma.$DocumentTypePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  language<T extends Prisma.FileWorkflowDocument$languageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflowDocument$languageArgs<ExtArgs>>): Prisma.Prisma__LanguageClient<runtime.Types.Result.GetResult<Prisma.$LanguagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   tasks<T extends Prisma.FileWorkflowDocument$tasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.FileWorkflowDocument$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1497,6 +1765,8 @@ export interface FileWorkflowDocumentFieldRefs {
   readonly id: Prisma.FieldRef<"FileWorkflowDocument", 'Int'>
   readonly fileWorkflowId: Prisma.FieldRef<"FileWorkflowDocument", 'Int'>
   readonly documentTypeId: Prisma.FieldRef<"FileWorkflowDocument", 'Int'>
+  readonly languageId: Prisma.FieldRef<"FileWorkflowDocument", 'Int'>
+  readonly languageName: Prisma.FieldRef<"FileWorkflowDocument", 'String'>
   readonly documentName: Prisma.FieldRef<"FileWorkflowDocument", 'String'>
   readonly baseAmount: Prisma.FieldRef<"FileWorkflowDocument", 'Decimal'>
   readonly discountAmount: Prisma.FieldRef<"FileWorkflowDocument", 'Decimal'>
@@ -1852,6 +2122,25 @@ export type FileWorkflowDocumentDeleteManyArgs<ExtArgs extends runtime.Types.Ext
    * Limit how many FileWorkflowDocuments to delete.
    */
   limit?: number
+}
+
+/**
+ * FileWorkflowDocument.language
+ */
+export type FileWorkflowDocument$languageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Language
+   */
+  select?: Prisma.LanguageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Language
+   */
+  omit?: Prisma.LanguageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LanguageInclude<ExtArgs> | null
+  where?: Prisma.LanguageWhereInput
 }
 
 /**

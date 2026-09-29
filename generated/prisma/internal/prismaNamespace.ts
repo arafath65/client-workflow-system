@@ -406,6 +406,8 @@ export const ModelName = {
   WorkflowSubTask: 'WorkflowSubTask',
   FileWorkflow: 'FileWorkflow',
   DocumentType: 'DocumentType',
+  Language: 'Language',
+  DocumentTypeLanguage: 'DocumentTypeLanguage',
   FileWorkflowDocument: 'FileWorkflowDocument',
   PaymentAllocation: 'PaymentAllocation',
   WorkflowTask: 'WorkflowTask',
@@ -434,7 +436,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "documentType" | "fileWorkflowDocument" | "paymentAllocation" | "workflowTask" | "fileWorkflowSubTask" | "taskHistory" | "fileCharge" | "expense" | "payment" | "paymentInstallment" | "calendarEvent" | "thirdParty" | "fileNumberSequence" | "auditLog"
+    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "documentType" | "language" | "documentTypeLanguage" | "fileWorkflowDocument" | "paymentAllocation" | "workflowTask" | "fileWorkflowSubTask" | "taskHistory" | "fileCharge" | "expense" | "payment" | "paymentInstallment" | "calendarEvent" | "thirdParty" | "fileNumberSequence" | "auditLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1029,6 +1031,138 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.DocumentTypeCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.DocumentTypeCountAggregateOutputType> | number
+        }
+      }
+    }
+    Language: {
+      payload: Prisma.$LanguagePayload<ExtArgs>
+      fields: Prisma.LanguageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LanguageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LanguagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LanguageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LanguagePayload>
+        }
+        findFirst: {
+          args: Prisma.LanguageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LanguagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LanguageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LanguagePayload>
+        }
+        findMany: {
+          args: Prisma.LanguageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LanguagePayload>[]
+        }
+        create: {
+          args: Prisma.LanguageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LanguagePayload>
+        }
+        createMany: {
+          args: Prisma.LanguageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.LanguageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LanguagePayload>
+        }
+        update: {
+          args: Prisma.LanguageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LanguagePayload>
+        }
+        deleteMany: {
+          args: Prisma.LanguageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LanguageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.LanguageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LanguagePayload>
+        }
+        aggregate: {
+          args: Prisma.LanguageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLanguage>
+        }
+        groupBy: {
+          args: Prisma.LanguageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LanguageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LanguageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LanguageCountAggregateOutputType> | number
+        }
+      }
+    }
+    DocumentTypeLanguage: {
+      payload: Prisma.$DocumentTypeLanguagePayload<ExtArgs>
+      fields: Prisma.DocumentTypeLanguageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DocumentTypeLanguageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypeLanguagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DocumentTypeLanguageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypeLanguagePayload>
+        }
+        findFirst: {
+          args: Prisma.DocumentTypeLanguageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypeLanguagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DocumentTypeLanguageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypeLanguagePayload>
+        }
+        findMany: {
+          args: Prisma.DocumentTypeLanguageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypeLanguagePayload>[]
+        }
+        create: {
+          args: Prisma.DocumentTypeLanguageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypeLanguagePayload>
+        }
+        createMany: {
+          args: Prisma.DocumentTypeLanguageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.DocumentTypeLanguageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypeLanguagePayload>
+        }
+        update: {
+          args: Prisma.DocumentTypeLanguageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypeLanguagePayload>
+        }
+        deleteMany: {
+          args: Prisma.DocumentTypeLanguageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DocumentTypeLanguageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.DocumentTypeLanguageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DocumentTypeLanguagePayload>
+        }
+        aggregate: {
+          args: Prisma.DocumentTypeLanguageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDocumentTypeLanguage>
+        }
+        groupBy: {
+          args: Prisma.DocumentTypeLanguageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentTypeLanguageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DocumentTypeLanguageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DocumentTypeLanguageCountAggregateOutputType> | number
         }
       }
     }
@@ -1995,6 +2129,7 @@ export const WorkflowTemplateScalarFieldEnum = {
   description: 'description',
   defaultStaffId: 'defaultStaffId',
   trackingMode: 'trackingMode',
+  documentTypeId: 'documentTypeId',
   baseAmount: 'baseAmount',
   status: 'status',
   createdAt: 'createdAt',
@@ -2065,10 +2200,34 @@ export const DocumentTypeScalarFieldEnum = {
 export type DocumentTypeScalarFieldEnum = (typeof DocumentTypeScalarFieldEnum)[keyof typeof DocumentTypeScalarFieldEnum]
 
 
+export const LanguageScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LanguageScalarFieldEnum = (typeof LanguageScalarFieldEnum)[keyof typeof LanguageScalarFieldEnum]
+
+
+export const DocumentTypeLanguageScalarFieldEnum = {
+  documentTypeId: 'documentTypeId',
+  languageId: 'languageId',
+  price: 'price',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DocumentTypeLanguageScalarFieldEnum = (typeof DocumentTypeLanguageScalarFieldEnum)[keyof typeof DocumentTypeLanguageScalarFieldEnum]
+
+
 export const FileWorkflowDocumentScalarFieldEnum = {
   id: 'id',
   fileWorkflowId: 'fileWorkflowId',
   documentTypeId: 'documentTypeId',
+  languageId: 'languageId',
+  languageName: 'languageName',
   documentName: 'documentName',
   baseAmount: 'baseAmount',
   discountAmount: 'discountAmount',
@@ -2341,7 +2500,15 @@ export const DocumentTypeOrderByRelevanceFieldEnum = {
 export type DocumentTypeOrderByRelevanceFieldEnum = (typeof DocumentTypeOrderByRelevanceFieldEnum)[keyof typeof DocumentTypeOrderByRelevanceFieldEnum]
 
 
+export const LanguageOrderByRelevanceFieldEnum = {
+  name: 'name'
+} as const
+
+export type LanguageOrderByRelevanceFieldEnum = (typeof LanguageOrderByRelevanceFieldEnum)[keyof typeof LanguageOrderByRelevanceFieldEnum]
+
+
 export const FileWorkflowDocumentOrderByRelevanceFieldEnum = {
+  languageName: 'languageName',
   documentName: 'documentName'
 } as const
 
@@ -2705,6 +2872,8 @@ export type GlobalOmitConfig = {
   workflowSubTask?: Prisma.WorkflowSubTaskOmit
   fileWorkflow?: Prisma.FileWorkflowOmit
   documentType?: Prisma.DocumentTypeOmit
+  language?: Prisma.LanguageOmit
+  documentTypeLanguage?: Prisma.DocumentTypeLanguageOmit
   fileWorkflowDocument?: Prisma.FileWorkflowDocumentOmit
   paymentAllocation?: Prisma.PaymentAllocationOmit
   workflowTask?: Prisma.WorkflowTaskOmit

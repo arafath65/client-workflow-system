@@ -10,12 +10,13 @@ import { TaskStatus } from "@/generated/prisma/client";
 
 type DocumentInput = {
   documentTypeId?: unknown;
-  baseAmount?: unknown;
-  discountAmount?: unknown;
+  languages?: unknown;
 };
 
 type PreparedDocument = {
   documentTypeId: number;
+  languageId: number;
+  languageName: string;
   documentName: string;
   baseAmount: string;
   discountAmount: string;
@@ -358,6 +359,11 @@ if (!client.status) {
       workflow.trackingMode ===
       "DOCUMENT_BASED";
 
+    // Document-based services no longer use a workflow-level
+    // Document Base. Documents are selected when creating
+    // the client file, and each selected document gets its
+    // own independent workflow chain below.
+
     // ==================================================
     // Document Based Preparation
     // ==================================================
@@ -367,17 +373,10 @@ if (!client.status) {
         ? body.documents
         : [];
 
-    let preparedDocuments: PreparedDocument[] =
-      [];
+    const preparedDocuments: PreparedDocument[] = [];
 
     if (isDocumentBased) {
-      // ------------------------------------------------
-      // At least one document
-      // ------------------------------------------------
-
-      if (
-        rawDocuments.length === 0
-      ) {
+      if (rawDocuments.length === 0) {
         return NextResponse.json(
           {
             success: false,
@@ -388,43 +387,28 @@ if (!client.status) {
         );
       }
 
-      // ------------------------------------------------
-      // Extract Document Type IDs
-      // ------------------------------------------------
-
       const documentTypeIds: number[] =
-        rawDocuments.map(
-          (item: unknown): number => {
-            if (
-              typeof item !==
-                "object" ||
-              item === null ||
-              Array.isArray(item)
-            ) {
-              return NaN;
-            }
-
-            const input =
-              item as DocumentInput;
-
-            return Number(
-              input.documentTypeId
-            );
+        rawDocuments.map((item) => {
+          if (
+            typeof item !== "object" ||
+            item === null ||
+            Array.isArray(item)
+          ) {
+            return NaN;
           }
-        );
 
-      // ------------------------------------------------
-      // Validate Document Type IDs
-      // ------------------------------------------------
+          return Number(
+            (item as DocumentInput).documentTypeId
+          );
+        });
 
-      const hasInvalidId =
+      if (
         documentTypeIds.some(
-          (id: number) =>
+          (id) =>
             !Number.isInteger(id) ||
             id <= 0
-        );
-
-      if (hasInvalidId) {
+        )
+      ) {
         return NextResponse.json(
           {
             success: false,
@@ -435,17 +419,11 @@ if (!client.status) {
         );
       }
 
-      // ------------------------------------------------
-      // Duplicate Document Type Check
-      // ------------------------------------------------
-
-      const uniqueIds =
-        new Set<number>(
-          documentTypeIds
-        );
+      const uniqueDocumentTypeIds =
+        new Set(documentTypeIds);
 
       if (
-        uniqueIds.size !==
+        uniqueDocumentTypeIds.size !==
         documentTypeIds.length
       ) {
         return NextResponse.json(
@@ -458,35 +436,47 @@ if (!client.status) {
         );
       }
 
-      // ------------------------------------------------
-      // Load Active Document Types
-      // ------------------------------------------------
-
       const documentTypes =
-        await prisma.documentType.findMany(
-          {
-            where: {
-              id: {
-                in: documentTypeIds,
+        await prisma.documentType.findMany({
+          where: {
+            id: {
+              in: documentTypeIds,
+            },
+            status: true,
+          },
+          select: {
+            id: true,
+            name: true,
+            defaultAmount: true,
+            languages: {
+              where: {
+                language: {
+                  status: true,
+                },
               },
-              status: true,
+              select: {
+                languageId: true,
+                price: true,
+                language: {
+                  select: {
+                    id: true,
+                    name: true,
+                    status: true,
+                  },
+                },
+              },
+              orderBy: {
+                language: {
+                  name: "asc",
+                },
+              },
             },
-
-            select: {
-              id: true,
-              name: true,
-              defaultAmount: true,
-            },
-          }
-        );
-
-      // ------------------------------------------------
-      // Check All Document Types Exist
-      // ------------------------------------------------
+          },
+        });
 
       if (
         documentTypes.length !==
-        uniqueIds.size
+        uniqueDocumentTypeIds.size
       ) {
         return NextResponse.json(
           {
@@ -498,10 +488,6 @@ if (!client.status) {
         );
       }
 
-      // ------------------------------------------------
-      // Create Lookup Map
-      // ------------------------------------------------
-
       const documentTypeMap =
         new Map(
           documentTypes.map(
@@ -512,155 +498,147 @@ if (!client.status) {
           )
         );
 
-      // ------------------------------------------------
-      // Prepare Document Instances
-      // ------------------------------------------------
+      let sortOrder = 0;
 
-      preparedDocuments =
-        rawDocuments.map(
-          (
-            item: unknown,
-            index: number
-          ): PreparedDocument => {
-            if (
-              typeof item !==
-                "object" ||
-              item === null ||
-              Array.isArray(item)
-            ) {
-              throw new Error(
-                "DOCUMENT_TYPE_NOT_FOUND"
-              );
-            }
+      for (
+        const item of rawDocuments
+      ) {
+        if (
+          typeof item !== "object" ||
+          item === null ||
+          Array.isArray(item)
+        ) {
+          throw new Error(
+            "INVALID_DOCUMENT_INPUT"
+          );
+        }
 
-            const input =
-              item as DocumentInput;
+        const input =
+          item as DocumentInput;
 
-            const documentTypeId =
-              Number(
-                input.documentTypeId
-              );
+        const documentTypeId =
+          Number(input.documentTypeId);
 
-            const documentType =
-              documentTypeMap.get(
-                documentTypeId
-              );
+        const documentType =
+          documentTypeMap.get(
+            documentTypeId
+          );
 
-            if (!documentType) {
-              throw new Error(
-                "DOCUMENT_TYPE_NOT_FOUND"
-              );
-            }
+        if (!documentType) {
+          throw new Error(
+            "DOCUMENT_TYPE_NOT_FOUND"
+          );
+        }
 
-            // --------------------------------------------
-            // Base Amount
-            // --------------------------------------------
+        if (
+          !Array.isArray(
+            input.languages
+          )
+        ) {
+          throw new Error(
+            "INVALID_LANGUAGE_SELECTION"
+          );
+        }
 
-            let baseAmount: string;
-
-            const submittedBase =
-              input.baseAmount;
-
-            if (
-              submittedBase !==
-                undefined &&
-              submittedBase !==
-                null &&
-              String(
-                submittedBase
-              ).trim() !== ""
-            ) {
-              const parsed =
-                parseMoney(
-                  submittedBase
-                );
-
+        const languageIds =
+          input.languages.map(
+            (languageItem: unknown) => {
               if (
-                parsed === null
+                typeof languageItem !==
+                  "object" ||
+                languageItem === null ||
+                Array.isArray(
+                  languageItem
+                )
               ) {
-                throw new Error(
-                  "INVALID_DOCUMENT_BASE_AMOUNT"
-                );
+                return NaN;
               }
 
-              baseAmount =
-                parsed;
-            } else {
-              baseAmount =
-                documentType.defaultAmount.toFixed(
-                  2
-                );
-            }
-
-            // --------------------------------------------
-            // Discount
-            // --------------------------------------------
-
-            const discountAmount =
-              parseMoney(
-                input.discountAmount
-              );
-
-            if (
-              discountAmount ===
-              null
-            ) {
-              throw new Error(
-                "INVALID_DOCUMENT_DISCOUNT"
+              return Number(
+                (
+                  languageItem as {
+                    languageId?: unknown;
+                  }
+                ).languageId
               );
             }
+          );
 
-            // --------------------------------------------
-            // Final Amount
-            // --------------------------------------------
+        if (
+          languageIds.length === 0
+        ) {
+          throw new Error(
+            "NO_LANGUAGE_SELECTED"
+          );
+        }
 
-            const baseCents =
-              Math.round(
-                Number(
-                  baseAmount
-                ) * 100
-              );
+        if (
+          languageIds.some(
+            (id) =>
+              !Number.isInteger(id) ||
+              id <= 0
+          )
+        ) {
+          throw new Error(
+            "INVALID_LANGUAGE_SELECTION"
+          );
+        }
 
-            const discountCents =
-              Math.round(
-                Number(
-                  discountAmount
-                ) * 100
-              );
+        if (
+          new Set(languageIds).size !==
+          languageIds.length
+        ) {
+          throw new Error(
+            "DUPLICATE_LANGUAGE_SELECTION"
+          );
+        }
 
-            if (
-              discountCents >
-              baseCents
-            ) {
-              throw new Error(
-                "DOCUMENT_DISCOUNT_GREATER_THAN_BASE"
-              );
-            }
+        for (
+          const languageId of
+            languageIds
+        ) {
+          const configured =
+            documentType.languages.find(
+              (configuredLanguage) =>
+                configuredLanguage.languageId ===
+                languageId
+            );
 
-            const finalAmount =
-              (
-                (baseCents -
-                  discountCents) /
-                100
-              ).toFixed(2);
-
-            return {
-              documentTypeId,
-
-              documentName:
-                documentType.name,
-
-              baseAmount,
-
-              discountAmount,
-
-              finalAmount,
-
-              sortOrder:
-                index,
-            };
+          if (!configured) {
+            throw new Error(
+              "LANGUAGE_NOT_CONFIGURED_FOR_DOCUMENT"
+            );
           }
+
+          const price =
+            Number(
+              configured.price
+            ).toFixed(2);
+
+          preparedDocuments.push({
+            documentTypeId,
+            languageId,
+            languageName:
+              configured.language.name,
+            documentName:
+              `${documentType.name} - ${configured.language.name}`,
+            baseAmount: price,
+            discountAmount: "0.00",
+            finalAmount: price,
+            sortOrder,
+          });
+
+          sortOrder += 1;
+        }
+      }
+
+      if (
+        preparedDocuments.length === 0
+      ) {
+        throw new Error(
+          "NO_LANGUAGE_SELECTED"
         );
+      }
     }
 
     // ==================================================
@@ -672,68 +650,65 @@ if (!client.status) {
     let finalAmount: string;
 
     if (isDocumentBased) {
-      // ------------------------------------------------
-      // Parent FileWorkflow totals
-      // ------------------------------------------------
-
-      const totals =
+      const baseCents =
         preparedDocuments.reduce(
-          (
-            sum,
-            document
-          ) => ({
-            base:
-              sum.base +
-              Number(
-                document.baseAmount
-              ),
-
-            discount:
-              sum.discount +
-              Number(
-                document.discountAmount
-              ),
-
-            final:
-              sum.final +
-              Number(
-                document.finalAmount
-              ),
-          }),
-          {
-            base: 0,
-            discount: 0,
-            final: 0,
-          }
+          (sum, document) =>
+            sum +
+            Math.round(
+              Number(document.baseAmount) * 100
+            ),
+          0
         );
 
       baseAmount =
-        totals.base.toFixed(2);
-
-      discountAmount =
-        totals.discount.toFixed(2);
-
-      finalAmount =
-        totals.final.toFixed(2);
-    } else {
-      // ------------------------------------------------
-      // Standard Workflow
-      // ------------------------------------------------
-
-      baseAmount =
-        workflow.baseAmount.toFixed(
-          2
-        );
+        (baseCents / 100).toFixed(2);
 
       const parsedDiscount =
-        parseMoney(
-          body.discountAmount
+        parseMoney(body.discountAmount);
+
+      if (parsedDiscount === null) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Discount must be a valid non-negative amount with up to 2 decimal places.",
+          },
+          { status: 400 }
+        );
+      }
+
+      discountAmount =
+        parsedDiscount;
+
+      const discountCents =
+        Math.round(
+          Number(discountAmount) * 100
         );
 
-      if (
-        parsedDiscount ===
-        null
-      ) {
+      if (discountCents > baseCents) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Discount cannot be greater than the total selected language amount.",
+          },
+          { status: 400 }
+        );
+      }
+
+      finalAmount =
+        (
+          (baseCents - discountCents) /
+          100
+        ).toFixed(2);
+    } else {
+      baseAmount =
+        workflow.baseAmount.toFixed(2);
+
+      const parsedDiscount =
+        parseMoney(body.discountAmount);
+
+      if (parsedDiscount === null) {
         return NextResponse.json(
           {
             success: false,
@@ -749,22 +724,15 @@ if (!client.status) {
 
       const baseCents =
         Math.round(
-          Number(
-            baseAmount
-          ) * 100
+          Number(baseAmount) * 100
         );
 
       const discountCents =
         Math.round(
-          Number(
-            discountAmount
-          ) * 100
+          Number(discountAmount) * 100
         );
 
-      if (
-        discountCents >
-        baseCents
-      ) {
+      if (discountCents > baseCents) {
         return NextResponse.json(
           {
             success: false,
@@ -777,8 +745,7 @@ if (!client.status) {
 
       finalAmount =
         (
-          (baseCents -
-            discountCents) /
+          (baseCents - discountCents) /
           100
         ).toFixed(2);
     }
@@ -1067,6 +1034,12 @@ if (!client.status) {
                       documentTypeId:
                         document.documentTypeId,
 
+                      languageId:
+                        document.languageId,
+
+                      languageName:
+                        document.languageName,
+
                       documentName:
                         document.documentName,
 
@@ -1318,11 +1291,15 @@ if (!client.status) {
                   documentName:
                     document.documentName,
 
+                  language: {
+                    languageId:
+                      document.languageId,
+                    languageName:
+                      document.languageName,
+                  },
+
                   baseAmount:
                     document.baseAmount,
-
-                  discountAmount:
-                    document.discountAmount,
 
                   finalAmount:
                     document.finalAmount,
@@ -1378,32 +1355,52 @@ if (!client.status) {
             { status: 400 }
           );
 
-        case "INVALID_DOCUMENT_BASE_AMOUNT":
+        case "INVALID_DOCUMENT_INPUT":
           return NextResponse.json(
             {
               success: false,
               message:
-                "One of the document prices is invalid.",
+                "One of the selected documents is invalid.",
             },
             { status: 400 }
           );
 
-        case "INVALID_DOCUMENT_DISCOUNT":
+        case "INVALID_LANGUAGE_SELECTION":
           return NextResponse.json(
             {
               success: false,
               message:
-                "One of the document discounts is invalid.",
+                "One or more selected languages are invalid.",
             },
             { status: 400 }
           );
 
-        case "DOCUMENT_DISCOUNT_GREATER_THAN_BASE":
+        case "NO_LANGUAGE_SELECTED":
           return NextResponse.json(
             {
               success: false,
               message:
-                "A document discount cannot be greater than its base price.",
+                "At least one language must be selected for each document.",
+            },
+            { status: 400 }
+          );
+
+        case "DUPLICATE_LANGUAGE_SELECTION":
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "The same language cannot be selected more than once for a document.",
+            },
+            { status: 400 }
+          );
+
+        case "LANGUAGE_NOT_CONFIGURED_FOR_DOCUMENT":
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "One or more selected languages are not configured for the selected document type.",
             },
             { status: 400 }
           );
