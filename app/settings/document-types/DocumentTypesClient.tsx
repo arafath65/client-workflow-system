@@ -51,7 +51,6 @@ export default function DocumentTypesClient({
     useState<DocumentType[]>(initialDocumentTypes);
 
   const [languages, setLanguages] = useState<Language[]>(initialLanguages);
-  const [languagesLoading, setLanguagesLoading] = useState(false);
 
   const [open, setOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -69,37 +68,6 @@ export default function DocumentTypesClient({
   const totalCount = documentTypes.length;
   const activeCount = documentTypes.filter((item) => item.status).length;
   const inactiveCount = totalCount - activeCount;
-
-  const loadLanguages = async () => {
-    setLanguagesLoading(true);
-
-    try {
-      const response = await fetch("/api/languages", {
-        method: "GET",
-        cache: "no-store",
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(
-          data.message || "Unable to load languages."
-        );
-      }
-
-      setLanguages(Array.isArray(data.languages) ? data.languages : []);
-    } catch (error) {
-      console.error("Load languages error:", error);
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Unable to load languages."
-      );
-    } finally {
-      setLanguagesLoading(false);
-    }
-  };
-
 
   const resetDocumentForm = () => {
     setName("");
