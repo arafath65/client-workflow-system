@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>A&I Global Workflow System - Database Setup</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+      background: #f6f6f4;
+      color: #171717;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 620px;
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 18px;
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.10);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 28px 32px 24px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: #000000;
+      color: #f9a800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      margin-top: 3px;
+      font-size: 10px;
+      color: rgba(0, 0, 0, 0.45);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .content {
+      padding: 32px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: #f0a000;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin:
+        8px 0 0;
+      font-size: 28px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .description {
+      margin:
+        10px 0 28px;
+      color: rgba(0, 0, 0, 0.52);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns:
+        1fr 150px;
+      gap: 16px;
+    }
+
+    .field-full {
+      grid-column: 1 / -1;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(0, 0, 0, 0.66);
+    }
+
+    input {
+      width: 100%;
+      height: 44px;
+      padding:
+        0 13px;
+      border:
+        1px solid rgba(0, 0, 0, 0.13);
+      border-radius: 9px;
+      outline: none;
+      background: #ffffff;
+      color: #171717;
+      font-size: 14px;
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+    }
+
+    input:focus {
+      border-color: #f0a000;
+      box-shadow:
+        0 0 0 3px rgba(240, 160, 0, 0.12);
+    }
+
+    .info {
+      margin-top: 6px;
+      padding:
+        14px 16px;
+      border:
+        1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 10px;
+      background: #fafaf8;
+      color: rgba(0, 0, 0, 0.52);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .status {
+      display: none;
+      margin-bottom: 18px;
+      padding:
+        12px 14px;
+      border-radius: 9px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .status.error {
+      display: block;
+      background: #fff2f2;
+      border:
+        1px solid #f2caca;
+      color: #a61b1b;
+    }
+
+    .status.success {
+      display: block;
+      background: #f2fbf4;
+      border:
+        1px solid #cde7d2;
+      color: #236b30;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    button {
+      height: 44px;
+      padding:
+        0 18px;
+      border-radius: 9px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      background: #ffffff;
+      color: #171717;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #f5f5f3;
+    }
+
+    button.primary {
+      border-color: #000000;
+      background: #000000;
+      color: #ffffff;
+    }
+
+    button.primary:hover {
+      background: #1d1d1d;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: default;
+    }
+
+    .footer {
+      padding:
+        18px 32px;
+      border-top:
+        1px solid rgba(0, 0, 0, 0.08);
+      color: rgba(0, 0, 0, 0.35);
+      font-size: 11px;
+    }
+
+    @media (max-width: 620px) {
+      body {
+        padding: 16px;
+      }
+
+      .content,
+      .header,
+      .footer {
+        padding-left: 22px;
+        padding-right: 22px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field-full {
+        grid-column: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+
+    <div class="header">
+      <div class="brand">
+
+        <div class="brand-mark">
+          A&I
+        </div>
+
+        <div>
+          <div class="brand-name">
+            A&I Global
+          </div>
+
+          <div class="brand-subtitle">
+            Client Workflow System
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="content">
+
+      <p class="eyebrow">
+        Initial Setup
+      </p>
+
+      <h1>
+        Database Configuration
+      </h1>
+
+      <p class="description">
+        Connect the application to the MySQL database
+        used by this client installation.
+      </p>
+
+      <div
+        id="status"
+        class="status"
+      ></div>
+
+      <div class="grid">
+
+        <div class="field">
+          <label for="host">
+            Database Host
+          </label>
+
+          <input
+            id="host"
+            type="text"
+            placeholder="127.0.0.1"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="field">
+          <label for="port">
+            Port
+          </label>
+
+          <input
+            id="port"
+            type="text"
+            placeholder="3306"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="field">
+          <label for="username">
+            Username
+          </label>
+
+          <input
+            id="username"
+            type="text"
+            placeholder="root"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="field">
+          <label for="password">
+            Password
+          </label>
+
+          <input
+            id="password"
+            type="password"
+            placeholder="MySQL password"
+            autocomplete="new-password"
+          />
+        </div>
+
+        <div class="field field-full">
+          <label for="database">
+            Database Name
+          </label>
+
+          <input
+            id="database"
+            type="text"
+            placeholder="client_workflow_db"
+            autocomplete="off"
+          />
+        </div>
+
+      </div>
+
+      <div class="info">
+        These settings are stored locally on this
+        Windows computer. They are not included in
+        the application installer.
+      </div>
+
+      <div
+  class="actions"
+>
+  <button
+    id="exitButton"
+    type="button"
+  >
+    Exit
+  </button>
+
+  <button
+    id="testButton"
+    type="button"
+  >
+    Test Connection
+  </button>
+
+  <button
+    id="saveButton"
+    type="button"
+    class="primary"
+  >
+    Save &amp; Start
+  </button>
+</div>
+
+    </div>
+
+    <div class="footer">
+      A&I Global Workflow System · Database Setup
+    </div>
+
+  </div>
+
+  <script>
+
+    const hostInput =
+  document.getElementById(
+    "host"
+  );
+
+const portInput =
+  document.getElementById(
+    "port"
+  );
+
+const usernameInput =
+  document.getElementById(
+    "username"
+  );
+
+const passwordInput =
+  document.getElementById(
+    "password"
+  );
+
+const databaseInput =
+  document.getElementById(
+    "database"
+  );
+
+const testButton =
+  document.getElementById(
+    "testButton"
+  );
+
+const saveButton =
+  document.getElementById(
+    "saveButton"
+  );
+
+const exitButton =
+  document.getElementById(
+    "exitButton"
+  );
+
+const statusBox =
+  document.getElementById(
+    "status"
+  );
+
+function showError(
+  message
+) {
+  statusBox.className =
+    "status error";
+
+  statusBox.textContent =
+    message;
+}
+
+function showSuccess(
+  message
+) {
+  statusBox.className =
+    "status success";
+
+  statusBox.textContent =
+    message;
+}
+
+function clearStatus() {
+  statusBox.className =
+    "status";
+
+  statusBox.textContent =
+    "";
+}
+
+function getFormConfig() {
+  return {
+    host:
+      hostInput.value.trim(),
+
+    port:
+      portInput.value.trim(),
+
+    username:
+      usernameInput.value.trim(),
+
+    password:
+      passwordInput.value,
+
+    database:
+      databaseInput.value.trim(),
+  };
+}
+
+function validateForm(
+  config
+) {
+  if (!config.host) {
+    showError(
+      "Please enter the database host."
+    );
+
+    hostInput.focus();
+
+    return false;
+  }
+
+  if (
+    !config.port ||
+    !/^\d+$/.test(
+      config.port
+    )
+  ) {
+    showError(
+      "Please enter a valid database port."
+    );
+
+    portInput.focus();
+
+    return false;
+  }
+
+  const numericPort =
+    Number(config.port);
+
+  if (
+    numericPort < 1 ||
+    numericPort > 65535
+  ) {
+    showError(
+      "Database port must be between 1 and 65535."
+    );
+
+    portInput.focus();
+
+    return false;
+  }
+
+  if (!config.username) {
+    showError(
+      "Please enter the database username."
+    );
+
+    usernameInput.focus();
+
+    return false;
+  }
+
+  if (!config.database) {
+    showError(
+      "Please enter the database name."
+    );
+
+    databaseInput.focus();
+
+    return false;
+  }
+
+  return true;
+}
+
+function setBusy(
+  busy
+) {
+  testButton.disabled =
+    busy;
+
+  saveButton.disabled =
+    busy;
+
+  exitButton.disabled =
+    busy;
+}
+
+async function loadConfig() {
+  try {
+    const config =
+      await window.electronAPI
+        .getDatabaseConfig();
+
+    hostInput.value =
+      config.host ||
+      "127.0.0.1";
+
+    portInput.value =
+      config.port ||
+      "3306";
+
+    usernameInput.value =
+      config.username ||
+      "root";
+
+    passwordInput.value =
+      config.password ||
+      "";
+
+    databaseInput.value =
+      config.database ||
+      "client_workflow_db";
+  } catch (error) {
+    console.error(error);
+
+    showError(
+      "Unable to load the database configuration."
+    );
+  }
+}
+
+async function testConnection() {
+  clearStatus();
+
+  const config =
+    getFormConfig();
+
+  if (
+    !validateForm(
+      config
+    )
+  ) {
+    return;
+  }
+
+  setBusy(true);
+
+  showSuccess(
+    "Testing database connection..."
+  );
+
+  try {
+    const result =
+      await window.electronAPI
+        .testDatabaseConnection(
+          config
+        );
+
+    if (!result?.success) {
+      showError(
+        result?.message ||
+          "Database connection failed."
+      );
+
+      return;
+    }
+
+    showSuccess(
+      "Database connection successful."
+    );
+  } catch (error) {
+    console.error(error);
+
+    showError(
+      error instanceof Error
+        ? error.message
+        : "Database connection failed."
+    );
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function saveAndStart() {
+  clearStatus();
+
+  const config =
+    getFormConfig();
+
+  if (
+    !validateForm(
+      config
+    )
+  ) {
+    return;
+  }
+
+  setBusy(true);
+
+  showSuccess(
+    "Testing database connection..."
+  );
+
+  try {
+    const result =
+      await window.electronAPI
+        .saveDatabaseConfigAndStart(
+          config
+        );
+
+    if (!result?.success) {
+      showError(
+        result?.message ||
+          "Unable to start the application."
+      );
+
+      setBusy(false);
+
+      return;
+    }
+
+    showSuccess(
+      "Database connected. Starting application..."
+    );
+  } catch (error) {
+    console.error(error);
+
+    showError(
+      error instanceof Error
+        ? error.message
+        : "Unable to start the application."
+    );
+
+    setBusy(false);
+  }
+}
+
+testButton.addEventListener(
+  "click",
+  testConnection
+);
+
+saveButton.addEventListener(
+  "click",
+  saveAndStart
+);
+
+exitButton.addEventListener(
+  "click",
+  () => {
+    window.electronAPI
+      .exitApplication();
+  }
+);
+
+loadConfig();
+  </script>
+</body>
+</html>
