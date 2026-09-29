@@ -653,7 +653,7 @@ export default function DocumentTypesClient({
           <button
             type="button"
             onClick={handleOpenAdd}
-            disabled={languagesLoading}
+            disabled={languageSaving}
             className="rounded-lg bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black disabled:opacity-50"
           >
             + Add Document Type
@@ -764,7 +764,7 @@ export default function DocumentTypesClient({
                         onClick={() =>
                           handleOpenEdit(documentType)
                         }
-                        disabled={loading || languagesLoading}
+                        disabled={loading || languageSaving}
                         className="text-xs font-medium text-black/45 transition hover:text-black disabled:opacity-50"
                       >
                         Edit
