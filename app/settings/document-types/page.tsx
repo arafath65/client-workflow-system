@@ -5,15 +5,8 @@ import { prisma } from "@/lib/prisma";
 import Navigation from "../../components/Navigation";
 import LogoutButton from "../../dashboard/LogoutButton";
 import DocumentTypesClient from "./DocumentTypesClient";
-import DocumentTypeFilter from "./DocumentTypeFilter";
 
-export default async function DocumentTypesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    status?: string;
-  }>;
-}) {
+export default async function DocumentTypesPage() {
   // --------------------------------------------------
   // Authentication
   // --------------------------------------------------
@@ -46,58 +39,35 @@ export default async function DocumentTypesPage({
   }
 
   // --------------------------------------------------
-  // Status Filter
+  // Load All Document Types + Language Pricing
+  // Filtering is handled client-side so changing the
+  // filter does not refresh the page.
   // --------------------------------------------------
 
-  const params = await searchParams;
+  const documentTypes = await prisma.documentType.findMany({
+    orderBy: {
+      name: "asc",
+    },
 
-  const filter =
-    params.status === "inactive" ||
-    params.status === "all"
-      ? params.status
-      : "active";
-
-  // --------------------------------------------------
-  // Load Document Types + Language Pricing
-  // --------------------------------------------------
-
-  const documentTypes =
-    await prisma.documentType.findMany({
-      where:
-        filter === "inactive"
-          ? {
-              status: false,
-            }
-          : filter === "all"
-            ? undefined
-            : {
-                status: true,
-              },
-
-      orderBy: {
-        name: "asc",
-      },
-
-      include: {
-        languages: {
-          include: {
-            language: {
-              select: {
-                id: true,
-                name: true,
-                status: true,
-              },
-            },
-          },
-          orderBy: {
-            language: {
-              name: "asc",
+    include: {
+      languages: {
+        include: {
+          language: {
+            select: {
+              id: true,
+              name: true,
+              status: true,
             },
           },
         },
+        orderBy: {
+          language: {
+            name: "asc",
+          },
+        },
       },
-    });
-
+    },
+  });
 
   // --------------------------------------------------
   // Load Languages
@@ -139,8 +109,8 @@ export default async function DocumentTypesPage({
   // Serialize Decimal Values
   // --------------------------------------------------
 
-  const serializedDocumentTypes =
-    documentTypes.map((documentType) => ({
+  const serializedDocumentTypes = documentTypes.map(
+    (documentType) => ({
       id: documentType.id,
       name: documentType.name,
       description: documentType.description,
@@ -148,18 +118,17 @@ export default async function DocumentTypesPage({
         documentType.defaultAmount
       ),
       status: documentType.status,
-      languages: documentType.languages.map(
-        (item) => ({
-          languageId: item.languageId,
-          language: {
-            id: item.language.id,
-            name: item.language.name,
-            status: item.language.status,
-          },
-          price: Number(item.price),
-        })
-      ),
-    }));
+      languages: documentType.languages.map((item) => ({
+        languageId: item.languageId,
+        language: {
+          id: item.language.id,
+          name: item.language.name,
+          status: item.language.status,
+        },
+        price: Number(item.price),
+      })),
+    })
+  );
 
   // --------------------------------------------------
   // Page
@@ -271,32 +240,8 @@ export default async function DocumentTypesPage({
         {/* Document Type Section */}
 
         <div className="overflow-hidden rounded-xl border border-black/10 bg-white">
-          {/* Section Header */}
-
-          <div className="flex flex-col gap-4 border-b border-black/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-sm font-semibold">
-                Document Types
-              </h2>
-
-              <p className="mt-1 text-xs text-black/40">
-                Reusable document types and language
-                prices used by new client files.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <DocumentTypeFilter />
-            </div>
-          </div>
-
-          {/* Client Component */}
-
           <DocumentTypesClient
-            key={filter}
-            initialDocumentTypes={
-              serializedDocumentTypes
-            }
+            initialDocumentTypes={serializedDocumentTypes}
             initialLanguages={languages}
           />
         </div>

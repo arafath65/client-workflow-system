@@ -37,6 +37,12 @@ type LanguageDraft = {
   custom: boolean;
 };
 
+type StatusFilter = "ACTIVE" | "INACTIVE" | "ALL";
+
+type DocumentTypeGroup = DocumentType & {
+  sourceIds: number[];
+};
+
 const formatMoney = (value: number) =>
   value.toLocaleString("en-LK", {
     minimumFractionDigits: 2,
@@ -65,9 +71,90 @@ export default function DocumentTypesClient({
   const [loading, setLoading] = useState(false);
   const [languageSaving, setLanguageSaving] = useState(false);
 
-  const totalCount = documentTypes.length;
-  const activeCount = documentTypes.filter((item) => item.status).length;
-  const inactiveCount = totalCount - activeCount;
+  const [documentStatusFilter, setDocumentStatusFilter] =
+    useState<StatusFilter>("ACTIVE");
+  const [languageStatusFilter, setLanguageStatusFilter] =
+    useState<StatusFilter>("ACTIVE");
+
+  // Older data may contain document names such as
+  // "Birth certificate - Arabic" and "Birth certificate - English".
+  // They are still one logical document type, so group them by the
+  // base name and combine their language/pricing records for display.
+  const documentTypeGroups = documentTypes.reduce<DocumentTypeGroup[]>(
+    (groups, documentType) => {
+      const normalizedName = documentType.name.trim().toLowerCase();
+      const matchedLanguage = [...languages]
+        .sort((a, b) => b.name.length - a.name.length)
+        .find((language) =>
+          normalizedName.endsWith(` - ${language.name.trim().toLowerCase()}`)
+        );
+
+      const baseName = matchedLanguage
+        ? documentType.name
+            .trim()
+            .slice(0, -(matchedLanguage.name.trim().length + 3))
+            .trim()
+        : documentType.name.trim();
+
+      const groupKey = baseName.toLowerCase();
+      const existingGroup = groups.find(
+        (group) => group.name.trim().toLowerCase() === groupKey
+      );
+
+      if (!existingGroup) {
+        groups.push({
+          ...documentType,
+          name: baseName,
+          sourceIds: [documentType.id],
+          languages: [...documentType.languages],
+        });
+        return groups;
+      }
+
+      existingGroup.sourceIds.push(documentType.id);
+      existingGroup.status = existingGroup.status || documentType.status;
+
+      if (!existingGroup.description && documentType.description) {
+        existingGroup.description = documentType.description;
+      }
+
+      // Keep the first configured price for each language. If an older
+      // duplicate has the language-specific name suffix, prefer that
+      // record's price for the matching language.
+      for (const item of documentType.languages) {
+        const existingLanguageIndex = existingGroup.languages.findIndex(
+          (existingItem) => existingItem.languageId === item.languageId
+        );
+
+        if (existingLanguageIndex === -1) {
+          existingGroup.languages.push(item);
+          continue;
+        }
+
+        const sourceName = documentType.name.trim().toLowerCase();
+        const languageName = item.language.name.trim().toLowerCase();
+
+        if (sourceName.endsWith(` - ${languageName}`)) {
+          existingGroup.languages[existingLanguageIndex] = item;
+        }
+      }
+
+      return groups;
+    },
+    []
+  );  
+
+  const filteredDocumentTypes = documentTypeGroups.filter((item) => {
+    if (documentStatusFilter === "ACTIVE") return item.status;
+    if (documentStatusFilter === "INACTIVE") return !item.status;
+    return true;
+  });
+
+  const filteredLanguages = languages.filter((item) => {
+    if (languageStatusFilter === "ACTIVE") return item.status;
+    if (languageStatusFilter === "INACTIVE") return !item.status;
+    return true;
+  });
 
   const resetDocumentForm = () => {
     setName("");
@@ -357,7 +444,7 @@ export default function DocumentTypesClient({
   };
 
   const handleToggleStatus = async (
-    documentType: DocumentType
+    documentType: DocumentTypeGroup
   ) => {
     const nextStatus = !documentType.status;
 
@@ -373,37 +460,39 @@ export default function DocumentTypesClient({
     setLoading(true);
 
     try {
-      const response = await fetch(
-        `/api/document-types/${documentType.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            status: nextStatus,
-          }),
+      for (const sourceId of documentType.sourceIds) {
+        const response = await fetch(
+          `/api/document-types/${sourceId}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              status: nextStatus,
+            }),
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          alert(
+            data.message ||
+              `Unable to update document type. HTTP ${response.status}`
+          );
+          return;
         }
-      );
 
-      const data = await response.json();
+        if (data.documentType) {
+          const saved = data.documentType as DocumentType;
 
-      if (!response.ok || !data.success) {
-        alert(
-          data.message ||
-            `Unable to update document type. HTTP ${response.status}`
-        );
-        return;
-      }
-
-      if (data.documentType) {
-        const saved = data.documentType as DocumentType;
-
-        setDocumentTypes((current) =>
-          current.map((item) =>
-            item.id === saved.id ? saved : item
-          )
-        );
+          setDocumentTypes((current) =>
+            current.map((item) =>
+              item.id === saved.id ? saved : item
+            )
+          );
+        }
       }
     } catch (error) {
       console.error(
@@ -608,36 +697,6 @@ export default function DocumentTypesClient({
 
   return (
     <>
-      {/* Summary */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-black/10 bg-white p-5">
-          <p className="text-xs text-black/40">
-            Total Document Types
-          </p>
-          <p className="mt-2 text-2xl font-semibold">
-            {totalCount}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-black/10 bg-white p-5">
-          <p className="text-xs text-black/40">
-            Active
-          </p>
-          <p className="mt-2 text-2xl font-semibold">
-            {activeCount}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-black/10 bg-white p-5">
-          <p className="text-xs text-black/40">
-            Inactive
-          </p>
-          <p className="mt-2 text-2xl font-semibold">
-            {inactiveCount}
-          </p>
-        </div>
-      </div>
-
       {/* Document Types */}
       <div className="mt-8 overflow-hidden rounded-xl border border-black/10 bg-white">
         <div className="flex flex-col gap-4 border-b border-black/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -650,17 +709,34 @@ export default function DocumentTypesClient({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={handleOpenAdd}
-            disabled={languageSaving}
-            className="rounded-lg bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black disabled:opacity-50"
-          >
-            + Add Document Type
-          </button>
+          <div className="flex items-center gap-2">
+            <select
+              value={documentStatusFilter}
+              onChange={(event) =>
+                setDocumentStatusFilter(
+                  event.target.value as StatusFilter
+                )
+              }
+              className="h-10 rounded-lg border border-black/10 bg-white px-3 text-xs font-medium outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
+              aria-label="Filter document types by status"
+            >
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+              <option value="ALL">All</option>
+            </select>
+
+            <button
+              type="button"
+              onClick={handleOpenAdd}
+              disabled={languageSaving}
+              className="rounded-lg bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black disabled:opacity-50"
+            >
+              + Add Document Type
+            </button>
+          </div>
         </div>
 
-        {documentTypes.length === 0 ? (
+        {filteredDocumentTypes.length === 0 ? (
           <div className="flex min-h-64 items-center justify-center px-6">
             <div className="text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-black/[0.04]">
@@ -702,7 +778,7 @@ export default function DocumentTypesClient({
               </thead>
 
               <tbody>
-                {documentTypes.map((documentType) => (
+                {filteredDocumentTypes.map((documentType) => (
                   <tr
                     key={documentType.id}
                     className="border-b border-black/5 last:border-b-0"
@@ -726,9 +802,12 @@ export default function DocumentTypesClient({
                           documentType.languages.map((item) => (
                             <span
                               key={item.languageId}
-                              className="rounded-full bg-black/[0.04] px-2 py-1 text-[10px] text-black/60"
+                              className="inline-flex items-center gap-1.5 rounded-full bg-black/[0.04] px-2 py-1 text-[10px] text-black/60"
                             >
-                              {item.language.name}
+                              <span>{item.language.name}</span>
+                              <span className="font-semibold text-black/70">
+                                LKR {formatMoney(Number(item.price))}
+                              </span>
                             </span>
                           ))
                         )}
@@ -740,35 +819,49 @@ export default function DocumentTypesClient({
                     </td>
 
                     <td className="px-5 py-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleToggleStatus(documentType)
-                        }
-                        disabled={loading}
-                        className={`rounded-full px-3 py-1 text-[10px] font-semibold transition ${
+                      <span
+                        className={`rounded-full px-3 py-1 text-[10px] font-semibold ${
                           documentType.status
-                            ? "bg-green-100 text-green-700 hover:bg-green-200"
-                            : "bg-black/5 text-black/40 hover:bg-black/10"
-                        } disabled:opacity-50`}
+                            ? "bg-green-100 text-green-700"
+                            : "bg-black/5 text-black/40"
+                        }`}
                       >
                         {documentType.status
                           ? "Active"
                           : "Inactive"}
-                      </button>
+                      </span>
                     </td>
 
                     <td className="px-5 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleOpenEdit(documentType)
-                        }
-                        disabled={loading || languageSaving}
-                        className="text-xs font-medium text-black/45 transition hover:text-black disabled:opacity-50"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex items-center justify-end gap-4">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleOpenEdit(documentType)
+                          }
+                          disabled={loading || languageSaving}
+                          className="text-xs font-medium text-black/45 transition hover:text-black disabled:opacity-50"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleToggleStatus(documentType)
+                          }
+                          disabled={loading}
+                          className={`text-xs font-medium transition disabled:opacity-50 ${
+                            documentType.status
+                              ? "text-red-500 hover:text-red-700"
+                              : "text-green-600 hover:text-green-700"
+                          }`}
+                        >
+                          {documentType.status
+                            ? "Deactivate"
+                            : "Activate"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -790,19 +883,36 @@ export default function DocumentTypesClient({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => handleOpenLanguageAdd("global")}
-            className="rounded-lg bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black"
-          >
-            + Add Language
-          </button>
+          <div className="flex items-center gap-2">
+            <select
+              value={languageStatusFilter}
+              onChange={(event) =>
+                setLanguageStatusFilter(
+                  event.target.value as StatusFilter
+                )
+              }
+              className="h-10 rounded-lg border border-black/10 bg-white px-3 text-xs font-medium outline-none transition focus:border-[#f9a800] focus:ring-2 focus:ring-[#f9a800]/10"
+              aria-label="Filter languages by status"
+            >
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+              <option value="ALL">All</option>
+            </select>
+
+            <button
+              type="button"
+              onClick={() => handleOpenLanguageAdd("global")}
+              className="rounded-lg bg-black px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#f9a800] hover:text-black"
+            >
+              + Add Language
+            </button>
+          </div>
         </div>
 
-        {languages.length === 0 ? (
+        {filteredLanguages.length === 0 ? (
           <div className="px-5 py-6">
             <p className="text-xs text-black/40">
-              No languages configured yet. Add the first language above.
+              No languages match the selected filter.
             </p>
           </div>
         ) : (
@@ -823,7 +933,7 @@ export default function DocumentTypesClient({
               </thead>
 
               <tbody>
-                {languages.map((language) => (
+                {filteredLanguages.map((language) => (
                   <tr
                     key={language.id}
                     className="border-b border-black/5 last:border-b-0"
