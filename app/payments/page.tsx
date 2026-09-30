@@ -6,8 +6,10 @@ import type { ReactNode } from "react";
 import Navigation from "../components/Navigation";
 import LogoutButton from "../dashboard/LogoutButton";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import ExpenseManager from "./ExpenseManager";
 import FinanceQuickRange from "./FinanceQuickRange";
+import PaymentHistory from "./PaymentHistory";
 
 type SearchParams = Record<
   string,
@@ -255,83 +257,93 @@ export default async function PaymentsPage({
   // --------------------------------------------------
   // Payment history in selected period
   // --------------------------------------------------
-  const historyPayments = await prisma.payment.findMany({
-    where: {
-      ...(status === "ALL"
-        ? {
-            status: {
-              in: ["CLEARED", "REFUNDED", "CANCELLED"],
-            },
-          }
-        : {
-            status,
-          }),
-      paidAt: {
-        gte: rangeStart,
-        lt: rangeEndExclusive,
-      },
-      ...(search
-        ? {
-            OR: [
-              {
-                clientFile: {
-                  fileNumber: {
-                    contains: search,
-                  },
-                },
-              },
-              {
-                clientFile: {
-                  title: {
-                    contains: search,
-                  },
-                },
-              },
-              {
-                clientFile: {
-                  client: {
-                    name: {
-                      contains: search,
-                    },
-                  },
-                },
-              },
-              {
-                referenceNo: {
+  const transactionPageSize = 20;
+
+  const historyWhere: Prisma.PaymentWhereInput = {
+    ...(status === "ALL"
+      ? {
+          status: {
+            in: ["CLEARED", "REFUNDED", "CANCELLED"],
+          },
+        }
+      : {
+          status,
+        }),
+    paidAt: {
+      gte: rangeStart,
+      lt: rangeEndExclusive,
+    },
+    ...(search
+      ? {
+          OR: [
+            {
+              clientFile: {
+                fileNumber: {
                   contains: search,
                 },
               },
-            ],
-          }
-        : {}),
-    },
-    select: {
-      id: true,
-      amount: true,
-      paymentMethod: true,
-      status: true,
-      referenceNo: true,
-      remarks: true,
-      paidAt: true,
-      clientFile: {
-        select: {
-          id: true,
-          fileNumber: true,
-          title: true,
-          client: {
-            select: {
-              id: true,
-              name: true,
+            },
+            {
+              clientFile: {
+                title: {
+                  contains: search,
+                },
+              },
+            },
+            {
+              clientFile: {
+                client: {
+                  name: {
+                    contains: search,
+                  },
+                },
+              },
+            },
+            {
+              referenceNo: {
+                contains: search,
+              },
+            },
+          ],
+        }
+      : {}),
+  };
+
+  const [historyPayments, transactionCount] = await Promise.all([
+    prisma.payment.findMany({
+      where: historyWhere,
+      select: {
+        id: true,
+        amount: true,
+        paymentMethod: true,
+        status: true,
+        referenceNo: true,
+        remarks: true,
+        paidAt: true,
+        clientFile: {
+          select: {
+            id: true,
+            fileNumber: true,
+            title: true,
+            client: {
+              select: {
+                id: true,
+                name: true,
+              },
             },
           },
         },
       },
-    },
-    orderBy: {
-      paidAt: "desc",
-    },
-    take: 250,
-  });
+      orderBy: [
+        { paidAt: "desc" },
+        { id: "desc" },
+      ],
+      take: transactionPageSize,
+    }),
+    prisma.payment.count({
+      where: historyWhere,
+    }),
+  ]);
 
   // --------------------------------------------------
   // Financial totals
@@ -465,7 +477,6 @@ export default async function PaymentsPage({
 
   const outstandingCount = receivables.length;
   const selectedFileCount = selectedFiles.length;
-  const transactionCount = historyPayments.length;
   const expenseCount = periodExpenses.length;
 
   return (
@@ -838,114 +849,31 @@ export default async function PaymentsPage({
         </section>
 
         {/* Transactions */}
-        <section className="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black/10 px-5 py-5 sm:px-6">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#b77900]">
-                Transactions
-              </p>
-              <h2 className="mt-1 text-lg font-semibold tracking-tight">
-                Payment history
-              </h2>
-              <p className="mt-1 text-xs text-black/40">
-                {status === "ALL"
-                  ? "All"
-                  : status === "CLEARED"
-                    ? "Cleared"
-                    : status === "REFUNDED"
-                      ? "Refunded"
-                      : "Cancelled"} payment activity in the selected period.
-              </p>
-            </div>
-            <div className="rounded-xl bg-[#f6f6f4] px-3 py-2 text-right">
-              <p className="text-[9px] uppercase tracking-wider text-black/35">
-                Showing
-              </p>
-              <p className="mt-0.5 text-sm font-bold">
-                {historyPayments.length} transaction{historyPayments.length === 1 ? "" : "s"}
-              </p>
-            </div>
-          </div>
-
-          {historyPayments.length === 0 ? (
-            <EmptyState message="No payment activity found for the selected filters." />
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[980px]">
-                <thead>
-                  <tr className="bg-[#fafaf8] text-left">
-                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
-                      Date
-                    </th>
-                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
-                      Client
-                    </th>
-                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
-                      File
-                    </th>
-                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
-                      Method
-                    </th>
-                    <th className="px-5 py-3 text-right text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
-                      Amount
-                    </th>
-                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
-                      Reference
-                    </th>
-                    <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {historyPayments.map((payment) => (
-                    <tr
-                      key={payment.id}
-                      className="border-t border-black/5 transition hover:bg-[#fcfcfa]"
-                    >
-                      <td className="px-5 py-4 text-xs text-black/55">
-                        {formatDateTime(payment.paidAt)}
-                      </td>
-                      <td className="px-5 py-4 text-xs font-semibold">
-                        {payment.clientFile.client.name}
-                      </td>
-                      <td className="px-5 py-4">
-                        <Link
-                          href={`/files/${payment.clientFile.id}`}
-                          className="text-xs font-semibold hover:text-[#b77900]"
-                        >
-                          {payment.clientFile.fileNumber}
-                        </Link>
-                        <p className="mt-0.5 max-w-[240px] truncate text-[10px] text-black/35">
-                          {payment.clientFile.title}
-                        </p>
-                      </td>
-                      <td className="px-5 py-4 text-xs text-black/55">
-                        {formatPaymentMethod(payment.paymentMethod)}
-                      </td>
-                      <td className="px-5 py-4 text-right text-xs font-bold">
-                        {formatLkr(Number(payment.amount))}
-                      </td>
-                      <td className="px-5 py-4 text-xs text-black/45">
-                        {payment.referenceNo || "—"}
-                      </td>
-                      <td className="px-5 py-4">
-                        <PaymentBadge status={payment.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <div className="border-t border-black/5 px-5 py-3 sm:px-6">
-            <p className="text-[10px] leading-5 text-black/35">
-              Cleared payments are included in Received. Refunded payments are
-              excluded from Received and remain visible here for reconciliation.
-            </p>
-          </div>
-        </section>
+        <PaymentHistory
+          initialPayments={historyPayments.map((payment) => ({
+            id: payment.id,
+            amount: Number(payment.amount),
+            paymentMethod: payment.paymentMethod,
+            status: payment.status,
+            referenceNo: payment.referenceNo,
+            paidAt: payment.paidAt.toISOString(),
+            clientFile: {
+              id: payment.clientFile.id,
+              fileNumber: payment.clientFile.fileNumber,
+              title: payment.clientFile.title,
+              client: {
+                id: payment.clientFile.client.id,
+                name: payment.clientFile.client.name,
+              },
+            },
+          }))}
+          initialTotal={transactionCount}
+          pageSize={transactionPageSize}
+          from={normalizedRange.from}
+          to={normalizedRange.to}
+          status={status}
+          search={search}
+        />
       </section>
     </main>
   );
@@ -1037,28 +965,6 @@ function MiniStat({ label, value }: { label: string; value: string }) {
       </p>
       <p className="mt-2 text-lg font-semibold tracking-tight">{value}</p>
     </div>
-  );
-}
-
-function PaymentBadge({ status }: { status: string }) {
-  const className =
-    status === "CLEARED"
-      ? "bg-[#edf7e7] text-[#456a29]"
-      : status === "REFUNDED"
-        ? "bg-[#fff5df] text-[#986600]"
-        : "bg-[#f8eaea] text-[#974848]";
-
-  const label =
-    status === "CLEARED"
-      ? "Cleared"
-      : status === "REFUNDED"
-        ? "Refunded"
-        : "Cancelled";
-
-  return (
-    <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${className}`}>
-      {label}
-    </span>
   );
 }
 
@@ -1350,21 +1256,6 @@ function formatCompactLkr(value: number) {
   }
 
   return `LKR ${Math.round(value)}`;
-}
-
-function formatPaymentMethod(method: string) {
-  switch (method) {
-    case "BANK_TRANSFER":
-      return "Bank Transfer";
-    case "CASH":
-      return "Cash";
-    case "CARD":
-      return "Card";
-    case "CHEQUE":
-      return "Cheque";
-    default:
-      return method;
-  }
 }
 
 function roundMoney(value: number) {

@@ -5,6 +5,7 @@ import LogoutButton from "../dashboard/LogoutButton";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import type { ReactNode } from "react";
+import AuditLogsClient from "./AuditLogsClient";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -88,6 +89,10 @@ export default async function AuditLogsPage({
   const action = getParam(params.action);
   const search = getParam(params.search).trim();
 
+  const rawPage = Number.parseInt(getParam(params.page), 10);
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+  const pageSize = 20;
+
   const normalizedFrom = from <= to ? from : to;
   const normalizedTo = from <= to ? to : from;
 
@@ -144,34 +149,37 @@ export default async function AuditLogsPage({
       : {}),
   };
 
-  const [logs, total] = await Promise.all([
-    prisma.auditLog.findMany({
-      where,
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 250,
-      select: {
-        id: true,
-        createdAt: true,
-        module: true,
-        action: true,
-        entity: true,
-        entityId: true,
-        description: true,
-        metadata: true,
-        user: {
-          select: {
-            username: true,
-          },
+  const total = await prisma.auditLog.count({ where });
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const currentPage = Math.min(page, totalPages);
+
+  const logs = await prisma.auditLog.findMany({
+    where,
+    orderBy: [
+      { createdAt: "desc" },
+      { id: "desc" },
+    ],
+    skip: (currentPage - 1) * pageSize,
+    take: pageSize,
+    select: {
+      id: true,
+      createdAt: true,
+      module: true,
+      action: true,
+      entity: true,
+      entityId: true,
+      description: true,
+      metadata: true,
+      user: {
+        select: {
+          username: true,
         },
       },
-    }),
+    },
+  });
 
-    prisma.auditLog.count({
-      where,
-    }),
-  ]);
+  const startItem = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, total);
 
   return (
     <main className="min-h-screen bg-[#f6f6f4] text-[#171717]">
@@ -298,7 +306,7 @@ export default async function AuditLogsPage({
 
           <div className="mt-4 flex items-center justify-between gap-3">
             <p className="text-[10px] text-black/35">
-              Showing {logs.length} of {total} matching log
+              Showing {startItem}-{endItem} of {total} matching log
               {total === 1 ? "" : "s"}
             </p>
 
@@ -312,100 +320,28 @@ export default async function AuditLogsPage({
         </form>
 
         {/* Activity History */}
-        <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-semibold">
-                Activity History
-              </h2>
-
-              <p className="mt-1 text-xs text-black/40">
-                Newest actions appear first.
-              </p>
-            </div>
-
-            {logs.length >= 250 ? (
-              <span className="text-[10px] text-black/35">
-                Latest 250 shown
-              </span>
-            ) : null}
-          </div>
-
-          {logs.length === 0 ? (
-            <div className="mt-5 flex min-h-40 items-center justify-center rounded-lg border border-dashed border-black/10 bg-[#fafaf9]">
-              <p className="text-sm text-black/40">
-                No audit activity found for the selected filters.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-5 overflow-x-auto rounded-lg border border-black/10">
-              <table className="w-full min-w-[1050px]">
-                <thead>
-                  <tr className="border-b border-black/10 bg-[#fafaf9]">
-                    {[
-                      "Date / Time",
-                      "User",
-                      "Module",
-                      "Action",
-                      "Details",
-                    ].map((head) => (
-                      <th
-                        key={head}
-                        className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40"
-                      >
-                        {head}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {logs.map((log) => (
-                    <tr
-                      key={log.id}
-                      className="border-b border-black/5 last:border-b-0 hover:bg-[#fafaf9]"
-                    >
-                      <td className="px-4 py-3 text-xs text-black/60">
-                        {formatDateTime(log.createdAt)}
-                      </td>
-
-                      <td className="px-4 py-3 text-xs font-medium">
-                        {log.user.username}
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <span className="rounded-full bg-black/[0.05] px-2.5 py-1 text-[10px] font-medium text-black/55">
-                          {formatLabel(log.module)}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <span className="rounded-full bg-[#fff7e6] px-2.5 py-1 text-[10px] font-medium text-[#a56e00]">
-                          {formatLabel(log.action)}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-3">
-                        <p className="text-xs font-medium">
-                          {log.description}
-                        </p>
-
-                        {log.entity ? (
-                          <p className="mt-0.5 text-[10px] text-black/35">
-                            {formatLabel(log.entity)}
-                            {log.entityId
-                              ? ` #${log.entityId}`
-                              : ""}
-                          </p>
-                        ) : null}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <AuditLogsClient
+          initialLogs={logs.map((log) => ({
+            id: log.id,
+            createdAt: log.createdAt.toISOString(),
+            module: log.module,
+            action: log.action,
+            entity: log.entity,
+            entityId: log.entityId,
+            description: log.description,
+            user: log.user,
+          }))}
+          initialTotal={total}
+          initialPage={currentPage}
+          pageSize={pageSize}
+          filters={{
+            from: normalizedFrom,
+            to: normalizedTo,
+            module: moduleFilter,
+            action,
+            search,
+          }}
+        />
       </section>
     </main>
   );
@@ -467,14 +403,3 @@ function formatLabel(value: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function formatDateTime(value: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "Asia/Colombo",
-  }).format(value);
-}

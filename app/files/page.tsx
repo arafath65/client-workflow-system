@@ -4,6 +4,18 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import FilesList from "./FilesList";
 
+const FILE_PAGE_SIZE = 20;
+
+const fileStatuses = [
+  "OPEN",
+  "IN_PROGRESS",
+  "ON_HOLD",
+  "COMPLETED",
+  "CANCELLED",
+] as const;
+
+type FileStatus = (typeof fileStatuses)[number];
+
 function formatDate(date: Date | null | undefined) {
   if (!date) {
     return null;
@@ -16,206 +28,241 @@ function formatDate(date: Date | null | undefined) {
   }).format(date);
 }
 
-export default async function FilesPage() {
-  // --------------------------------------------------
-  // Authentication
-  // --------------------------------------------------
-
+export default async function FilesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    search?: string;
+    status?: string;
+    page?: string;
+  }>;
+}) {
   const cookieStore = await cookies();
-
-  const sessionUser =
-    cookieStore.get("session_user");
+  const sessionUser = cookieStore.get("session_user");
 
   if (!sessionUser?.value) {
     redirect("/login");
   }
 
-  const userId = Number(
-    sessionUser.value
-  );
+  const userId = Number(sessionUser.value);
 
-  if (
-    !Number.isInteger(userId) ||
-    userId <= 0
-  ) {
+  if (!Number.isInteger(userId) || userId <= 0) {
     redirect("/login");
   }
 
-  const user =
-    await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-      select: {
-        username: true,
-      },
-    });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { username: true },
+  });
 
   if (!user) {
     redirect("/login");
   }
 
-  // --------------------------------------------------
-  // Load all files once
-  // --------------------------------------------------
+  const params = await searchParams;
+  const search = params.search?.trim() || "";
+  const requestedStatus = params.status || "";
+
+  const statusFilter = fileStatuses.includes(
+    requestedStatus as FileStatus
+  )
+    ? (requestedStatus as FileStatus)
+    : null;
+
+  const requestedPage = Number.parseInt(params.page || "1", 10);
+  const safeRequestedPage =
+    Number.isInteger(requestedPage) && requestedPage > 0
+      ? requestedPage
+      : 1;
+
+  const where = {
+    ...(search
+      ? {
+          OR: [
+            {
+              fileNumber: {
+                contains: search,
+              },
+            },
+            {
+              title: {
+                contains: search,
+              },
+            },
+            {
+              client: {
+                OR: [
+                  {
+                    name: {
+                      contains: search,
+                    },
+                  },
+                  {
+                    whatsapp: {
+                      contains: search,
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        }
+      : {}),
+    ...(statusFilter
+      ? {
+          status: statusFilter,
+        }
+      : {}),
+  };
 
   const [
-    files,
+    totalFilteredFiles,
     totalFiles,
     inProgressFiles,
     completedFiles,
   ] = await Promise.all([
-    prisma.clientFile.findMany({
-      select: {
-        id: true,
-        fileNumber: true,
-        title: true,
-        status: true,
+    prisma.clientFile.count({ where }),
+    prisma.clientFile.count(),
+    prisma.clientFile.count({
+      where: { status: "IN_PROGRESS" },
+    }),
+    prisma.clientFile.count({
+      where: { status: "COMPLETED" },
+    }),
+  ]);
 
-        client: {
-          select: {
-            id: true,
-            name: true,
-            whatsapp: true,
-          },
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalFilteredFiles / FILE_PAGE_SIZE)
+  );
+
+  const currentPage = Math.min(
+    safeRequestedPage,
+    totalPages
+  );
+
+  const files = await prisma.clientFile.findMany({
+    where,
+    skip: (currentPage - 1) * FILE_PAGE_SIZE,
+    take: FILE_PAGE_SIZE,
+
+    select: {
+      id: true,
+      fileNumber: true,
+      title: true,
+      status: true,
+
+      client: {
+        select: {
+          id: true,
+          name: true,
+          whatsapp: true,
         },
+      },
 
-        fileWorkflows: {
-          select: {
-            assignedStaff: {
-              select: {
-                name: true,
-              },
+      fileWorkflows: {
+        select: {
+          assignedStaff: {
+            select: {
+              name: true,
             },
+          },
 
-            tasks: {
-              select: {
-                status: true,
+          tasks: {
+            select: {
+              status: true,
 
-                assignedStaff: {
-                  select: {
-                    name: true,
-                  },
+              assignedStaff: {
+                select: {
+                  name: true,
                 },
               },
             },
           },
         },
+      },
 
-        calendarEvents: {
-          where: {
-            status: "SCHEDULED",
-          },
-
-          orderBy: {
-            startAt: "asc",
-          },
-
-          take: 1,
-
-          select: {
-            startAt: true,
-            title: true,
-          },
+      calendarEvents: {
+        where: {
+          status: "SCHEDULED",
         },
 
-        updatedAt: true,
+        orderBy: {
+          startAt: "asc",
+        },
+
+        take: 1,
+
+        select: {
+          startAt: true,
+          title: true,
+        },
       },
 
-      orderBy: {
-        updatedAt: "desc",
-      },
-    }),
+      updatedAt: true,
+    },
 
-    prisma.clientFile.count(),
-
-    prisma.clientFile.count({
-      where: {
-        status: "IN_PROGRESS",
-      },
-    }),
-
-    prisma.clientFile.count({
-      where: {
-        status: "COMPLETED",
-      },
-    }),
-  ]);
-
-  // --------------------------------------------------
-  // Convert to client-safe data
-  // --------------------------------------------------
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
 
   const fileRows = files.map((file) => {
-    const tasks =
-      file.fileWorkflows.flatMap(
-        (workflow) => workflow.tasks
-      );
+    const tasks = file.fileWorkflows.flatMap(
+      (workflow) => workflow.tasks
+    );
 
-    const completedTasks =
-      tasks.filter(
-        (task) =>
-          task.status === "COMPLETED"
-      ).length;
+    const completedTasks = tasks.filter(
+      (task) => task.status === "COMPLETED"
+    ).length;
 
-    const assignedNames =
-      Array.from(
-        new Set(
-          file.fileWorkflows.flatMap(
-            (workflow) => [
-              ...(workflow.assignedStaff
-                ? [
-                    workflow
-                      .assignedStaff.name,
-                  ]
-                : []),
+    const assignedNames = Array.from(
+      new Set(
+        file.fileWorkflows.flatMap((workflow) => [
+          ...(workflow.assignedStaff
+            ? [workflow.assignedStaff.name]
+            : []),
 
-              ...workflow.tasks.flatMap(
-                (task) =>
-                  task.assignedStaff
-                    ? [
-                        task.assignedStaff
-                          .name,
-                      ]
-                    : []
-              ),
-            ]
-          )
-        )
-      );
+          ...workflow.tasks.flatMap((task) =>
+            task.assignedStaff
+              ? [task.assignedStaff.name]
+              : []
+          ),
+        ])
+      )
+    );
 
-    const nextEvent =
-      file.calendarEvents[0];
+    const nextEvent = file.calendarEvents[0];
 
     return {
       id: file.id,
       fileNumber: file.fileNumber,
       title: file.title,
       status: file.status,
+
       client: {
         id: file.client.id,
         name: file.client.name,
-        whatsapp:
-          file.client.whatsapp,
+        whatsapp: file.client.whatsapp,
       },
+
       totalTasks: tasks.length,
       completedTasks,
       assignedNames,
+
       nextEvent: nextEvent
         ? {
             title: nextEvent.title,
-            startAt:
-              nextEvent.startAt.toISOString(),
+            startAt: nextEvent.startAt.toISOString(),
           }
         : null,
-      updatedAt:
-        formatDate(file.updatedAt),
+
+      updatedAt: formatDate(file.updatedAt),
     };
   });
 
   return (
     <main className="min-h-screen bg-[#f6f6f4] text-[#171717]">
-      {/* Header */}
       <header className="border-b border-black/10 bg-white">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-3">
@@ -229,7 +276,6 @@ export default async function FilesPage() {
               <p className="text-sm font-semibold">
                 A&I Global
               </p>
-
               <p className="text-[10px] text-black/40">
                 Client Workflow System
               </p>
@@ -241,7 +287,6 @@ export default async function FilesPage() {
               <p className="text-xs text-black/40">
                 Logged in as
               </p>
-
               <p className="text-sm font-medium">
                 {user.username}
               </p>
@@ -264,9 +309,7 @@ export default async function FilesPage() {
 
       <Navigation currentPage="files" />
 
-      {/* Main */}
       <section className="mx-auto max-w-7xl px-6 py-8">
-        {/* Heading */}
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f9a800]">
             File Management
@@ -277,12 +320,10 @@ export default async function FilesPage() {
           </h1>
 
           <p className="mt-2 text-sm text-black/50">
-            View and track files across all
-            registered clients.
+            View and track files across all registered clients.
           </p>
         </div>
 
-        {/* Summary */}
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <SummaryCard
             title="Total Files"
@@ -303,9 +344,17 @@ export default async function FilesPage() {
           />
         </div>
 
-        {/* File List */}
         <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
-          <FilesList files={fileRows} />
+          <FilesList
+            key={`${search}|${statusFilter ?? "ALL"}|${currentPage}`}
+            files={fileRows}
+            totalFiles={totalFilteredFiles}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={FILE_PAGE_SIZE}
+            initialSearch={search}
+            initialStatus={statusFilter ?? "ALL"}
+          />
         </div>
       </section>
     </main>
