@@ -72,6 +72,7 @@
     const [description, setDescription] = useState("");
 
     const [baseAmount, setBaseAmount] = useState("");
+    const [quantity, setQuantity] = useState("1");
     const [discountAmount, setDiscountAmount] = useState("");
 
     const [documentTypes, setDocumentTypes] = useState<
@@ -334,6 +335,7 @@
       setThirdPartyId("");
       setDescription("");
       setBaseAmount("");
+      setQuantity("1");
       setDiscountAmount("");
       setDocuments([]);
       setError("");
@@ -419,6 +421,7 @@
       if (!value) {
         setTrackingMode("STANDARD");
         setBaseAmount("");
+        setQuantity("1");
         setDocuments([]);
         return;
       }
@@ -438,6 +441,7 @@
         // Documents are selected by the user in this form.
         // There is no workflow-level Document Base anymore.
         setBaseAmount("");
+        setQuantity("1");
         setDocuments([createEmptyDocumentRow()]);
         return;
       }
@@ -620,6 +624,23 @@
         return;
       }
 
+      if (trackingMode === "STANDARD") {
+        if (!/^\d+$/.test(quantity.trim())) {
+          setError("Quantity must be a whole number.");
+          return;
+        }
+
+        const parsedQuantity = Number(quantity);
+
+        if (
+          !Number.isInteger(parsedQuantity) ||
+          parsedQuantity <= 0
+        ) {
+          setError("Quantity must be at least 1.");
+          return;
+        }
+      }
+
       if (trackingMode === "DOCUMENT_BASED") {
       if (documents.length === 0) {
         setError("At least one document is required.");
@@ -709,6 +730,11 @@
               baseAmount:
                 baseAmount || "0",
 
+              quantity:
+                trackingMode === "STANDARD"
+                  ? Number(quantity)
+                  : 1,
+
               discountAmount:
               discountAmount || "0",
 
@@ -752,6 +778,7 @@
         setThirdPartyId("");
         setDescription("");
         setBaseAmount("");
+        setQuantity("1");
         setDiscountAmount("");
         setDocuments([]);
         setError("");
@@ -1368,10 +1395,10 @@
                         Service Pricing
                       </label>
 
-                      <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="grid gap-3 sm:grid-cols-[1fr_120px]">
                         <div>
                           <label className="mb-1.5 block text-[11px] font-medium text-black/60">
-                            Base Price (LKR)
+                            Unit Price (LKR)
                           </label>
 
                           <input
@@ -1384,6 +1411,7 @@
                             disabled={saving || !serviceTypeId}
                             className="w-full rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-2.5 text-sm outline-none focus:border-[#f9a800] disabled:opacity-60"
                           />
+
                           <p className="mt-1.5 text-[10px] text-black/35">
                             Loaded automatically from the selected Service Type.
                           </p>
@@ -1391,44 +1419,97 @@
 
                         <div>
                           <label className="mb-1.5 block text-[11px] font-medium text-black/60">
-                            Discount (LKR)
+                            Quantity
                           </label>
 
                           <input
                             type="number"
-                            min="0"
-                            step="0.01"
-                            value={discountAmount}
-                            onChange={(e) =>
-                              setDiscountAmount(e.target.value)
-                            }
-                            placeholder="0.00"
-                            disabled={saving}
-                            className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
+                            min="1"
+                            step="1"
+                            value={quantity}
+                            onChange={(e) => setQuantity(e.target.value)}
+                            disabled={saving || !serviceTypeId}
+                            className="w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
                           />
+
+                          <p className="mt-1.5 text-[10px] text-black/35">
+                            Number of applicants/items.
+                          </p>
                         </div>
                       </div>
 
-                      <div className="mt-3 rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-3">
-                        <p className="text-[10px] uppercase tracking-wider text-black/35">
-                          Final Amount
-                        </p>
+                      {(() => {
+                        const parsedQuantity = Number(quantity) || 0;
+                        const subtotal = Math.max(
+                          0,
+                          (Number(baseAmount) || 0) * parsedQuantity
+                        );
+                        const discount = Number(discountAmount) || 0;
+                        const finalAmount = Math.max(
+                          0,
+                          subtotal - discount
+                        );
 
-                        <p className="mt-1 text-base font-semibold">
-                          LKR {Math.max(
-                            0,
-                            (Number(baseAmount) || 0) -
-                              (Number(discountAmount) || 0)
-                          ).toLocaleString("en-LK", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </p>
+                        return (
+                          <>
+                            <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_180px] sm:items-end">
+                              <div className="rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-3">
+                                <p className="text-[10px] uppercase tracking-wider text-black/35">
+                                  Total Amount
+                                </p>
 
-                        <p className="mt-1 text-[10px] text-black/35">
-                          This price is saved for this workflow instance.
-                        </p>
-                      </div>
+                                <p className="mt-1 text-base font-semibold">
+                                  LKR {subtotal.toLocaleString("en-LK", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </p>
+
+                                <p className="mt-1 text-[10px] text-black/35">
+                                  Unit Price × Quantity
+                                </p>
+                              </div>
+
+                              <div>
+                                <label className="mb-1.5 block text-[11px] font-medium text-black/60">
+                                  Discount (LKR)
+                                </label>
+
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={discountAmount}
+                                  onChange={(e) =>
+                                    setDiscountAmount(e.target.value)
+                                  }
+                                  placeholder="0.00"
+                                  disabled={saving}
+                                  className="w-full rounded-lg border border-black/10 px-3 py-2.5 text-sm outline-none focus:border-[#f9a800]"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="mt-3 rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-3">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold">
+                                  Final Amount
+                                </p>
+                                <p className="text-base font-semibold">
+                                  LKR {finalAmount.toLocaleString("en-LK", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })}
+                                </p>
+                              </div>
+
+                              <p className="mt-1 text-[10px] text-black/35">
+                                Saved as Unit Price × Quantity − Discount.
+                              </p>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
 

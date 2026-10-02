@@ -206,6 +206,7 @@ export const FileWorkflowScalarFieldEnum = {
   assignedStaffId: 'assignedStaffId',
   status: 'status',
   baseAmount: 'baseAmount',
+  quantity: 'quantity',
   discountAmount: 'discountAmount',
   finalAmount: 'finalAmount',
   startedAt: 'startedAt',

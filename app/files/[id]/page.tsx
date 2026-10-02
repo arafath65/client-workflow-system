@@ -659,7 +659,7 @@ export default async function FileDetailsPage({
   ) : (
     <>
       <div className="mt-5 overflow-x-auto">
-        <table className="w-full min-w-[700px]">
+        <table className="w-full min-w-[820px]">
           <thead>
             <tr className="border-b border-black/10 bg-[#fafaf9]">
               <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -667,7 +667,15 @@ export default async function FileDetailsPage({
               </th>
 
               <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                Base Amount
+                Unit Price
+              </th>
+
+              <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                Qty
+              </th>
+
+              <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                Total Amount
               </th>
 
               <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -690,6 +698,19 @@ export default async function FileDetailsPage({
                   <p className="text-sm font-medium text-black">
                     {workflow.workflowTemplate.name}
                   </p>
+                </td>
+
+                <td className="px-4 py-4 text-right text-sm text-black/70">
+                  {formatMoney(
+                    Number(workflow.quantity) > 0
+                      ? Number(workflow.baseAmount) /
+                          Number(workflow.quantity)
+                      : Number(workflow.baseAmount)
+                  )}
+                </td>
+
+                <td className="px-4 py-4 text-right text-sm text-black/70">
+                  {workflow.quantity}
                 </td>
 
                 <td className="px-4 py-4 text-right text-sm text-black/70">

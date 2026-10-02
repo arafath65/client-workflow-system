@@ -223,6 +223,8 @@ export async function POST(
         body.description ?? ""
       ).trim();
 
+    const rawQuantity = Number(body.quantity ?? 1);
+
     // ==================================================
     // Validate Client
     // ==================================================
@@ -642,6 +644,29 @@ if (!client.status) {
     }
 
     // ==================================================
+    // Quantity Validation
+    // ==================================================
+
+    if (!isDocumentBased) {
+      if (
+        !Number.isInteger(rawQuantity) ||
+        rawQuantity <= 0 ||
+        rawQuantity > 100000
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Quantity must be a whole number greater than 0.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    const quantity = isDocumentBased ? 1 : rawQuantity;
+
+    // ==================================================
     // Pricing
     // ==================================================
 
@@ -702,8 +727,15 @@ if (!client.status) {
           100
         ).toFixed(2);
     } else {
+      const unitAmountCents = Math.round(
+        Number(workflow.baseAmount) * 100
+      );
+
+      const totalBaseCents =
+        unitAmountCents * quantity;
+
       baseAmount =
-        workflow.baseAmount.toFixed(2);
+        (totalBaseCents / 100).toFixed(2);
 
       const parsedDiscount =
         parseMoney(body.discountAmount);
@@ -723,9 +755,7 @@ if (!client.status) {
         parsedDiscount;
 
       const baseCents =
-        Math.round(
-          Number(baseAmount) * 100
-        );
+        totalBaseCents;
 
       const discountCents =
         Math.round(
@@ -1001,6 +1031,8 @@ if (!client.status) {
 
                   baseAmount,
 
+                  quantity,
+
                   discountAmount,
 
                   finalAmount,
@@ -1274,6 +1306,8 @@ if (!client.status) {
         thirdPartyId,
 
         baseAmount,
+
+        quantity,
 
         discountAmount,
 
