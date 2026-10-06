@@ -625,6 +625,25 @@
       }
 
       if (trackingMode === "STANDARD") {
+        if (
+          !/^\d+(?:\.\d{1,2})?$/.test(
+            baseAmount.trim()
+          )
+        ) {
+          setError("Unit Price must be a valid amount.");
+          return;
+        }
+
+        const parsedBaseAmount = Number(baseAmount);
+
+        if (
+          !Number.isFinite(parsedBaseAmount) ||
+          parsedBaseAmount < 0
+        ) {
+          setError("Unit Price must be a valid non-negative amount.");
+          return;
+        }
+
         if (!/^\d+$/.test(quantity.trim())) {
           setError("Quantity must be a whole number.");
           return;
@@ -637,6 +656,23 @@
           parsedQuantity <= 0
         ) {
           setError("Quantity must be at least 1.");
+          return;
+        }
+
+        const subtotal =
+          parsedBaseAmount * parsedQuantity;
+
+        const parsedDiscount =
+          Number(discountAmount || "0");
+
+        if (
+          !Number.isFinite(parsedDiscount) ||
+          parsedDiscount < 0 ||
+          parsedDiscount > subtotal
+        ) {
+          setError(
+            "Discount cannot be greater than the total amount."
+          );
           return;
         }
       }
@@ -1406,14 +1442,16 @@
                             min="0"
                             step="0.01"
                             value={baseAmount}
-                            readOnly
+                            onChange={(e) =>
+                              setBaseAmount(e.target.value)
+                            }
                             placeholder="0.00"
                             disabled={saving || !serviceTypeId}
-                            className="w-full rounded-lg border border-black/10 bg-[#fafaf9] px-3 py-2.5 text-sm outline-none focus:border-[#f9a800] disabled:opacity-60"
+                            className="w-full rounded-lg border border-black/10 bg-white px-3 py-2.5 text-sm outline-none focus:border-[#f9a800] disabled:opacity-60"
                           />
 
                           <p className="mt-1.5 text-[10px] text-black/35">
-                            Loaded automatically from the selected Service Type.
+                            Loaded automatically from the selected Service Type. You can edit it for special cases.
                           </p>
                         </div>
 

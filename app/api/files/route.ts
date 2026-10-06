@@ -225,6 +225,9 @@ export async function POST(
 
     const rawQuantity = Number(body.quantity ?? 1);
 
+    const rawBaseAmount =
+      String(body.baseAmount ?? "").trim();
+
     // ==================================================
     // Validate Client
     // ==================================================
@@ -644,7 +647,7 @@ if (!client.status) {
     }
 
     // ==================================================
-    // Quantity Validation
+    // Quantity + Unit Price Validation
     // ==================================================
 
     if (!isDocumentBased) {
@@ -665,6 +668,35 @@ if (!client.status) {
     }
 
     const quantity = isDocumentBased ? 1 : rawQuantity;
+
+    let standardUnitAmount: string;
+
+    if (isDocumentBased) {
+      standardUnitAmount = "0.00";
+    } else if (rawBaseAmount) {
+      const parsedBaseAmount =
+        parseMoney(rawBaseAmount);
+
+      if (parsedBaseAmount === null) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Unit Price must be a valid non-negative amount with up to 2 decimal places.",
+          },
+          { status: 400 }
+        );
+      }
+
+      standardUnitAmount =
+        parsedBaseAmount;
+    } else {
+      // Backward-compatible fallback:
+      // use the Service Type default when no custom price is supplied.
+      standardUnitAmount = Number(
+        workflow.baseAmount
+      ).toFixed(2);
+    }
 
     // ==================================================
     // Pricing
@@ -728,7 +760,7 @@ if (!client.status) {
         ).toFixed(2);
     } else {
       const unitAmountCents = Math.round(
-        Number(workflow.baseAmount) * 100
+        Number(standardUnitAmount) * 100
       );
 
       const totalBaseCents =
