@@ -163,6 +163,12 @@ export default async function PaymentsPage({
           amount: true,
           status: true,
           paidAt: true,
+          refunds: {
+            select: {
+              amount: true,
+              refundedAt: true,
+            },
+          },
         },
       },
     },
@@ -176,7 +182,34 @@ export default async function PaymentsPage({
   // --------------------------------------------------
   const periodClearedPayments = await prisma.payment.findMany({
     where: {
-      status: "CLEARED",
+      status: {
+        in: ["CLEARED", "REFUNDED"],
+      },
+      paidAt: {
+        gte: rangeStart,
+        lt: rangeEndExclusive,
+      },
+    },
+    select: {
+      id: true,
+      amount: true,
+      status: true,
+      paidAt: true,
+    },
+    orderBy: {
+      paidAt: "asc",
+    },
+  });
+
+  // --------------------------------------------------
+  // Refunded payments in selected period
+  // --------------------------------------------------
+  // Legacy full refunds were previously represented only by payment.status.
+  // New refunds are individual PaymentRefund rows, queried below by refund date.
+  const periodRefundedPayments = await prisma.payment.findMany({
+    where: {
+      status: "REFUNDED",
+      refunds: { none: {} },
       paidAt: {
         gte: rangeStart,
         lt: rangeEndExclusive,
@@ -192,24 +225,19 @@ export default async function PaymentsPage({
     },
   });
 
-  // --------------------------------------------------
-  // Refunded payments in selected period
-  // --------------------------------------------------
-  const periodRefundedPayments = await prisma.payment.findMany({
+  const periodRefundRows = await prisma.paymentRefund.findMany({
     where: {
-      status: "REFUNDED",
-      paidAt: {
+      refundedAt: {
         gte: rangeStart,
         lt: rangeEndExclusive,
       },
     },
     select: {
-      id: true,
       amount: true,
-      paidAt: true,
+      refundedAt: true,
     },
     orderBy: {
-      paidAt: "asc",
+      refundedAt: "asc",
     },
   });
 
@@ -320,6 +348,15 @@ export default async function PaymentsPage({
         referenceNo: true,
         remarks: true,
         paidAt: true,
+        refunds: {
+          orderBy: { refundedAt: "desc" },
+          select: {
+            id: true,
+            amount: true,
+            reason: true,
+            refundedAt: true,
+          },
+        },
         clientFile: {
           select: {
             id: true,
@@ -364,9 +401,7 @@ export default async function PaymentsPage({
 
     const billed = roundMoney(workflowTotal + extraChargeTotal);
     const received = roundMoney(
-      file.payments
-        .filter((payment) => payment.status === "CLEARED")
-        .reduce((sum, payment) => sum + Number(payment.amount), 0)
+      file.payments.reduce((sum, payment) => sum + netPaidAmount(payment), 0)
     );
 
     const due =
@@ -391,6 +426,9 @@ export default async function PaymentsPage({
   const totalRefunded = roundMoney(
     periodRefundedPayments.reduce(
       (sum, payment) => sum + Number(payment.amount),
+      0
+    ) + periodRefundRows.reduce(
+      (sum, refund) => sum + Number(refund.amount),
       0
     )
   );
@@ -419,9 +457,7 @@ export default async function PaymentsPage({
 
       const billed = roundMoney(workflowTotal + extraChargeTotal);
       const paid = roundMoney(
-        file.payments
-          .filter((payment) => payment.status === "CLEARED")
-          .reduce((sum, payment) => sum + Number(payment.amount), 0)
+        file.payments.reduce((sum, payment) => sum + netPaidAmount(payment), 0)
       );
 
       const due =
@@ -430,7 +466,7 @@ export default async function PaymentsPage({
           : roundMoney(Math.max(billed - paid, 0));
 
       const clearedPayments = file.payments.filter(
-        (payment) => payment.status === "CLEARED"
+        (payment) => netPaidAmount(payment) > 0
       );
 
       const lastPaymentAt =
@@ -625,7 +661,7 @@ export default async function PaymentsPage({
             eyebrow="Received"
             title="Money received"
             value={formatLkr(totalIncome)}
-            subtitle={`${periodClearedPayments.length} cleared transaction${periodClearedPayments.length === 1 ? "" : "s"}`}
+            subtitle={`${periodClearedPayments.length} receipt${periodClearedPayments.length === 1 ? "" : "s"} recorded in this period`}
             tone="positive"
           />
           <MetricCard
@@ -857,6 +893,24 @@ export default async function PaymentsPage({
             status: payment.status,
             referenceNo: payment.referenceNo,
             paidAt: payment.paidAt.toISOString(),
+            refundedAmount:
+              payment.status === "REFUNDED" && payment.refunds.length === 0
+                ? Number(payment.amount)
+                : payment.refunds.reduce(
+                    (sum, refund) => sum + Number(refund.amount),
+                    0
+                  ),
+            displayStatus:
+              payment.status === "CLEARED" &&
+              payment.refunds.reduce((sum, refund) => sum + Number(refund.amount), 0) > 0
+                ? "PARTIALLY_REFUNDED"
+                : payment.status,
+            refunds: payment.refunds.map((refund) => ({
+              id: refund.id,
+              amount: Number(refund.amount),
+              reason: refund.reason,
+              refundedAt: refund.refundedAt.toISOString(),
+            })),
             clientFile: {
               id: payment.clientFile.id,
               fileNumber: payment.clientFile.fileNumber,
@@ -1260,6 +1314,33 @@ function formatCompactLkr(value: number) {
 
 function roundMoney(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+type PaymentForNetPaid = {
+  amount: unknown;
+  status: string;
+  refunds?: Array<{ amount: unknown }>;
+};
+
+function netPaidAmount(payment: PaymentForNetPaid): number {
+  const amount = Number(payment.amount ?? 0);
+  const refunded = (payment.refunds ?? []).reduce(
+    (sum, refund) => sum + Number(refund.amount ?? 0),
+    0
+  );
+
+  if (payment.status === "CLEARED") {
+    return Math.max(amount - refunded, 0);
+  }
+
+  if (payment.status === "REFUNDED") {
+    // Compatibility for older records that used only the status to store a full refund.
+    return (payment.refunds ?? []).length === 0
+      ? 0
+      : Math.max(amount - refunded, 0);
+  }
+
+  return 0;
 }
 
 function pad2(value: number) {

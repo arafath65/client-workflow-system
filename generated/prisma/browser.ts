@@ -113,6 +113,11 @@ export type Expense = Prisma.ExpenseModel
  */
 export type Payment = Prisma.PaymentModel
 /**
+ * Model PaymentRefund
+ * 
+ */
+export type PaymentRefund = Prisma.PaymentRefundModel
+/**
  * Model PaymentInstallment
  * 
  */
@@ -137,3 +142,8 @@ export type FileNumberSequence = Prisma.FileNumberSequenceModel
  * 
  */
 export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model WorkflowActivityLog
+ * 
+ */
+export type WorkflowActivityLog = Prisma.WorkflowActivityLogModel

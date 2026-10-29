@@ -70,11 +70,13 @@ export const ModelName = {
   FileCharge: 'FileCharge',
   Expense: 'Expense',
   Payment: 'Payment',
+  PaymentRefund: 'PaymentRefund',
   PaymentInstallment: 'PaymentInstallment',
   CalendarEvent: 'CalendarEvent',
   ThirdParty: 'ThirdParty',
   FileNumberSequence: 'FileNumberSequence',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  WorkflowActivityLog: 'WorkflowActivityLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -378,6 +380,18 @@ export const PaymentScalarFieldEnum = {
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
 
 
+export const PaymentRefundScalarFieldEnum = {
+  id: 'id',
+  paymentId: 'paymentId',
+  amount: 'amount',
+  reason: 'reason',
+  refundedAt: 'refundedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PaymentRefundScalarFieldEnum = (typeof PaymentRefundScalarFieldEnum)[keyof typeof PaymentRefundScalarFieldEnum]
+
+
 export const PaymentInstallmentScalarFieldEnum = {
   id: 'id',
   paymentId: 'paymentId',
@@ -445,6 +459,33 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const WorkflowActivityLogScalarFieldEnum = {
+  id: 'id',
+  clientFileId: 'clientFileId',
+  fileWorkflowId: 'fileWorkflowId',
+  workflowTaskId: 'workflowTaskId',
+  fileWorkflowSubTaskId: 'fileWorkflowSubTaskId',
+  fileWorkflowDocumentId: 'fileWorkflowDocumentId',
+  staffId: 'staffId',
+  actorUserId: 'actorUserId',
+  staffName: 'staffName',
+  actorUsername: 'actorUsername',
+  activityType: 'activityType',
+  action: 'action',
+  fileNumber: 'fileNumber',
+  clientName: 'clientName',
+  workflowName: 'workflowName',
+  stepNumber: 'stepNumber',
+  stepTitle: 'stepTitle',
+  subTaskNumber: 'subTaskNumber',
+  subTaskTitle: 'subTaskTitle',
+  remarks: 'remarks',
+  createdAt: 'createdAt'
+} as const
+
+export type WorkflowActivityLogScalarFieldEnum = (typeof WorkflowActivityLogScalarFieldEnum)[keyof typeof WorkflowActivityLogScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -592,6 +633,13 @@ export const PaymentOrderByRelevanceFieldEnum = {
 export type PaymentOrderByRelevanceFieldEnum = (typeof PaymentOrderByRelevanceFieldEnum)[keyof typeof PaymentOrderByRelevanceFieldEnum]
 
 
+export const PaymentRefundOrderByRelevanceFieldEnum = {
+  reason: 'reason'
+} as const
+
+export type PaymentRefundOrderByRelevanceFieldEnum = (typeof PaymentRefundOrderByRelevanceFieldEnum)[keyof typeof PaymentRefundOrderByRelevanceFieldEnum]
+
+
 export const PaymentInstallmentOrderByRelevanceFieldEnum = {
   remarks: 'remarks'
 } as const
@@ -624,4 +672,20 @@ export const AuditLogOrderByRelevanceFieldEnum = {
 } as const
 
 export type AuditLogOrderByRelevanceFieldEnum = (typeof AuditLogOrderByRelevanceFieldEnum)[keyof typeof AuditLogOrderByRelevanceFieldEnum]
+
+
+export const WorkflowActivityLogOrderByRelevanceFieldEnum = {
+  staffName: 'staffName',
+  actorUsername: 'actorUsername',
+  activityType: 'activityType',
+  action: 'action',
+  fileNumber: 'fileNumber',
+  clientName: 'clientName',
+  workflowName: 'workflowName',
+  stepTitle: 'stepTitle',
+  subTaskTitle: 'subTaskTitle',
+  remarks: 'remarks'
+} as const
+
+export type WorkflowActivityLogOrderByRelevanceFieldEnum = (typeof WorkflowActivityLogOrderByRelevanceFieldEnum)[keyof typeof WorkflowActivityLogOrderByRelevanceFieldEnum]
 

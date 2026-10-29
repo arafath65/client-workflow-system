@@ -65,6 +65,7 @@ const navigation = [
     href: "/settings/document-types",
     key: "document-types",
   },
+  { label: "Work Activity", href: "/reports/work-activity", key: "work-activity" },
 ];
 
 export default function Navigation({

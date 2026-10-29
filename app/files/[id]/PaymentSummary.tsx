@@ -29,6 +29,16 @@ type Payment = {
   referenceNo: string | null;
   remarks: string | null;
   paidAt: string;
+  refunds?: Array<{
+    id: number;
+    amount: string | number;
+    reason: string | null;
+    refundedAt: string;
+    createdAt: string;
+  }>;
+  refundedAmount?: string | number;
+  remainingRefundable?: string | number;
+  displayStatus?: string;
 };
 
 type PaymentSummaryProps = {
@@ -57,11 +67,8 @@ export default function PaymentSummary({
       "CASH" | "CARD" | "BANK_TRANSFER" | "CHEQUE"
     >("CASH");
 
-  const [processingPaymentId, setProcessingPaymentId] =
+  const [reversingPaymentId, setReversingPaymentId] =
     useState<number | null>(null);
-
-  const [processingPaymentAction, setProcessingPaymentAction] =
-    useState<"REVERSE" | "REFUND" | null>(null);
 
   const [paymentFilter, setPaymentFilter] =
     useState<"CLEARED" | "CANCELLED" | "REFUNDED">("CLEARED");
@@ -239,22 +246,18 @@ export default function PaymentSummary({
     );
   }
 
-  const handlePaymentAction = async (
-    action: "REVERSE" | "REFUND",
+  const handleReversePayment = async (
     paymentId: number,
     amount: string
   ) => {
-    const isRefund = action === "REFUND";
     const confirmed = window.confirm(
-      isRefund
-        ? `Refund this payment of ${money(amount)}?\n\nThe payment will be marked as refunded and will no longer count as paid.`
-        : `Reverse this payment of ${money(amount)}?\n\nThe payment will remain in history but will no longer count as paid.`
+      `Reverse this payment of ${money(amount)}?\n\n` +
+        "The payment will remain in history but will no longer count as paid."
     );
 
     if (!confirmed) return;
 
-    setProcessingPaymentId(paymentId);
-    setProcessingPaymentAction(action);
+    setReversingPaymentId(paymentId);
     setError("");
 
     try {
@@ -267,7 +270,6 @@ export default function PaymentSummary({
           },
           body: JSON.stringify({
             paymentId,
-            action,
           }),
         }
       );
@@ -277,9 +279,7 @@ export default function PaymentSummary({
       if (!response.ok || !data.success) {
         setError(
           data.message ||
-            (isRefund
-              ? "Unable to refund payment."
-              : "Unable to reverse payment.")
+            "Unable to reverse payment."
         );
         return;
       }
@@ -287,7 +287,7 @@ export default function PaymentSummary({
       await loadPaymentSummary();
     } catch (error) {
       console.error(
-        `${isRefund ? "Refund" : "Reverse"} payment error:`,
+        "Reverse payment error:",
         error
       );
 
@@ -295,14 +295,108 @@ export default function PaymentSummary({
         "Unable to connect to the server."
       );
     } finally {
-      setProcessingPaymentId(null);
-      setProcessingPaymentAction(null);
+      setReversingPaymentId(null);
+    }
+  };
+
+  const handleRefundPayment = async (payment: Payment) => {
+    const previouslyRefunded = Number(
+      payment.refundedAmount ??
+        (payment.refunds ?? []).reduce(
+          (sum, refund) => sum + Number(refund.amount || 0),
+          0
+        )
+    );
+    const remainingRefundable = Math.max(
+      Number(payment.remainingRefundable ?? Number(payment.amount) - previouslyRefunded),
+      0
+    );
+
+    if (payment.status !== "CLEARED" || remainingRefundable <= 0) {
+      setError("This payment has no remaining refundable amount.");
+      return;
+    }
+
+    const refundInput = window.prompt(
+      `Enter the refund amount in LKR. Maximum refundable: ${money(remainingRefundable)}`,
+      remainingRefundable.toFixed(2)
+    );
+
+    if (refundInput === null) return;
+
+    const cleanRefundAmount = refundInput.trim();
+    if (!/^\d+(?:\.\d{1,2})?$/.test(cleanRefundAmount) || Number(cleanRefundAmount) <= 0) {
+      setError("Enter a valid refund amount greater than zero.");
+      return;
+    }
+
+    if (Number(cleanRefundAmount) > remainingRefundable + 0.0001) {
+      setError(`Refund cannot exceed LKR ${money(remainingRefundable)}.`);
+      return;
+    }
+
+    const reasonInput = window.prompt("Enter the reason for this refund:");
+    if (reasonInput === null) return;
+    const reason = reasonInput.trim();
+
+    if (!reason) {
+      setError("A reason is required for the refund.");
+      return;
+    }
+
+    setReversingPaymentId(payment.id);
+    setError("");
+
+    try {
+      const response = await fetch(`/api/files/${fileId}/payments`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paymentId: payment.id,
+          action: "REFUND",
+          amount: cleanRefundAmount,
+          reason,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        setError(data.message || "Unable to record refund.");
+        return;
+      }
+
+      await loadPaymentSummary();
+    } catch (error) {
+      console.error("Refund payment error:", error);
+      setError("Unable to connect to the server.");
+    } finally {
+      setReversingPaymentId(null);
     }
   };
 
   const visiblePayments = payments.filter(
     (payment) => payment.status === paymentFilter
   );
+
+  const totalAmountNumber = Number(summary?.totalAmount ?? 0);
+  const totalPaidNumber = Number(summary?.totalPaid ?? 0);
+  const outstandingNumber = Number(summary?.outstanding ?? 0);
+  const financialStatus =
+    totalAmountNumber <= 0
+      ? "No Amount Due"
+      : outstandingNumber <= 0
+        ? "Paid"
+        : totalPaidNumber <= 0
+          ? "Unpaid"
+          : "Partially Paid";
+  const financialStatusClass =
+    financialStatus === "Paid"
+      ? "bg-green-100 text-green-700"
+      : financialStatus === "Unpaid"
+        ? "bg-red-100 text-red-700"
+        : financialStatus === "Partially Paid"
+          ? "bg-amber-100 text-amber-800"
+          : "bg-black/5 text-black/50";
 
   return (
     <div className="mt-6 rounded-xl border border-black/10 bg-white p-5">
@@ -334,6 +428,23 @@ export default function PaymentSummary({
             : "+ Record Payment"}
         </button>
       </div>
+
+      {/* Financial status is independent of workflow completion. */}
+      {summary && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-black/10 bg-[#fafaf9] px-4 py-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-black/40">
+              Payment Status
+            </p>
+            <p className="mt-1 text-[10px] text-black/45">
+              Workflow completion and payment settlement are tracked separately.
+            </p>
+          </div>
+          <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${financialStatusClass}`}>
+            {financialStatus}
+          </span>
+        </div>
+      )}
 
       {/* Summary */}
 
@@ -590,7 +701,7 @@ export default function PaymentSummary({
           </div>
         ) : (
           <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[700px]">
+            <table className="w-full min-w-[900px]">
               <thead>
                 <tr className="border-b border-black/10 bg-[#fafaf9]">
                   <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -603,6 +714,10 @@ export default function PaymentSummary({
 
                   <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
                     Amount
+                  </th>
+
+                  <th className="px-4 py-3 text-right text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                    Refunded
                   </th>
 
                   <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -640,6 +755,18 @@ export default function PaymentSummary({
                       {money(payment.amount)}
                     </td>
 
+                    <td className="px-4 py-3 text-right text-xs">
+                      <p className={`font-semibold ${Number(payment.refundedAmount ?? 0) > 0 ? "text-red-600" : "text-black/35"}`}>
+                        {money(payment.refundedAmount ?? 0)}
+                      </p>
+                      {(payment.refunds ?? []).map((refund) => (
+                        <p key={refund.id} className="mt-1 max-w-[190px] text-[10px] leading-4 text-black/40">
+                          {date(refund.refundedAt)} · {money(refund.amount)}
+                          {refund.reason ? ` — ${refund.reason}` : ""}
+                        </p>
+                      ))}
+                    </td>
+
                     <td className="px-4 py-3 text-xs text-black/50">
                       {payment.referenceNo ||
                         "—"}
@@ -647,64 +774,40 @@ export default function PaymentSummary({
 
                     <td className="px-4 py-3">
                       <span className="inline-flex rounded-full bg-black/[0.05] px-2.5 py-1 text-[10px] font-medium text-black/55">
-                        {payment.status === "REFUNDED"
-                          ? "Refunded"
-                          : payment.status.replaceAll(
-                              "_",
-                              " "
-                            )}
+                        {payment.displayStatus === "PARTIALLY_REFUNDED"
+                          ? "Partially Refunded"
+                          : payment.status === "REFUNDED"
+                            ? "Refunded"
+                            : payment.status.replaceAll("_", " ")}
                       </span>
                     </td>
 
                     <td className="px-4 py-3 text-right">
                       {payment.status === "CLEARED" ? (
-                        <div className="flex items-center justify-end gap-3">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handlePaymentAction(
-                                "REFUND",
-                                payment.id,
-                                payment.amount
-                              )
-                            }
-                            disabled={
-                              processingPaymentId ===
-                              payment.id
-                            }
-                            className="text-xs font-medium text-black/45 transition hover:text-[#a66f00] disabled:opacity-50"
-                          >
-                            {processingPaymentId === payment.id &&
-                            processingPaymentAction === "REFUND"
-                              ? "Refunding..."
-                              : "Refund"}
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handlePaymentAction(
-                                "REVERSE",
-                                payment.id,
-                                payment.amount
-                              )
-                            }
-                            disabled={
-                              processingPaymentId ===
-                              payment.id
-                            }
-                            className="text-xs font-medium text-black/40 transition hover:text-red-600 disabled:opacity-50"
-                          >
-                            {processingPaymentId === payment.id &&
-                            processingPaymentAction === "REVERSE"
-                              ? "Reversing..."
-                              : "Reverse"}
-                          </button>
+                        <div className="flex justify-end gap-3">
+                          {Number(payment.remainingRefundable ?? Number(payment.amount) - Number(payment.refundedAmount ?? 0)) > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => handleRefundPayment(payment)}
+                              disabled={reversingPaymentId === payment.id}
+                              className="text-xs font-semibold text-[#9b6800] transition hover:text-black disabled:opacity-50"
+                            >
+                              {reversingPaymentId === payment.id ? "Processing..." : "Refund"}
+                            </button>
+                          ) : null}
+                          {Number(payment.refundedAmount ?? 0) <= 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => handleReversePayment(payment.id, payment.amount)}
+                              disabled={reversingPaymentId === payment.id}
+                              className="text-xs font-medium text-black/40 transition hover:text-red-600 disabled:opacity-50"
+                            >
+                              {reversingPaymentId === payment.id ? "Processing..." : "Reverse"}
+                            </button>
+                          ) : null}
                         </div>
                       ) : (
-                        <span className="text-[10px] text-black/25">
-                          —
-                        </span>
+                        <span className="text-[10px] text-black/25">—</span>
                       )}
                     </td>
                   </tr>

@@ -94,6 +94,47 @@ function decimalToNumber(value: unknown): number {
   return Number(value ?? 0);
 }
 
+type RefundAmountRow = {
+  amount: unknown;
+};
+
+type RefundAwarePayment = {
+  amount: unknown;
+  status: string;
+  refunds?: RefundAmountRow[];
+};
+
+function refundedAmount(payment: RefundAwarePayment): number {
+  return (payment.refunds ?? []).reduce(
+    (sum, refund) => sum + decimalToNumber(refund.amount),
+    0
+  );
+}
+
+/**
+ * Returns the amount that still counts as money received for a payment.
+ * Legacy REFUNDED rows without refund records are treated as fully refunded.
+ */
+function netPaidAmount(payment: RefundAwarePayment): number {
+  const originalAmount = decimalToNumber(payment.amount);
+  const refunds = refundedAmount(payment);
+
+  if (payment.status === "CLEARED") {
+    return Math.max(originalAmount - refunds, 0);
+  }
+
+  if (payment.status === "REFUNDED") {
+    // Older versions marked a full refund by status only, without a refund row.
+    if ((payment.refunds ?? []).length === 0) {
+      return 0;
+    }
+
+    return Math.max(originalAmount - refunds, 0);
+  }
+
+  return 0;
+}
+
 // ==================================================
 // GET - Payment Summary
 // ==================================================
@@ -174,6 +215,18 @@ export async function GET(
                 createdAt: true,
               },
             },
+            refunds: {
+              orderBy: {
+                refundedAt: "desc",
+              },
+              select: {
+                id: true,
+                amount: true,
+                reason: true,
+                refundedAt: true,
+                createdAt: true,
+              },
+            },
           },
         },
       },
@@ -208,15 +261,32 @@ export async function GET(
     const totalAmount =
       workflowFees + extraCharges;
 
-    const clearedPayments = clientFile.payments.filter(
-      (payment) => payment.status === "CLEARED"
-    );
-
-    const totalPaid = clearedPayments.reduce(
-      (sum, payment) =>
-        sum + decimalToNumber(payment.amount),
+    const totalPaid = clientFile.payments.reduce(
+      (sum, payment) => sum + netPaidAmount(payment),
       0
     );
+
+    const paymentsWithRefundSummary = clientFile.payments.map((payment) => {
+      const recordedRefunds = refundedAmount(payment);
+      const totalRefundedForPayment =
+        payment.status === "REFUNDED" && payment.refunds.length === 0
+          ? decimalToNumber(payment.amount)
+          : recordedRefunds;
+      const remainingRefundable = Math.max(
+        decimalToNumber(payment.amount) - totalRefundedForPayment,
+        0
+      );
+
+      return {
+        ...payment,
+        refundedAmount: totalRefundedForPayment.toFixed(2),
+        remainingRefundable: remainingRefundable.toFixed(2),
+        displayStatus:
+          payment.status === "CLEARED" && totalRefundedForPayment > 0
+            ? "PARTIALLY_REFUNDED"
+            : payment.status,
+      };
+    });
 
     const outstanding =
       clientFile.status === "CANCELLED"
@@ -231,7 +301,7 @@ export async function GET(
       fileNumber: clientFile.fileNumber,
       workflows: clientFile.fileWorkflows,
       charges: clientFile.charges,
-      payments: clientFile.payments,
+      payments: paymentsWithRefundSummary,
       summary: {
         workflowFees: workflowFees.toFixed(2),
         extraCharges: extraCharges.toFixed(2),
@@ -328,11 +398,14 @@ export async function PATCH(
       where: {
         id: paymentId,
       },
-      select: {
-        id: true,
-        clientFileId: true,
-        amount: true,
-        status: true,
+      include: {
+        refunds: {
+          select: {
+            amount: true,
+            reason: true,
+            refundedAt: true,
+          },
+        },
         clientFile: {
           select: {
             fileNumber: true,
@@ -371,43 +444,276 @@ export async function PATCH(
       );
     }
 
-    const newStatus = action === "REFUND" ? "REFUNDED" : "CANCELLED";
-    const auditAction = action === "REFUND" ? "REFUND" : "REVERSE";
-    const actionPastTense = action === "REFUND" ? "refunded" : "reversed";
+    const alreadyRefunded = payment.refunds.reduce(
+      (sum, refund) => sum + decimalToNumber(refund.amount),
+      0
+    );
 
-    const updatedPayment = await prisma.payment.update({
-      where: {
-        id: paymentId,
-      },
-      data: {
-        status: newStatus,
-      },
+    if (action === "REVERSE") {
+      if (alreadyRefunded > 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "This payment already has a refund. Refund the remaining amount instead of reversing it.",
+          },
+          { status: 400 }
+        );
+      }
+
+      const reverseResult = await prisma.payment.updateMany({
+        where: {
+          id: paymentId,
+          status: "CLEARED",
+          updatedAt: payment.updatedAt,
+        },
+        data: {
+          status: "CANCELLED",
+          updatedAt: new Date(Math.max(Date.now(), payment.updatedAt.getTime() + 1)),
+        },
+      });
+
+      if (reverseResult.count !== 1) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "This payment changed while you were processing it. Reload and try again.",
+          },
+          { status: 409 }
+        );
+      }
+
+      const updatedPayment = await prisma.payment.findUnique({
+        where: { id: paymentId },
+      });
+
+      await writeAuditLog({
+        module: "PAYMENTS",
+        action: "REVERSE",
+        entity: "PAYMENT",
+        entityId: paymentId,
+        description: `Payment ${paymentId} of LKR ${payment.amount.toFixed(2)} reversed for file ${payment.clientFile.fileNumber}.`,
+        metadata: {
+          paymentId,
+          clientFileId,
+          fileNumber: payment.clientFile.fileNumber,
+          amount: payment.amount.toString(),
+          oldStatus: "CLEARED",
+          newStatus: "CANCELLED",
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Payment reversed successfully.",
+        payment: updatedPayment,
+      });
+    }
+
+    const bodyObject = body as Record<string, unknown>;
+    const refundAmount = parseMoney(bodyObject.amount ?? bodyObject.refundAmount);
+    const reason =
+      typeof bodyObject.reason === "string"
+        ? bodyObject.reason.trim()
+        : "";
+
+    if (refundAmount === null) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Enter a valid refund amount greater than zero.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!reason) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "A reason is required for the refund.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const requestedRefund = Number(refundAmount);
+    const remainingRefundable = Math.max(
+      decimalToNumber(payment.amount) - alreadyRefunded,
+      0
+    );
+
+    if (requestedRefund > remainingRefundable + 0.0001) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Refund cannot exceed the remaining refundable amount of LKR ${remainingRefundable.toFixed(2)}.`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // The compare-and-set update prevents two concurrent refund requests from
+    // both refunding the same remaining balance.
+    const refundResult = await prisma.$transaction(async (tx) => {
+      const currentPayment = await tx.payment.findUnique({
+        where: { id: paymentId },
+        include: {
+          refunds: {
+            select: { amount: true },
+          },
+        },
+      });
+
+      if (!currentPayment || currentPayment.status !== "CLEARED") {
+        throw new Error("PAYMENT_NOT_REFUNDABLE");
+      }
+
+      const currentRefunded = currentPayment.refunds.reduce(
+        (sum, refund) => sum + decimalToNumber(refund.amount),
+        0
+      );
+      const currentRemaining = Math.max(
+        decimalToNumber(currentPayment.amount) - currentRefunded,
+        0
+      );
+
+      if (requestedRefund > currentRemaining + 0.0001) {
+        throw new Error("REFUND_EXCEEDS_REMAINING");
+      }
+
+      const lockResult = await tx.payment.updateMany({
+        where: {
+          id: paymentId,
+          status: "CLEARED",
+          updatedAt: currentPayment.updatedAt,
+        },
+        data: {
+          updatedAt: new Date(
+            Math.max(Date.now(), currentPayment.updatedAt.getTime() + 1)
+          ),
+        },
+      });
+
+      if (lockResult.count !== 1) {
+        throw new Error("PAYMENT_CHANGED_RETRY");
+      }
+
+      await tx.paymentRefund.create({
+        data: {
+          paymentId,
+          amount: refundAmount,
+          reason,
+        },
+      });
+
+      const refundedAfter = currentRefunded + requestedRefund;
+      const isFullyRefunded =
+        refundedAfter >= decimalToNumber(currentPayment.amount) - 0.0001;
+
+      const updatedPayment = isFullyRefunded
+        ? await tx.payment.update({
+            where: { id: paymentId },
+            data: { status: "REFUNDED" },
+            include: {
+              refunds: {
+                orderBy: { refundedAt: "desc" },
+                select: {
+                  id: true,
+                  amount: true,
+                  reason: true,
+                  refundedAt: true,
+                  createdAt: true,
+                },
+              },
+            },
+          })
+        : await tx.payment.findUnique({
+            where: { id: paymentId },
+            include: {
+              refunds: {
+                orderBy: { refundedAt: "desc" },
+                select: {
+                  id: true,
+                  amount: true,
+                  reason: true,
+                  refundedAt: true,
+                  createdAt: true,
+                },
+              },
+            },
+          });
+
+      if (!updatedPayment) {
+        throw new Error("PAYMENT_NOT_FOUND_AFTER_REFUND");
+      }
+
+      return {
+        payment: updatedPayment,
+        totalRefunded: refundedAfter,
+        isFullyRefunded,
+      };
     });
 
     await writeAuditLog({
       module: "PAYMENTS",
-      action: auditAction,
+      action: "REFUND",
       entity: "PAYMENT",
       entityId: paymentId,
-      description: `Payment ${paymentId} of LKR ${payment.amount.toFixed(2)} ${actionPastTense} for file ${payment.clientFile.fileNumber}.`,
+      description: `Refunded LKR ${requestedRefund.toFixed(2)} from payment ${paymentId} for file ${payment.clientFile.fileNumber}. Reason: ${reason}`,
       metadata: {
         paymentId,
         clientFileId,
         fileNumber: payment.clientFile.fileNumber,
-        amount: payment.amount.toString(),
-        oldStatus: "CLEARED",
-        newStatus,
+        originalAmount: payment.amount.toString(),
+        refundAmount: refundAmount,
+        totalRefunded: refundResult.totalRefunded.toFixed(2),
+        remainingRefundable: Math.max(
+          decimalToNumber(payment.amount) - refundResult.totalRefunded,
+          0
+        ).toFixed(2),
+        reason,
+        newStatus: refundResult.isFullyRefunded ? "REFUNDED" : "CLEARED",
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: action === "REFUND"
-        ? "Payment refunded successfully."
-        : "Payment reversed successfully.",
-      payment: updatedPayment,
+      message: refundResult.isFullyRefunded
+        ? "Full refund recorded successfully."
+        : "Partial refund recorded successfully.",
+      payment: refundResult.payment,
+      refundAmount: refundAmount,
+      totalRefunded: refundResult.totalRefunded.toFixed(2),
+      remainingRefundable: Math.max(
+        decimalToNumber(payment.amount) - refundResult.totalRefunded,
+        0
+      ).toFixed(2),
     });
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "PAYMENT_NOT_REFUNDABLE") {
+        return NextResponse.json(
+          { success: false, message: "This payment is no longer refundable." },
+          { status: 400 }
+        );
+      }
+
+      if (error.message === "REFUND_EXCEEDS_REMAINING") {
+        return NextResponse.json(
+          { success: false, message: "The requested refund exceeds the remaining refundable balance. Reload the payment and try again." },
+          { status: 400 }
+        );
+      }
+
+      if (error.message === "PAYMENT_CHANGED_RETRY") {
+        return NextResponse.json(
+          { success: false, message: "This payment was changed by another request. Reload and try again." },
+          { status: 409 }
+        );
+      }
+    }
+
     console.error("Payment action error:", error);
 
     return NextResponse.json(
@@ -560,10 +866,18 @@ export async function POST(
         },
         payments: {
           where: {
-            status: "CLEARED",
+            status: {
+              in: ["CLEARED", "REFUNDED"],
+            },
           },
           select: {
             amount: true,
+            status: true,
+            refunds: {
+              select: {
+                amount: true,
+              },
+            },
           },
         },
       },
@@ -612,15 +926,10 @@ export async function POST(
       currentWorkflowFees +
       currentExtraCharges;
 
-    const currentTotalPaid =
-      clientFile.payments.reduce(
-        (sum, payment) =>
-          sum +
-          decimalToNumber(
-            payment.amount
-          ),
-        0
-      );
+    const currentTotalPaid = clientFile.payments.reduce(
+      (sum, payment) => sum + netPaidAmount(payment),
+      0
+    );
 
     const currentOutstanding =
       clientFile.status === "CANCELLED"

@@ -10,6 +10,14 @@ type PaymentRow = {
   status: string;
   referenceNo: string | null;
   paidAt: string;
+  refundedAmount?: number;
+  displayStatus?: string;
+  refunds?: Array<{
+    id: number;
+    amount: number;
+    reason: string | null;
+    refundedAt: string;
+  }>;
   clientFile: {
     id: number;
     fileNumber: string;
@@ -152,7 +160,7 @@ export default function PaymentHistory({
               </div>
             ) : null}
 
-            <table className="w-full min-w-[980px]">
+            <table className="w-full min-w-[1180px]">
               <thead>
                 <tr className="bg-[#fafaf8] text-left">
                   <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
@@ -168,7 +176,10 @@ export default function PaymentHistory({
                     Method
                   </th>
                   <th className="px-5 py-3 text-right text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
-                    Amount
+                    Original Amount
+                  </th>
+                  <th className="px-5 py-3 text-right text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
+                    Refunded
                   </th>
                   <th className="px-5 py-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/35">
                     Reference
@@ -213,12 +224,27 @@ export default function PaymentHistory({
                       {formatLkr(payment.amount)}
                     </td>
 
+                    <td className="px-5 py-4 text-right text-xs">
+                      <p className={`font-semibold ${Number(payment.refundedAmount ?? 0) > 0 ? "text-red-600" : "text-black/35"}`}>
+                        {formatLkr(payment.refundedAmount ?? 0)}
+                      </p>
+                      {(payment.refunds ?? []).map((refund) => (
+                        <p key={refund.id} className="mt-1 max-w-[220px] text-left text-[10px] leading-4 text-black/40">
+                          {formatDateTime(refund.refundedAt)} · {formatLkr(refund.amount)}
+                          {refund.reason ? ` — ${refund.reason}` : ""}
+                        </p>
+                      ))}
+                    </td>
+
                     <td className="px-5 py-4 text-xs text-black/45">
                       {payment.referenceNo || "—"}
                     </td>
 
                     <td className="px-5 py-4">
-                      <PaymentBadge status={payment.status} />
+                      <PaymentBadge
+                        status={payment.status}
+                        displayStatus={payment.displayStatus}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -265,8 +291,7 @@ export default function PaymentHistory({
 
       <div className="border-t border-black/5 px-5 py-3 sm:px-6">
         <p className="text-[10px] leading-5 text-black/35">
-          Cleared payments are included in Received. Refunded payments are
-          excluded from Received and remain visible here for reconciliation.
+          Received records show original receipts. Refunds are listed separately and deducted when calculating net income and outstanding balances.
         </p>
       </div>
     </section>
@@ -294,20 +319,31 @@ function PaginationButton({
   );
 }
 
-function PaymentBadge({ status }: { status: string }) {
+function PaymentBadge({
+  status,
+  displayStatus,
+}: {
+  status: string;
+  displayStatus?: string;
+}) {
+  const shownStatus = displayStatus || status;
   const className =
-    status === "CLEARED"
+    shownStatus === "CLEARED"
       ? "bg-[#edf7e7] text-[#456a29]"
-      : status === "REFUNDED"
+      : shownStatus === "PARTIALLY_REFUNDED"
         ? "bg-[#fff5df] text-[#986600]"
-        : "bg-[#f8eaea] text-[#974848]";
+        : shownStatus === "REFUNDED"
+          ? "bg-[#fff5df] text-[#986600]"
+          : "bg-[#f8eaea] text-[#974848]";
 
   const label =
-    status === "CLEARED"
+    shownStatus === "CLEARED"
       ? "Cleared"
-      : status === "REFUNDED"
-        ? "Refunded"
-        : "Cancelled";
+      : shownStatus === "PARTIALLY_REFUNDED"
+        ? "Partially Refunded"
+        : shownStatus === "REFUNDED"
+          ? "Refunded"
+          : "Cancelled";
 
   return (
     <span

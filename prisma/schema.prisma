@@ -171,7 +171,7 @@ model WorkflowTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  defaultStaff Staff? @relation("WorkflowTemplateDefaultStaff", fields: [defaultStaffId], references: [id], onDelete: SetNull)
+  defaultStaff Staff?        @relation("WorkflowTemplateDefaultStaff", fields: [defaultStaffId], references: [id], onDelete: SetNull)
   documentType DocumentType? @relation("WorkflowTemplateDocumentBase", fields: [documentTypeId], references: [id], onDelete: SetNull)
 
   steps         WorkflowStep[]
@@ -307,7 +307,7 @@ model DocumentType {
 
   languages     DocumentTypeLanguage[]
   fileDocuments FileWorkflowDocument[]
-  baseWorkflows WorkflowTemplate[] @relation("WorkflowTemplateDocumentBase")
+  baseWorkflows WorkflowTemplate[]     @relation("WorkflowTemplateDocumentBase")
 
   @@index([name])
   @@index([status])
@@ -332,7 +332,7 @@ model Language {
 model DocumentTypeLanguage {
   documentTypeId Int
   languageId     Int
-  price          Decimal @db.Decimal(12, 2)
+  price          Decimal  @db.Decimal(12, 2)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -599,6 +599,7 @@ model Payment {
 
   clientFile   ClientFile           @relation(fields: [clientFileId], references: [id])
   installments PaymentInstallment[]
+  refunds      PaymentRefund[]
 
   fileWorkflowId Int?
   fileWorkflow   FileWorkflow? @relation(fields: [fileWorkflowId], references: [id], onDelete: SetNull)
@@ -610,6 +611,21 @@ model Payment {
   @@index([status])
   @@index([paidAt])
   @@map("payments")
+}
+
+model PaymentRefund {
+  id         Int      @id @default(autoincrement())
+  paymentId  Int
+  amount     Decimal  @db.Decimal(12, 2)
+  reason     String   @db.Text
+  refundedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([paymentId])
+  @@index([refundedAt])
+  @@map("payment_refunds")
 }
 
 // ==================================================
@@ -760,4 +776,44 @@ model AuditLog {
   @@index([entity])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// Append this model to your existing prisma/schema.prisma.
+// It intentionally stores identifying labels as snapshots so old reports remain readable
+// if a client, file, workflow, step, subtask, or staff member is later renamed/deactivated.
+model WorkflowActivityLog {
+  id                     Int  @id @default(autoincrement())
+  clientFileId           Int
+  fileWorkflowId         Int
+  workflowTaskId         Int?
+  fileWorkflowSubTaskId  Int?
+  fileWorkflowDocumentId Int?
+
+  // Assigned staff attached to the step/subtask; actorUserId is the login account
+  // that recorded the action. These are kept separately because User and Staff
+  // are separate models in the current application.
+  staffId       Int?
+  actorUserId   Int?
+  staffName     String? @db.VarChar(191)
+  actorUsername String? @db.VarChar(191)
+
+  activityType  String   @db.VarChar(20) // WORKFLOW_STEP | SUBTASK
+  action        String   @db.VarChar(20) // COMPLETED | REOPENED | RESET
+  fileNumber    String   @db.VarChar(100)
+  clientName    String   @db.VarChar(191)
+  workflowName  String   @db.VarChar(191)
+  stepNumber    Int
+  stepTitle     String   @db.VarChar(191)
+  subTaskNumber Int?
+  subTaskTitle  String?  @db.VarChar(191)
+  remarks       String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([staffId, createdAt])
+  @@index([activityType, action, createdAt])
+  @@index([clientFileId, createdAt])
+  @@index([workflowTaskId])
+  @@index([fileWorkflowSubTaskId])
+  @@map("workflow_activity_logs")
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
+import { makeWorkflowActivityData, resolveWorkflowActivityActor } from "@/lib/workflow-activity";
 
 type RouteContext = {
   params: Promise<{
@@ -66,14 +67,23 @@ export async function PATCH(
       },
       include: {
         workflowStep: true,
-
+        assignedStaff: { select: { id: true, name: true } },
         fileWorkflowDocument: true,
 
         fileWorkflow: {
           include: {
+            clientFile: {
+              select: {
+                id: true,
+                fileNumber: true,
+                client: { select: { name: true } },
+              },
+            },
+            assignedStaff: { select: { id: true, name: true } },
             workflowTemplate: {
               select: {
                 trackingMode: true,
+                name: true,
               },
             },
 
@@ -87,6 +97,7 @@ export async function PATCH(
             tasks: {
               include: {
                 workflowStep: true,
+                assignedStaff: { select: { id: true, name: true } },
               },
             },
           },
@@ -105,8 +116,8 @@ export async function PATCH(
     }
 
     const documentBased = isDocumentBasedTask(task);
-    const documentId =
-      task.fileWorkflowDocumentId ?? null;
+    const documentId = task.fileWorkflowDocumentId ?? null;
+    const actor = await resolveWorkflowActivityActor(request);
 
     // --------------------------------------------------
     // Helper: only tasks belonging to the same chain
@@ -182,15 +193,47 @@ export async function PATCH(
         // Complete all subtasks under this task
         // ----------------------------------------------
 
-        await tx.fileWorkflowSubTask.updateMany({
-          where: {
-            workflowTaskId: task.id,
-          },
-          data: {
-            status: "COMPLETED",
-            completedAt: now,
+        const subtasksBeforeCompletion = await tx.fileWorkflowSubTask.findMany({
+          where: { workflowTaskId: task.id },
+          include: {
+            workflowSubTask: true,
+            assignedStaff: { select: { id: true, name: true } },
           },
         });
+
+        await tx.fileWorkflowSubTask.updateMany({
+          where: { workflowTaskId: task.id },
+          data: { status: "COMPLETED", completedAt: now },
+        });
+
+        for (const subTask of subtasksBeforeCompletion) {
+          // A subtask already completed by its own action has its own history entry.
+          if (subTask.status === "COMPLETED") continue;
+          await tx.workflowActivityLog.create({
+            data: makeWorkflowActivityData({
+              clientFileId: task.fileWorkflow.clientFileId,
+              fileWorkflowId: task.fileWorkflow.id,
+              workflowTaskId: task.id,
+              fileWorkflowSubTaskId: subTask.id,
+              fileWorkflowDocumentId: documentId,
+              staffId: subTask.assignedStaffId ?? task.assignedStaffId ?? task.fileWorkflow.assignedStaffId,
+              staffName: subTask.assignedStaff?.name ?? task.assignedStaff?.name ?? task.fileWorkflow.assignedStaff?.name,
+              actorUserId: actor.actorUserId,
+              actorUsername: actor.actorUsername,
+              activityType: "SUBTASK",
+              action: "COMPLETED",
+              fileNumber: task.fileWorkflow.clientFile.fileNumber,
+              clientName: task.fileWorkflow.clientFile.client.name,
+              workflowName: task.fileWorkflow.workflowTemplate.name,
+              stepNumber: task.workflowStep.stepNumber,
+              stepTitle: task.workflowStep.title,
+              subTaskNumber: subTask.workflowSubTask.subTaskNumber,
+              subTaskTitle: subTask.workflowSubTask.title,
+              remarks: null,
+              createdAt: now,
+            }),
+          });
+        }
 
         await tx.taskHistory.create({
           data: {
@@ -203,6 +246,28 @@ export async function PATCH(
                 : "Workflow step completed.",
             changedAt: now,
           },
+        });
+
+        await tx.workflowActivityLog.create({
+          data: makeWorkflowActivityData({
+            clientFileId: task.fileWorkflow.clientFileId,
+            fileWorkflowId: task.fileWorkflow.id,
+            workflowTaskId: task.id,
+            fileWorkflowDocumentId: documentId,
+            staffId: task.assignedStaffId ?? task.fileWorkflow.assignedStaffId,
+            staffName: task.assignedStaff?.name ?? task.fileWorkflow.assignedStaff?.name,
+            actorUserId: actor.actorUserId,
+            actorUsername: actor.actorUsername,
+            activityType: "WORKFLOW_STEP",
+            action: "COMPLETED",
+            fileNumber: task.fileWorkflow.clientFile.fileNumber,
+            clientName: task.fileWorkflow.clientFile.client.name,
+            workflowName: task.fileWorkflow.workflowTemplate.name,
+            stepNumber: task.workflowStep.stepNumber,
+            stepTitle: task.workflowStep.title,
+            remarks: task.remarks ?? "Workflow step completed.",
+            createdAt: now,
+          }),
         });
 
         // ----------------------------------------------
@@ -474,15 +539,46 @@ export async function PATCH(
       // Reset this task's subtasks
       // ----------------------------------------------
 
-      await tx.fileWorkflowSubTask.updateMany({
-        where: {
-          workflowTaskId: task.id,
-        },
-        data: {
-          status: "PENDING",
-          completedAt: null,
+      const currentSubtasksBeforeReopen = await tx.fileWorkflowSubTask.findMany({
+        where: { workflowTaskId: task.id },
+        include: {
+          workflowSubTask: true,
+          assignedStaff: { select: { id: true, name: true } },
         },
       });
+
+      await tx.fileWorkflowSubTask.updateMany({
+        where: { workflowTaskId: task.id },
+        data: { status: "PENDING", completedAt: null },
+      });
+
+      for (const subTask of currentSubtasksBeforeReopen) {
+        if (subTask.status === "PENDING") continue;
+        await tx.workflowActivityLog.create({
+          data: makeWorkflowActivityData({
+            clientFileId: task.fileWorkflow.clientFileId,
+            fileWorkflowId: task.fileWorkflow.id,
+            workflowTaskId: task.id,
+            fileWorkflowSubTaskId: subTask.id,
+            fileWorkflowDocumentId: documentId,
+            staffId: subTask.assignedStaffId ?? task.assignedStaffId ?? task.fileWorkflow.assignedStaffId,
+            staffName: subTask.assignedStaff?.name ?? task.assignedStaff?.name ?? task.fileWorkflow.assignedStaff?.name,
+            actorUserId: actor.actorUserId,
+            actorUsername: actor.actorUsername,
+            activityType: "SUBTASK",
+            action: "RESET",
+            fileNumber: task.fileWorkflow.clientFile.fileNumber,
+            clientName: task.fileWorkflow.clientFile.client.name,
+            workflowName: task.fileWorkflow.workflowTemplate.name,
+            stepNumber: task.workflowStep.stepNumber,
+            stepTitle: task.workflowStep.title,
+            subTaskNumber: subTask.workflowSubTask.subTaskNumber,
+            subTaskTitle: subTask.workflowSubTask.title,
+            remarks: "Subtask reset to pending when its workflow step was reopened.",
+            createdAt: now,
+          }),
+        });
+      }
 
       await tx.taskHistory.create({
         data: {
@@ -495,6 +591,28 @@ export async function PATCH(
               : "Workflow step reopened.",
           changedAt: now,
         },
+      });
+
+      await tx.workflowActivityLog.create({
+        data: makeWorkflowActivityData({
+          clientFileId: task.fileWorkflow.clientFileId,
+          fileWorkflowId: task.fileWorkflow.id,
+          workflowTaskId: task.id,
+          fileWorkflowDocumentId: documentId,
+          staffId: task.assignedStaffId ?? task.fileWorkflow.assignedStaffId,
+          staffName: task.assignedStaff?.name ?? task.fileWorkflow.assignedStaff?.name,
+          actorUserId: actor.actorUserId,
+          actorUsername: actor.actorUsername,
+          activityType: "WORKFLOW_STEP",
+          action: "REOPENED",
+          fileNumber: task.fileWorkflow.clientFile.fileNumber,
+          clientName: task.fileWorkflow.clientFile.client.name,
+          workflowName: task.fileWorkflow.workflowTemplate.name,
+          stepNumber: task.workflowStep.stepNumber,
+          stepTitle: task.workflowStep.title,
+          remarks: "Workflow step reopened.",
+          createdAt: now,
+        }),
       });
 
       // ----------------------------------------------
@@ -511,27 +629,51 @@ export async function PATCH(
 
       for (const laterTask of laterTasks) {
         if (laterTask.status !== "PENDING") {
-          await tx.workflowTask.update({
-            where: {
-              id: laterTask.id,
-            },
-            data: {
-              status: "PENDING",
-              startedAt: null,
-              completedAt: null,
+          const laterSubtasksBeforeReset = await tx.fileWorkflowSubTask.findMany({
+            where: { workflowTaskId: laterTask.id },
+            include: {
+              workflowSubTask: true,
+              assignedStaff: { select: { id: true, name: true } },
             },
           });
 
-          await tx.fileWorkflowSubTask.updateMany({
-            where: {
-              workflowTaskId:
-                laterTask.id,
-            },
-            data: {
-              status: "PENDING",
-              completedAt: null,
-            },
+          await tx.workflowTask.update({
+            where: { id: laterTask.id },
+            data: { status: "PENDING", startedAt: null, completedAt: null },
           });
+
+          await tx.fileWorkflowSubTask.updateMany({
+            where: { workflowTaskId: laterTask.id },
+            data: { status: "PENDING", completedAt: null },
+          });
+
+          for (const subTask of laterSubtasksBeforeReset) {
+            if (subTask.status === "PENDING") continue;
+            await tx.workflowActivityLog.create({
+              data: makeWorkflowActivityData({
+                clientFileId: task.fileWorkflow.clientFileId,
+                fileWorkflowId: task.fileWorkflow.id,
+                workflowTaskId: laterTask.id,
+                fileWorkflowSubTaskId: subTask.id,
+                fileWorkflowDocumentId: documentId,
+                staffId: subTask.assignedStaffId ?? laterTask.assignedStaffId ?? task.fileWorkflow.assignedStaffId,
+                staffName: subTask.assignedStaff?.name ?? laterTask.assignedStaff?.name ?? task.fileWorkflow.assignedStaff?.name,
+                actorUserId: actor.actorUserId,
+                actorUsername: actor.actorUsername,
+                activityType: "SUBTASK",
+                action: "RESET",
+                fileNumber: task.fileWorkflow.clientFile.fileNumber,
+                clientName: task.fileWorkflow.clientFile.client.name,
+                workflowName: task.fileWorkflow.workflowTemplate.name,
+                stepNumber: laterTask.workflowStep.stepNumber,
+                stepTitle: laterTask.workflowStep.title,
+                subTaskNumber: subTask.workflowSubTask.subTaskNumber,
+                subTaskTitle: subTask.workflowSubTask.title,
+                remarks: "Subtask reset to pending after an earlier workflow step was reopened.",
+                createdAt: now,
+              }),
+            });
+          }
 
           await tx.taskHistory.create({
             data: {
@@ -546,6 +688,28 @@ export async function PATCH(
                   : "Reset because a later workflow step was reopened.",
               changedAt: now,
             },
+          });
+
+          await tx.workflowActivityLog.create({
+            data: makeWorkflowActivityData({
+              clientFileId: task.fileWorkflow.clientFileId,
+              fileWorkflowId: task.fileWorkflow.id,
+              workflowTaskId: laterTask.id,
+              fileWorkflowDocumentId: documentId,
+              staffId: laterTask.assignedStaffId ?? null,
+              staffName: laterTask.assignedStaff?.name ?? null,
+              actorUserId: actor.actorUserId,
+              actorUsername: actor.actorUsername,
+              activityType: "WORKFLOW_STEP",
+              action: "RESET",
+              fileNumber: task.fileWorkflow.clientFile.fileNumber,
+              clientName: task.fileWorkflow.clientFile.client.name,
+              workflowName: task.fileWorkflow.workflowTemplate.name,
+              stepNumber: laterTask.workflowStep.stepNumber,
+              stepTitle: laterTask.workflowStep.title,
+              remarks: "Workflow step reset to pending after an earlier step was reopened.",
+              createdAt: now,
+            }),
           });
         }
       }

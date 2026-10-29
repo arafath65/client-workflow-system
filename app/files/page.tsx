@@ -22,6 +22,7 @@ function formatDate(date: Date | null | undefined) {
   }
 
   return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Colombo",
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -151,6 +152,7 @@ export default async function FilesPage({
       fileNumber: true,
       title: true,
       status: true,
+      createdAt: true,
 
       client: {
         select: {
@@ -162,6 +164,7 @@ export default async function FilesPage({
 
       fileWorkflows: {
         select: {
+          finalAmount: true,
           assignedStaff: {
             select: {
               name: true,
@@ -177,6 +180,29 @@ export default async function FilesPage({
                   name: true,
                 },
               },
+            },
+          },
+        },
+      },
+
+      charges: {
+        select: {
+          totalAmount: true,
+        },
+      },
+
+      payments: {
+        where: {
+          status: {
+            in: ["CLEARED", "REFUNDED"],
+          },
+        },
+        select: {
+          amount: true,
+          status: true,
+          refunds: {
+            select: {
+              amount: true,
             },
           },
         },
@@ -234,11 +260,42 @@ export default async function FilesPage({
 
     const nextEvent = file.calendarEvents[0];
 
+    const workflowTotal = file.fileWorkflows.reduce(
+      (sum, workflow) => sum + Number(workflow.finalAmount ?? 0),
+      0
+    );
+    const chargeTotal = file.charges.reduce(
+      (sum, charge) => sum + Number(charge.totalAmount ?? 0),
+      0
+    );
+    const totalBilled = workflowTotal + chargeTotal;
+    const totalPaid = file.payments.reduce(
+      (sum, payment) => sum + netPaidAmountForFile(payment),
+      0
+    );
+    const outstandingAmount =
+      file.status === "CANCELLED"
+        ? 0
+        : Math.max(totalBilled - totalPaid, 0);
+    const paymentStatus =
+      file.status === "CANCELLED"
+        ? "CANCELLED"
+        : totalBilled <= 0
+          ? "NO_AMOUNT_DUE"
+          : outstandingAmount <= 0
+            ? "PAID"
+            : totalPaid <= 0
+              ? "UNPAID"
+              : "PARTIALLY_PAID";
+
     return {
       id: file.id,
       fileNumber: file.fileNumber,
       title: file.title,
       status: file.status,
+      createdAt: formatDate(file.createdAt),
+      paymentStatus,
+      outstandingAmount: Number(outstandingAmount.toFixed(2)),
 
       client: {
         id: file.client.id,
@@ -385,4 +442,28 @@ function SummaryCard({
       </p>
     </div>
   );
+}
+
+
+function netPaidAmountForFile(payment: {
+  amount: unknown;
+  status: string;
+  refunds: Array<{ amount: unknown }>;
+}) {
+  const amount = Number(payment.amount ?? 0);
+  const refunded = payment.refunds.reduce(
+    (sum, refund) => sum + Number(refund.amount ?? 0),
+    0
+  );
+
+  if (payment.status === "CLEARED") {
+    return Math.max(amount - refunded, 0);
+  }
+
+  if (payment.status === "REFUNDED") {
+    // Support old full refunds that were stored by status only.
+    return payment.refunds.length === 0 ? 0 : Math.max(amount - refunded, 0);
+  }
+
+  return 0;
 }

@@ -416,11 +416,13 @@ export const ModelName = {
   FileCharge: 'FileCharge',
   Expense: 'Expense',
   Payment: 'Payment',
+  PaymentRefund: 'PaymentRefund',
   PaymentInstallment: 'PaymentInstallment',
   CalendarEvent: 'CalendarEvent',
   ThirdParty: 'ThirdParty',
   FileNumberSequence: 'FileNumberSequence',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  WorkflowActivityLog: 'WorkflowActivityLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -436,7 +438,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "documentType" | "language" | "documentTypeLanguage" | "fileWorkflowDocument" | "paymentAllocation" | "workflowTask" | "fileWorkflowSubTask" | "taskHistory" | "fileCharge" | "expense" | "payment" | "paymentInstallment" | "calendarEvent" | "thirdParty" | "fileNumberSequence" | "auditLog"
+    modelProps: "user" | "staff" | "client" | "clientFile" | "workflowTemplate" | "workflowStep" | "workflowSubTask" | "fileWorkflow" | "documentType" | "language" | "documentTypeLanguage" | "fileWorkflowDocument" | "paymentAllocation" | "workflowTask" | "fileWorkflowSubTask" | "taskHistory" | "fileCharge" | "expense" | "payment" | "paymentRefund" | "paymentInstallment" | "calendarEvent" | "thirdParty" | "fileNumberSequence" | "auditLog" | "workflowActivityLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1694,6 +1696,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PaymentRefund: {
+      payload: Prisma.$PaymentRefundPayload<ExtArgs>
+      fields: Prisma.PaymentRefundFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PaymentRefundFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRefundPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PaymentRefundFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRefundPayload>
+        }
+        findFirst: {
+          args: Prisma.PaymentRefundFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRefundPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PaymentRefundFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRefundPayload>
+        }
+        findMany: {
+          args: Prisma.PaymentRefundFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRefundPayload>[]
+        }
+        create: {
+          args: Prisma.PaymentRefundCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRefundPayload>
+        }
+        createMany: {
+          args: Prisma.PaymentRefundCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.PaymentRefundDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRefundPayload>
+        }
+        update: {
+          args: Prisma.PaymentRefundUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRefundPayload>
+        }
+        deleteMany: {
+          args: Prisma.PaymentRefundDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PaymentRefundUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.PaymentRefundUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRefundPayload>
+        }
+        aggregate: {
+          args: Prisma.PaymentRefundAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePaymentRefund>
+        }
+        groupBy: {
+          args: Prisma.PaymentRefundGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentRefundGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PaymentRefundCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentRefundCountAggregateOutputType> | number
+        }
+      }
+    }
     PaymentInstallment: {
       payload: Prisma.$PaymentInstallmentPayload<ExtArgs>
       fields: Prisma.PaymentInstallmentFieldRefs
@@ -2024,6 +2092,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WorkflowActivityLog: {
+      payload: Prisma.$WorkflowActivityLogPayload<ExtArgs>
+      fields: Prisma.WorkflowActivityLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WorkflowActivityLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowActivityLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WorkflowActivityLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowActivityLogPayload>
+        }
+        findFirst: {
+          args: Prisma.WorkflowActivityLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowActivityLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WorkflowActivityLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowActivityLogPayload>
+        }
+        findMany: {
+          args: Prisma.WorkflowActivityLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowActivityLogPayload>[]
+        }
+        create: {
+          args: Prisma.WorkflowActivityLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowActivityLogPayload>
+        }
+        createMany: {
+          args: Prisma.WorkflowActivityLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.WorkflowActivityLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowActivityLogPayload>
+        }
+        update: {
+          args: Prisma.WorkflowActivityLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowActivityLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.WorkflowActivityLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WorkflowActivityLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.WorkflowActivityLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkflowActivityLogPayload>
+        }
+        aggregate: {
+          args: Prisma.WorkflowActivityLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWorkflowActivityLog>
+        }
+        groupBy: {
+          args: Prisma.WorkflowActivityLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkflowActivityLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WorkflowActivityLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkflowActivityLogCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2348,6 +2482,18 @@ export const PaymentScalarFieldEnum = {
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
 
 
+export const PaymentRefundScalarFieldEnum = {
+  id: 'id',
+  paymentId: 'paymentId',
+  amount: 'amount',
+  reason: 'reason',
+  refundedAt: 'refundedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PaymentRefundScalarFieldEnum = (typeof PaymentRefundScalarFieldEnum)[keyof typeof PaymentRefundScalarFieldEnum]
+
+
 export const PaymentInstallmentScalarFieldEnum = {
   id: 'id',
   paymentId: 'paymentId',
@@ -2415,6 +2561,33 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const WorkflowActivityLogScalarFieldEnum = {
+  id: 'id',
+  clientFileId: 'clientFileId',
+  fileWorkflowId: 'fileWorkflowId',
+  workflowTaskId: 'workflowTaskId',
+  fileWorkflowSubTaskId: 'fileWorkflowSubTaskId',
+  fileWorkflowDocumentId: 'fileWorkflowDocumentId',
+  staffId: 'staffId',
+  actorUserId: 'actorUserId',
+  staffName: 'staffName',
+  actorUsername: 'actorUsername',
+  activityType: 'activityType',
+  action: 'action',
+  fileNumber: 'fileNumber',
+  clientName: 'clientName',
+  workflowName: 'workflowName',
+  stepNumber: 'stepNumber',
+  stepTitle: 'stepTitle',
+  subTaskNumber: 'subTaskNumber',
+  subTaskTitle: 'subTaskTitle',
+  remarks: 'remarks',
+  createdAt: 'createdAt'
+} as const
+
+export type WorkflowActivityLogScalarFieldEnum = (typeof WorkflowActivityLogScalarFieldEnum)[keyof typeof WorkflowActivityLogScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2562,6 +2735,13 @@ export const PaymentOrderByRelevanceFieldEnum = {
 export type PaymentOrderByRelevanceFieldEnum = (typeof PaymentOrderByRelevanceFieldEnum)[keyof typeof PaymentOrderByRelevanceFieldEnum]
 
 
+export const PaymentRefundOrderByRelevanceFieldEnum = {
+  reason: 'reason'
+} as const
+
+export type PaymentRefundOrderByRelevanceFieldEnum = (typeof PaymentRefundOrderByRelevanceFieldEnum)[keyof typeof PaymentRefundOrderByRelevanceFieldEnum]
+
+
 export const PaymentInstallmentOrderByRelevanceFieldEnum = {
   remarks: 'remarks'
 } as const
@@ -2594,6 +2774,22 @@ export const AuditLogOrderByRelevanceFieldEnum = {
 } as const
 
 export type AuditLogOrderByRelevanceFieldEnum = (typeof AuditLogOrderByRelevanceFieldEnum)[keyof typeof AuditLogOrderByRelevanceFieldEnum]
+
+
+export const WorkflowActivityLogOrderByRelevanceFieldEnum = {
+  staffName: 'staffName',
+  actorUsername: 'actorUsername',
+  activityType: 'activityType',
+  action: 'action',
+  fileNumber: 'fileNumber',
+  clientName: 'clientName',
+  workflowName: 'workflowName',
+  stepTitle: 'stepTitle',
+  subTaskTitle: 'subTaskTitle',
+  remarks: 'remarks'
+} as const
+
+export type WorkflowActivityLogOrderByRelevanceFieldEnum = (typeof WorkflowActivityLogOrderByRelevanceFieldEnum)[keyof typeof WorkflowActivityLogOrderByRelevanceFieldEnum]
 
 
 
@@ -2883,11 +3079,13 @@ export type GlobalOmitConfig = {
   fileCharge?: Prisma.FileChargeOmit
   expense?: Prisma.ExpenseOmit
   payment?: Prisma.PaymentOmit
+  paymentRefund?: Prisma.PaymentRefundOmit
   paymentInstallment?: Prisma.PaymentInstallmentOmit
   calendarEvent?: Prisma.CalendarEventOmit
   thirdParty?: Prisma.ThirdPartyOmit
   fileNumberSequence?: Prisma.FileNumberSequenceOmit
   auditLog?: Prisma.AuditLogOmit
+  workflowActivityLog?: Prisma.WorkflowActivityLogOmit
 }
 
 /* Types for Logging */

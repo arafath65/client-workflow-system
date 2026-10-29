@@ -1,0 +1,32 @@
+-- CreateTable
+CREATE TABLE `workflow_activity_logs` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `clientFileId` INTEGER NOT NULL,
+    `fileWorkflowId` INTEGER NOT NULL,
+    `workflowTaskId` INTEGER NULL,
+    `fileWorkflowSubTaskId` INTEGER NULL,
+    `fileWorkflowDocumentId` INTEGER NULL,
+    `staffId` INTEGER NULL,
+    `actorUserId` INTEGER NULL,
+    `staffName` VARCHAR(191) NULL,
+    `actorUsername` VARCHAR(191) NULL,
+    `activityType` VARCHAR(20) NOT NULL,
+    `action` VARCHAR(20) NOT NULL,
+    `fileNumber` VARCHAR(100) NOT NULL,
+    `clientName` VARCHAR(191) NOT NULL,
+    `workflowName` VARCHAR(191) NOT NULL,
+    `stepNumber` INTEGER NOT NULL,
+    `stepTitle` VARCHAR(191) NOT NULL,
+    `subTaskNumber` INTEGER NULL,
+    `subTaskTitle` VARCHAR(191) NULL,
+    `remarks` TEXT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `workflow_activity_logs_createdAt_idx`(`createdAt`),
+    INDEX `workflow_activity_logs_staffId_createdAt_idx`(`staffId`, `createdAt`),
+    INDEX `workflow_activity_logs_activityType_action_createdAt_idx`(`activityType`, `action`, `createdAt`),
+    INDEX `workflow_activity_logs_clientFileId_createdAt_idx`(`clientFileId`, `createdAt`),
+    INDEX `workflow_activity_logs_workflowTaskId_idx`(`workflowTaskId`),
+    INDEX `workflow_activity_logs_fileWorkflowSubTaskId_idx`(`fileWorkflowSubTaskId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

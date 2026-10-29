@@ -144,6 +144,15 @@ export async function GET(request: Request) {
       status: true,
       referenceNo: true,
       paidAt: true,
+      refunds: {
+        orderBy: { refundedAt: "desc" },
+        select: {
+          id: true,
+          amount: true,
+          reason: true,
+          refundedAt: true,
+        },
+      },
       clientFile: {
         select: {
           id: true,
@@ -174,6 +183,35 @@ export async function GET(request: Request) {
       status: payment.status,
       referenceNo: payment.referenceNo,
       paidAt: payment.paidAt.toISOString(),
+      refundedAmount:
+        payment.status === "REFUNDED" && payment.refunds.length === 0
+          ? Number(payment.amount)
+          : payment.refunds.reduce(
+              (sum, refund) => sum + Number(refund.amount),
+              0
+            ),
+      remainingRefundable: Math.max(
+        Number(payment.amount) - (
+          payment.status === "REFUNDED" && payment.refunds.length === 0
+            ? Number(payment.amount)
+            : payment.refunds.reduce(
+                (sum, refund) => sum + Number(refund.amount),
+                0
+              )
+        ),
+        0
+      ),
+      displayStatus:
+        payment.status === "CLEARED" &&
+        payment.refunds.reduce((sum, refund) => sum + Number(refund.amount), 0) > 0
+          ? "PARTIALLY_REFUNDED"
+          : payment.status,
+      refunds: payment.refunds.map((refund) => ({
+        id: refund.id,
+        amount: Number(refund.amount),
+        reason: refund.reason,
+        refundedAt: refund.refundedAt.toISOString(),
+      })),
       clientFile: {
         id: payment.clientFile.id,
         fileNumber: payment.clientFile.fileNumber,

@@ -26,6 +26,9 @@ type FileRow = {
   fileNumber: string;
   title: string;
   status: string;
+  createdAt: string | null;
+  paymentStatus: string;
+  outstandingAmount: number;
 
   client: {
     id: number;
@@ -79,6 +82,39 @@ function statusClass(status: string) {
     default:
       return "bg-black/5 text-black/50";
   }
+}
+
+function paymentStatusClass(status: string) {
+  switch (status) {
+    case "PAID":
+      return "bg-green-100 text-green-700";
+    case "PARTIALLY_PAID":
+      return "bg-amber-100 text-amber-800";
+    case "UNPAID":
+      return "bg-red-100 text-red-700";
+    case "CANCELLED":
+      return "bg-black/5 text-black/40";
+    default:
+      return "bg-black/5 text-black/50";
+  }
+}
+
+function formatPaymentStatus(status: string) {
+  switch (status) {
+    case "PARTIALLY_PAID":
+      return "Partially Paid";
+    case "NO_AMOUNT_DUE":
+      return "No Amount Due";
+    default:
+      return status.replaceAll("_", " ");
+  }
+}
+
+function formatLkr(value: number) {
+  return `LKR ${new Intl.NumberFormat("en-LK", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)}`;
 }
 
 function formatEventDate(value: string) {
@@ -385,7 +421,11 @@ export default function FilesList({
                   </th>
 
                   <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-black/40">
-                    Status
+                    Workflow Status
+                  </th>
+
+                  <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-black/40">
+                    Payment Status
                   </th>
 
                   <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-black/40">
@@ -451,6 +491,12 @@ export default function FilesList({
                             {file.client.whatsapp}
                           </p>
                         ) : null}
+
+                        {file.createdAt ? (
+                          <p className="mt-1 text-[10px] text-black/35">
+                            Created {file.createdAt}
+                          </p>
+                        ) : null}
                       </td>
 
                       <td className="px-4 py-4">
@@ -461,6 +507,19 @@ export default function FilesList({
                         >
                           {formatStatus(file.status)}
                         </span>
+                      </td>
+
+                      <td className="px-4 py-4">
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${paymentStatusClass(file.paymentStatus)}`}
+                        >
+                          {formatPaymentStatus(file.paymentStatus)}
+                        </span>
+                        {file.outstandingAmount > 0 ? (
+                          <p className="mt-1.5 whitespace-nowrap text-[10px] font-medium text-red-600">
+                            Due: {formatLkr(file.outstandingAmount)}
+                          </p>
+                        ) : null}
                       </td>
 
                       <td className="px-4 py-4">
