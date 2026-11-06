@@ -65,14 +65,11 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("LOGIN API ERROR:", error);
 
     return NextResponse.json(
-      {
-        success: false,
-        message: "Unable to process login.",
-      },
-      { status: 500 }
+        { message: "Unable to process login." },
+        { status: 500 }
     );
-  }
+}
 }
