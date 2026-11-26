@@ -1,7 +1,7 @@
 # A&I GLOBAL CLIENT WORKFLOW SYSTEM — MASTER PROJECT RECORD
 
 **Technical handover, business-rules reference and continuation baseline**  
-**Last updated:** 22 November 2026  
+**Last updated:** 26 November 2026  
 **Customer / product:** A&I Global — Client Workflow System  
 **Application identity:** A&I Global Workflow System  
 **Development environment:** Windows 11, PowerShell, Next.js, React, TypeScript, Prisma, MySQL and Electron  
@@ -1531,7 +1531,7 @@ Other related files may include shared navigation, report filter components, PDF
 - Local project: `client-workflow-system`.
 - Branch noted in current project context: `main`.
 - Remote is referred to as `origin` in prior Git instructions.
-- The exact GitHub repository URL was not present in the verified project notes used for this document.
+- Verified GitHub repository: `https://github.com/arafath65/client-workflow-system` (public repository, default branch `main`; verified 26 November 2026).
 - Do not invent the remote URL or assume all latest local changes have been pushed.
 
 ### 22.2 Inspect before commit
@@ -1793,8 +1793,9 @@ The following must be confirmed from the customer or active source when relevant
 11. Did the requested operational-data cleanup complete successfully?
 12. What commit contains the latest Work Activity, payment and pagination updates?
 13. Has a final Windows installer built from those latest changes been installed and tested end-to-end?
-14. What is the official GitHub repository URL for this client workflow project?
-15. Is the customer deployment using a local MySQL service, a LAN database server or a hosted MySQL server?
+14. The GitHub repository is verified as `https://github.com/arafath65/client-workflow-system`, public, default branch `main` (checked 26 November 2026).
+15. The selected hosting direction is a Contabo VPS using Docker Compose. MySQL 8 is planned as a private Docker service on the same VPS; it has not yet been installed or deployed. Confirm the final database, backup and application connection settings during implementation.
+16. What DNS records and certificate names will be used for the production application domain/subdomain? The domain must be confirmed before public Caddy routing is configured.
 
 ---
 
@@ -1812,5 +1813,273 @@ The following must be confirmed from the customer or active source when relevant
 
 ---
 
-**End of current master baseline — 22 November 2026.**  
-**Next action:** record the customer's exact modification requests in Section 25 before implementation.
+**End of current master baseline — updated 26 November 2026.**  
+**Next action:** continue from Section 31.10: verify a second SSH login after UFW activation, then build the remaining Docker Compose hosting infrastructure. Customer change requests remain tracked separately in Section 25.
+
+---
+
+## 31. Contabo VPS Deployment and Hosting Checkpoint (26 November 2026)
+
+This section records the infrastructure work performed for hosting the A&I Global Client Workflow System and future Innovex applications. It is a deployment checkpoint, not a claim that the application has already been deployed.
+
+### 31.1 Hosting goal and chosen architecture
+
+- Provider/plan: Contabo VPS 4.
+- Operating system: Ubuntu 24.04.5 LTS (Noble).
+- Intended deployment approach: Docker Engine + Docker Compose.
+- The VPS is intended to host the Client Workflow System and potentially other separate Innovex web/API workloads in the future.
+- Planned reverse proxy: Caddy, terminating public HTTP/HTTPS traffic on ports 80 and 443.
+- Planned database: MySQL 8 in a Docker container on a private Docker network; do not publish MySQL port 3306 to the public internet.
+- Planned application services: separate containers/Compose deployments for the workflow application, Gym API and future Next.js applications, according to their approved deployment scope.
+- Planned administration: Cockpit for Ubuntu administration, Portainer as an optional Docker GUI, and phpMyAdmin for database administration if later installed. Administrative interfaces must remain private and be reached through SSH tunnels.
+- Docker Compose CLI is the reliable primary deployment/control path. Portainer is optional until its local environment connection issue is resolved.
+
+### 31.2 VPS capacity and base operating system
+
+Values confirmed during the 26 November 2026 setup session:
+
+| Item | Confirmed state |
+|---|---|
+| VPS plan | Contabo VPS 4 |
+| OS | Ubuntu 24.04.5 LTS |
+| Architecture | x86_64 / amd64 |
+| CPU | 4 vCPU |
+| RAM | Approximately 7.8 GiB |
+| Disk | 100 GB plan; root filesystem approximately 96 GB usable |
+| Kernel after reboot | 6.8.0-151-generic |
+| Timezone | Asia/Colombo (+05:30) |
+| NTP | Active |
+| Swap | 4 GB /swapfile, active and persistent in /etc/fstab |
+| Swappiness | 10 |
+| Network stack | Netplan with systemd-networkd managing eth0 |
+| Addressing | Public IPv4 and IPv6 are configured; exact addresses are intentionally not stored in this public repository |
+
+The VPS was rebooted after kernel/package updates. The running kernel was verified as 6.8.0-151-generic; swap remained active after reboot; apt-get check passed.
+
+### 31.3 Base package recovery and operating-system health
+
+The fresh server initially had an interrupted dpkg state. Investigation found malformed update fragments under /var/lib/dpkg/updates/; the numbered fragments were zero-filled/corrupt. The main dpkg status database and its backups were inspected and found valid.
+
+Recovery actions completed:
+
+- A timestamped archive of the dpkg/apt state was saved under /root/dpkg-recovery-20261126_111425/.
+- Corrupt numbered update fragments were preserved in a quarantine folder rather than discarded.
+- dpkg --configure -a subsequently completed.
+- dpkg --audit returned no findings and apt-get check passed.
+- Seven damaged/empty BIND 9 library files were separately backed up under /root/bind9-recovery-20261126_112804/.
+- Official Ubuntu bind9-libs package version 1:9.18.39-0ubuntu0.24.04.9 was installed, and matching bind9-host / bind9-dnsutils packages were upgraded.
+- dpkg --verify bind9-libs, ldconfig, dpkg --audit and apt-get check completed without the earlier errors.
+- apt upgrade reported no pending package upgrades before reboot.
+
+Do not delete the recovery archives or quarantined fragments as part of routine cleanup. There is no confirmed evidence in this setup record of ext4/journal I/O errors or a package database status-file corruption.
+
+### 31.4 Administrative account and SSH security
+
+The administrative Linux account used for normal server work is ubuntu; it has sudo access. The account password was set so the user can authenticate to Cockpit/PAM while SSH password authentication remains disabled.
+
+SSH configuration was hardened using /etc/ssh/sshd_config.d/00-innovex-security.conf:
+
+```text
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+KbdInteractiveAuthentication no
+```
+
+- SSH remains on TCP port 22.
+- Windows ED25519 key authentication was installed for the ubuntu account.
+- Private key material remains on the user's Windows computer and must never be uploaded to GitHub or copied into this document.
+- sshd -t passed.
+- Effective SSH settings were checked after reboot and still showed root login disabled, password authentication disabled and public-key authentication enabled.
+- A fresh second SSH connection after enabling UFW has not yet been tested. This is the exact next action when resuming.
+
+Windows PowerShell SSH commands must be run in Windows PowerShell, not inside the remote Ubuntu shell. Keep an existing SSH session open when changing firewall or SSH settings until a second session is confirmed.
+
+### 31.5 Network configuration and Cockpit
+
+Netplan reports eth0 with the VPS public IPv4/IPv6 configuration, DNS and default gateways. Network ownership was checked:
+
+- systemd-networkd is active and reports eth0 as routable (configured).
+- NetworkManager is also active, but nmcli device status reports both eth0 and lo as unmanaged.
+- Do not disable either service or edit the cloud network configuration through Cockpit without a separate review. systemd-networkd currently owns the VPS NIC.
+
+Cockpit installation:
+
+- Cockpit version: 362-1`bpo24.04.1 from Ubuntu Noble backports.
+- cockpit.socket is enabled and active.
+- Cockpit's web dashboard was opened successfully by the user.
+- The intended secure access pattern is an SSH tunnel from Windows to the server's loopback port 9090. Do not expose TCP 9090 publicly.
+- Cockpit's Networking page should not be used to change the active cloud NIC configuration until its NetworkManager/systemd-networkd behavior is understood.
+
+### 31.6 Docker Engine and Compose installation
+
+Docker was installed from Docker's official Ubuntu APT repository.
+
+Repository configuration:
+
+- Signing key: /etc/apt/keyrings/docker.asc.
+- Repository definition: /etc/apt/sources.list.d/docker.sources.
+- Ubuntu suite: noble.
+- Component: stable.
+- Architecture: amd64.
+- Docker's repository index was fetched successfully by apt update, with no GPG/signature error.
+
+Packages installed from the official repository:
+
+| Package | Installed version / status |
+|---|---|
+| docker-ce | 5:29.10.1-1`ubuntu.24.04`noble |
+| docker-ce-cli | 5:29.10.1-1`ubuntu.24.04`noble |
+| containerd.io | 2.4.2-4`ubuntu.24.04`noble |
+| docker-buildx-plugin | 0.39.1-1`ubuntu.24.04`noble |
+| docker-compose-plugin | 5.8.0-1`ubuntu.24.04`noble |
+| docker-ce-rootless-extras | Installed as a dependency |
+| pigz | Installed as a dependency |
+
+Confirmed runtime state:
+
+- docker.service is enabled and active (running).
+- Docker daemon completed initialization and listens on /run/docker.sock.
+- sudo docker run --rm hello-world successfully pulled and ran the official test image, displayed Hello from Docker!, then removed the test container.
+- Docker startup logged cleanup messages saying the initial IPv4/IPv6 docker-bridges nftables tables did not exist. Docker completed startup normally. An optional fsverity capability warning was also logged. No firewall workaround was applied based on those messages alone.
+- Use sudo docker ... / sudo docker compose ... for administration. The ubuntu account has not been added to the docker group; membership in that group grants root-equivalent control.
+
+### 31.7 Initial Innovex directory and Portainer deployment
+
+The following directory was created and is owned by ubuntu with mode 0750:
+
+```text
+/opt/innovex/infrastructure/portainer/
+```
+
+Compose file:
+
+```text
+/opt/innovex/infrastructure/portainer/compose.yaml
+```
+
+The current Compose configuration is:
+
+```yaml
+services:
+  portainer:
+    image: portainer/portainer-ce:lts
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+
+volumes:
+  portainer_data:
+    name: portainer_data
+```
+
+Confirmed deployment state:
+
+- Portainer Community Edition LTS image was pulled; startup logs identify version 2.45.4.
+- Container name: portainer.
+- Container is running.
+- Docker network: portainer_default.
+- Persistent volume: portainer_data, mounted at /data.
+- Docker socket mount: /var/run/docker.sock to /var/run/docker.sock.
+- Host HTTPS publication: 127.0.0.1:9443 only.
+- Container ports 8000 and 9000 appear in docker ps as exposed container ports but are not published on the VPS host.
+- Portainer first-time administrator account was created by the user. The administrator password and one-time setup token are intentionally not stored here.
+- Edge Compute was left disabled because no remote edge agents are being managed.
+- Portainer's browser interface is intended to be accessed through an SSH tunnel to 127.0.0.1:9443, using a Windows-local forwarding port such as 19443.
+
+### 31.8 Portainer local environment connection issue — unresolved
+
+The Portainer environment wizard initially showed that the local Docker environment was connected. After selecting Get Started, the page changed to:
+
+> We could not connect your local environment to Portainer.
+
+Read-only diagnostics performed:
+
+- Host Docker socket exists with mode srw-rw----, owner root:docker.
+- docker inspect portainer confirmed both /var/run/docker.sock and the persistent /data volume are mounted.
+- A direct Docker API ping on the host using the Unix socket returned OK:
+
+```bash
+sudo curl --silent --show-error --unix-socket /var/run/docker.sock http://localhost/_ping
+```
+
+- Attempting docker exec portainer ls ... failed because the minimal Portainer image does not include the ls executable; this is not evidence that the socket mount is missing.
+- The remaining Portainer endpoint error has not yet been diagnosed. Do not delete the portainer_data volume or recreate Portainer blindly. Docker Compose CLI remains available and is the primary deployment route until this is resolved.
+
+The temporary Portainer setup token appeared in an earlier terminal log and was not retained in this document. Never record setup tokens, admin passwords or credentials in the public repository.
+
+### 31.9 UFW firewall configuration
+
+UFW was inactive before hardening. IPv6 support was confirmed as enabled in /etc/default/ufw:
+
+```text
+IPV6=yes
+```
+
+Default policies confirmed:
+
+```text
+DEFAULT_INPUT_POLICY="DROP"
+DEFAULT_OUTPUT_POLICY="ACCEPT"
+DEFAULT_FORWARD_POLICY="DROP"
+```
+
+Rules added and firewall enabled:
+
+| Port | Protocol | Purpose | Public rule |
+|---|---|---|---|
+| 22 | TCP | SSH | Allowed |
+| 80 | TCP | HTTP / future reverse proxy | Allowed |
+| 443 | TCP | HTTPS / future reverse proxy | Allowed |
+
+sudo ufw status verbose confirmed Status: active, incoming denied by default, outgoing allowed, routed denied, and the three rules applied to both IPv4 and IPv6.
+
+No public allow rules were added for Cockpit 9090, Portainer 9443, or MySQL 3306.
+
+**Docker firewall caveat:** Docker-published ports can be handled through Docker-managed iptables/nftables paths and may bypass ordinary UFW filtering. Therefore, keep admin web interfaces bound to host loopback, keep MySQL unpublished, and review Docker's DOCKER-USER/forwarding behavior before publishing application containers. The intended public entry point is Caddy on ports 80/443 only.
+
+### 31.10 Exact continuation point and outstanding infrastructure tasks
+
+**Last confirmed state: 26 November 2026.** UFW is enabled and shows the intended dual-stack rules. The user paused before testing a new SSH session.
+
+Resume in this order:
+
+1. **Verify SSH access from Windows PowerShell in a new window** while keeping the current SSH session open:
+
+   ```powershell
+   ssh -i "$env:USERPROFILE\\.ssh\\innovex_vps_ed25519" ubuntu@<VPS_PUBLIC_IP>
+   ```
+
+   After login, run sudo whoami; expected output is root. Do not close the old session until this succeeds. Do not run the Windows $env:USERPROFILE command inside Ubuntu.
+
+2. Recheck sudo ufw status verbose and preserve SSH port 22 access for both address families.
+
+3. Create the remaining agreed directory layout, with application source/configuration under /opt/innovex/ and persistent database, backups and storage under /srv/innovex/. The /srv/innovex/ hierarchy has not yet been created.
+
+4. Complete Docker firewall design deliberately; keep admin interfaces on loopback and prevent direct public MySQL access.
+
+5. Install and configure Caddy as the public reverse proxy on ports 80/443. Confirm the required DNS record(s) and domain before requesting HTTPS certificates.
+
+6. Deploy MySQL 8 using a private Docker network and persistent storage. Do not publish 3306 to the public internet. Decide backup/restore procedure before production data is loaded.
+
+7. Deploy the Client Workflow System as a separate service/Compose stack, using production environment variables kept outside Git. Reconcile the live project source, Prisma migrations, Node runtime, and database requirements before the first deployment.
+
+8. Add phpMyAdmin only if required, with private SSH-tunnel access. Do not expose it publicly.
+
+9. Troubleshoot Portainer's local environment connection only if the user still wants the GUI; preserve the existing portainer_data volume.
+
+10. Perform end-to-end checks: DNS, HTTPS, reverse proxy routing, login, database connectivity, persistence after container recreation, backups/restores, and a reboot/reconnect check.
+
+### 31.11 Security and documentation rules for this VPS
+
+- This GitHub repository is public. Do not place the server's exact public IP addresses, private SSH key, SSH key material, passwords, one-time setup tokens, database credentials, .env values, or backup encryption keys in this document.
+- Retrieve the VPS public addresses from the Contabo control panel or approved private notes when required.
+- Keep Cockpit and Portainer reachable through SSH tunnels only.
+- Keep database ports private to Docker networks.
+- Never add a broad public Docker-published port without first reviewing Docker/UFW interaction.
+- Preserve the dpkg and BIND recovery archives until a separate retention decision is made.
+- The current infrastructure is a prepared base only: Caddy, MySQL, phpMyAdmin and the workflow application have not yet been deployed.
